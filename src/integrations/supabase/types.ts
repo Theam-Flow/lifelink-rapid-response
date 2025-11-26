@@ -489,6 +489,7 @@ export type Database = {
           manager_id: string | null
           name: string
           notes: string | null
+          photo_urls: string[] | null
           supplies_status: Json | null
           type: Database["public"]["Enums"]["shelter_type"]
           updated_at: string | null
@@ -506,6 +507,7 @@ export type Database = {
           manager_id?: string | null
           name: string
           notes?: string | null
+          photo_urls?: string[] | null
           supplies_status?: Json | null
           type: Database["public"]["Enums"]["shelter_type"]
           updated_at?: string | null
@@ -523,6 +525,7 @@ export type Database = {
           manager_id?: string | null
           name?: string
           notes?: string | null
+          photo_urls?: string[] | null
           supplies_status?: Json | null
           type?: Database["public"]["Enums"]["shelter_type"]
           updated_at?: string | null

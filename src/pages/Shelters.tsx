@@ -7,7 +7,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, MapPin, Phone, Users, Home, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Users, Home, CheckCircle, AlertTriangle, Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { ShelterForm } from '@/components/ShelterForm';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Shelter {
   id: string;
@@ -19,14 +31,19 @@ interface Shelter {
   capacity_current: number | null;
   is_verified: boolean;
   supplies_status: any;
+  photo_urls: string[] | null;
   created_at: string;
 }
 
 const Shelters = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [loading, setLoading] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingShelter, setEditingShelter] = useState<Shelter | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchShelters();
@@ -81,6 +98,27 @@ const Shelters = () => {
     return 'text-green-500';
   };
 
+  const handleEdit = (shelter: Shelter) => {
+    setEditingShelter(shelter);
+    setFormOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from('shelters').delete().eq('id', id);
+      if (error) throw error;
+      toast.success(t('shelters.deleted'));
+      fetchShelters();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleFormClose = () => {
+    setFormOpen(false);
+    setEditingShelter(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -105,6 +143,12 @@ const Shelters = () => {
                   <CardDescription className="text-base">{t('shelters.subtitle')}</CardDescription>
                 </div>
               </div>
+              {user && (
+                <Button onClick={() => setFormOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('shelters.createShelter')}
+                </Button>
+              )}
             </div>
           </CardHeader>
         </Card>
@@ -190,7 +234,44 @@ const Shelters = () => {
                             </Badge>
                           </div>
                         </div>
+                        {user && (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(shelter)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeletingId(shelter.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Photo Gallery */}
+                      {shelter.photo_urls && shelter.photo_urls.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {shelter.photo_urls.slice(0, 3).map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt={`${shelter.name} ${idx + 1}`}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                          ))}
+                          {shelter.photo_urls.length > 3 && (
+                            <div className="col-span-3 text-sm text-muted-foreground text-center">
+                              +{shelter.photo_urls.length - 3} {t('shelters.morePhotos')}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Capacity */}
                       {shelter.capacity_max && (
@@ -248,6 +329,39 @@ const Shelters = () => {
           )}
         </div>
       </div>
+
+      <ShelterForm
+        open={formOpen}
+        onClose={handleFormClose}
+        onSuccess={() => {
+          fetchShelters();
+          handleFormClose();
+        }}
+        shelter={editingShelter}
+      />
+
+      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('shelters.confirmDelete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('shelters.deleteWarning')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingId) handleDelete(deletingId);
+                setDeletingId(null);
+              }}
+              className="bg-destructive text-destructive-foreground"
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
