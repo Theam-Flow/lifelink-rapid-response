@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { validateShelter, validatePhone, sanitizeInput } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ interface ShelterFormProps {
 
 export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormProps) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [photos, setPhotos] = useState<string[]>(shelter?.photo_urls || []);
@@ -130,6 +132,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
         capacity_current: formData.capacity_current,
         notes: sanitizedNotes,
         photo_urls: photos,
+        manager_id: user?.id,
         ...(location && { location }),
       };
 
