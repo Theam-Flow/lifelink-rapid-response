@@ -943,11 +943,53 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_clustered_sos: {
+        Args: {
+          cluster_distance: number
+          max_lat: number
+          max_lng: number
+          min_lat: number
+          min_lng: number
+        }
+        Returns: {
+          centroid_lat: number
+          centroid_lng: number
+          cluster_id: number
+          max_severity: number
+          point_count: number
+          representative_id: string
+          representative_status: string
+          representative_type: string
+        }[]
+      }
       get_sos_coordinates: {
         Args: { sos_id: string }
         Returns: {
           lat: number
           lng: number
+        }[]
+      }
+      get_sos_nearby: {
+        Args: {
+          page_offset?: number
+          page_size?: number
+          radius_km?: number
+          user_lat: number
+          user_lng: number
+        }
+        Returns: {
+          accuracy_meters: number
+          created_at: string
+          description: string
+          distance_meters: number
+          id: string
+          lat: number
+          lng: number
+          severity_level: number
+          status: string
+          type: string
+          user_id: string
+          victim_count: number
         }[]
       }
       get_sos_with_distance: {
