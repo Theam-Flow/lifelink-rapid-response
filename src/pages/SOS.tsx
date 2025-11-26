@@ -28,7 +28,7 @@ const SOS = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      toast.error('Debes iniciar sesión para enviar una señal SOS');
+      toast.error(t('sos.loginRequired'));
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
@@ -47,14 +47,14 @@ const SOS = () => {
         accuracy: position.accuracy,
       });
       setLocationLoading(false);
-      toast.success('Ubicación adquirida');
+      toast.success(t('sos.locationAcquired'));
     } catch (error: any) {
       console.error('Geolocation error:', error);
       setLocationLoading(false);
-      toast.error('Error de ubicación', {
-        description: 'Intenta recargar tu ubicación',
+      toast.error(t('sos.locationError'), {
+        description: t('sos.tryReloadLocation'),
         action: {
-          label: 'Reintentar',
+          label: t('sos.retry'),
           onClick: fetchLocation,
         },
       });
@@ -65,7 +65,7 @@ const SOS = () => {
     e.preventDefault();
     
     if (!user) {
-      toast.error('Debes iniciar sesión');
+      toast.error(t('sos.loginRequired'));
       navigate('/auth');
       return;
     }
@@ -114,14 +114,14 @@ const SOS = () => {
       <div className="max-w-2xl mx-auto space-y-4 py-8">
         <Button variant="ghost" onClick={() => navigate('/')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('back')}
+          {t('common.back')}
         </Button>
 
         <Card className="border-2 border-destructive">
           <CardHeader className="bg-destructive text-destructive-foreground">
             <CardTitle className="flex items-center gap-3 text-2xl">
               <AlertTriangle className="h-8 w-8 animate-pulse" />
-              {t('sos_emergency')}
+              {t('sos.emergency')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -139,7 +139,7 @@ const SOS = () => {
                     {t('sos.acquiringLocation')}
                   </span>
                 ) : (
-                  <span className="text-destructive">Ubicación no disponible</span>
+                  <span className="text-destructive">{t('sos.noLocation')}</span>
                 )}
               </div>
               {!userLocation && !locationLoading && (
@@ -150,13 +150,13 @@ const SOS = () => {
                   onClick={fetchLocation}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Reintentar
+                  {t('sos.retry')}
                 </Button>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">{t('sos_type')}</Label>
+              <Label className="text-base font-semibold">{t('sos.type')}</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) => setFormData({ ...formData, type: value })}
@@ -165,20 +165,20 @@ const SOS = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="flood_trap">{t('flood_trap')}</SelectItem>
-                  <SelectItem value="medical_emergency">{t('medical_emergency')}</SelectItem>
-                  <SelectItem value="food_water">{t('food_water')}</SelectItem>
-                  <SelectItem value="evacuation">{t('evacuation')}</SelectItem>
-                  <SelectItem value="power_outage">{t('power_outage')}</SelectItem>
-                  <SelectItem value="structural_collapse">{t('structural_collapse')}</SelectItem>
-                  <SelectItem value="fire">{t('fire')}</SelectItem>
-                  <SelectItem value="other">{t('other')}</SelectItem>
+                  <SelectItem value="flood_trap">{t('emergencyTypes.flood_trap')}</SelectItem>
+                  <SelectItem value="medical_emergency">{t('emergencyTypes.medical_emergency')}</SelectItem>
+                  <SelectItem value="food_water">{t('emergencyTypes.food_water')}</SelectItem>
+                  <SelectItem value="evacuation">{t('emergencyTypes.evacuation')}</SelectItem>
+                  <SelectItem value="power_outage">{t('emergencyTypes.power_outage')}</SelectItem>
+                  <SelectItem value="structural_collapse">{t('emergencyTypes.structural_collapse')}</SelectItem>
+                  <SelectItem value="fire">{t('emergencyTypes.fire')}</SelectItem>
+                  <SelectItem value="other">{t('emergencyTypes.other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">{t('sos_severity')} (1-5)</Label>
+              <Label className="text-base font-semibold">{t('sos.severity')} (1-5)</Label>
               <div className="grid grid-cols-5 gap-2">
                 {[1, 2, 3, 4, 5].map((level) => (
                   <Button
@@ -195,7 +195,7 @@ const SOS = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">{t('sos_people')}</Label>
+              <Label className="text-base font-semibold">{t('sos.people')}</Label>
               <div className="grid grid-cols-4 gap-2">
                 {[1, 2, 3, 5, 10, 15, 20, 30].map((count) => (
                   <Button
@@ -212,7 +212,7 @@ const SOS = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">{t('sos_description')}</Label>
+              <Label className="text-base font-semibold">{t('sos.description')}</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}

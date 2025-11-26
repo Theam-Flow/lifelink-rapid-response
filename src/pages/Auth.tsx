@@ -39,9 +39,7 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success(t('auth.signupSuccess'), {
-          description: 'Tu cuenta ha sido creada exitosamente',
-        });
+        toast.success(t('auth.signupSuccess'));
         // Don't navigate immediately, let auth state change handle it
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -117,7 +115,7 @@ const Auth = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="country">{t('country')}</Label>
+                  <Label htmlFor="country">{t('auth.country')}</Label>
                   <Select
                     value={countryCode}
                     onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setCountryCode(value)}
@@ -161,7 +159,7 @@ const Auth = () => {
               />
               {isSignUp && (
                 <p className="text-xs text-muted-foreground">
-                  Mínimo 6 caracteres
+                  {t('auth.passwordMinLength')}
                 </p>
               )}
             </div>

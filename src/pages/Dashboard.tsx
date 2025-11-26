@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,7 @@ interface Metrics {
 }
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<Metrics>({
@@ -37,33 +39,28 @@ const Dashboard = () => {
     if (!user) return;
 
     const fetchMetrics = async () => {
-      // Fetch active SOS
       const { count: sosCount } = await supabase
         .from('sos_signals')
         .select('*', { count: 'exact', head: true })
         .in('status', ['active', 'acknowledged']);
 
-      // Fetch active rescuers
       const { count: rescuerCount } = await supabase
         .from('rescuer_activity')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'available')
         .gte('last_ping', new Date(Date.now() - 5 * 60 * 1000).toISOString());
 
-      // Fetch rescued count
       const { count: rescuedCount } = await supabase
         .from('sos_signals')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'rescued');
 
-      // Fetch rescued last 24h
       const { count: rescued24h } = await supabase
         .from('sos_signals')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'rescued')
         .gte('rescued_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
-      // Fetch average response time
       const { data: responseData } = await supabase
         .from('sos_signals')
         .select('acknowledged_at, rescued_at')
@@ -76,7 +73,7 @@ const Dashboard = () => {
         const times = responseData.map((r) => {
           const ack = new Date(r.acknowledged_at!).getTime();
           const res = new Date(r.rescued_at!).getTime();
-          return (res - ack) / (1000 * 60); // Minutes
+          return (res - ack) / (1000 * 60);
         });
         avgTime = times.reduce((a, b) => a + b, 0) / times.length;
       }
@@ -114,19 +111,21 @@ const Dashboard = () => {
     fetchMetrics();
     fetchRecentIncidents();
 
-    const interval = setInterval(fetchMetrics, 30000); // Update every 30 seconds
+    const interval = setInterval(fetchMetrics, 30000);
 
     return () => clearInterval(interval);
   }, [user]);
 
   const exportReport = async () => {
-    toast.info('Generando reporte...', { description: 'Esta función estará disponible pronto' });
+    toast.info(t('dashboard.generatingReport'), { 
+      description: t('dashboard.featureComingSoon')
+    });
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Cargando...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -134,92 +133,89 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4">
       <div className="max-w-7xl mx-auto space-y-6 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Dashboard de Métricas</h1>
-              <p className="text-muted-foreground">Análisis en tiempo real de operaciones de rescate</p>
+              <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+              <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
             </div>
           </div>
           <Button onClick={exportReport} variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Exportar Reporte
+            {t('dashboard.exportReport')}
           </Button>
         </div>
 
-        {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">SOS Activos</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.activeSOS')}</CardTitle>
               <AlertCircle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{metrics.activeSOS}</div>
-              <p className="text-xs text-muted-foreground mt-1">Requieren atención inmediata</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.requiresAttention')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Rescatistas Activos</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.activeRescuers')}</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{metrics.activeRescuers}</div>
-              <p className="text-xs text-muted-foreground mt-1">Compartiendo ubicación</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.sharingLocation')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Rescatados</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.totalRescued')}</CardTitle>
               <Heart className="h-4 w-4 text-secondary" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{metrics.totalRescued}</div>
-              <p className="text-xs text-muted-foreground mt-1">Desde el inicio</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.sinceStart')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Últimas 24h</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.last24h')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{metrics.rescuedLast24h}</div>
-              <p className="text-xs text-muted-foreground mt-1">Rescates completados</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.rescuesCompleted')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Tiempo Promedio</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.avgTime')}</CardTitle>
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
                 {metrics.avgResponseTime ? Math.round(metrics.avgResponseTime) : '-'}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Minutos de respuesta</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.responseMinutes')}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Incidents */}
         <Card>
           <CardHeader>
-            <CardTitle>Reportes Recientes de Incidentes</CardTitle>
+            <CardTitle>{t('dashboard.recentIncidents')}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentIncidents.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                No hay reportes de incidentes todavía
+                {t('dashboard.noIncidents')}
               </p>
             ) : (
               <div className="space-y-4">
@@ -230,10 +226,10 @@ const Dashboard = () => {
                   >
                     <div className="space-y-1">
                       <p className="font-semibold">
-                        {incident.sos_signals?.type || 'Desconocido'}
+                        {incident.sos_signals?.type ? t(`emergencyTypes.${incident.sos_signals.type}`) : t('dashboard.unknown')}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Reportado por: {incident.profiles?.full_name || 'Desconocido'}
+                        {t('dashboard.reportedBy')}: {incident.profiles?.full_name || t('dashboard.unknown')}
                       </p>
                       <p className="text-sm">
                         <span className={`font-semibold ${
@@ -242,9 +238,9 @@ const Dashboard = () => {
                           incident.outcome === 'failed' ? 'text-red-500' :
                           'text-muted-foreground'
                         }`}>
-                          {incident.outcome || 'En progreso'}
+                          {incident.outcome ? t(`dashboard.${incident.outcome}`) : t('dashboard.inProgress')}
                         </span>
-                        {incident.victims_rescued && ` • ${incident.victims_rescued} rescatados`}
+                        {incident.victims_rescued && ` • ${incident.victims_rescued} ${t('dashboard.rescued')}`}
                         {incident.response_time_minutes && ` • ${incident.response_time_minutes} min`}
                       </p>
                     </div>

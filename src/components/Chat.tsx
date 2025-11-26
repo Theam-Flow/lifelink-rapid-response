@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,13 +25,13 @@ interface ChatProps {
 }
 
 export const Chat = ({ sosId, onClose }: ChatProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch messages
   useEffect(() => {
     if (!sosId) return;
 
@@ -58,7 +59,6 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
 
     fetchMessages();
 
-    // Subscribe to real-time messages
     const channel = supabase
       .channel(`chat_${sosId}`)
       .on(
@@ -80,7 +80,6 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
     };
   }, [sosId]);
 
-  // Auto scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -101,7 +100,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
     });
 
     if (error) {
-      toast.error('Error al enviar mensaje');
+      toast.error(t('chat.sendError'));
       console.error(error);
     } else {
       setNewMessage('');
@@ -115,7 +114,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
       <Card className="w-full">
         <CardContent className="p-6 text-center text-muted-foreground">
           <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p>Selecciona un SOS para ver el chat</p>
+          <p>{t('chat.selectSOS')}</p>
         </CardContent>
       </Card>
     );
@@ -126,7 +125,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          Chat de Coordinación
+          {t('chat.title')}
         </CardTitle>
         {onClose && (
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -138,7 +137,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
         <ScrollArea className="h-[300px] px-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground text-sm">
-              No hay mensajes aún. Sé el primero en escribir.
+              {t('chat.noMessages')}
             </div>
           ) : (
             <div className="space-y-4 py-4">
@@ -158,7 +157,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
                   >
                     {message.user_id !== user?.id && (
                       <p className="text-xs font-semibold mb-1">
-                        {message.profile?.full_name || 'Desconocido'}
+                        {message.profile?.full_name || t('chat.unknown')}
                       </p>
                     )}
                     <p className="text-sm">{message.content}</p>
@@ -176,7 +175,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Escribe un mensaje..."
+            placeholder={t('chat.placeholder')}
             disabled={loading}
           />
           <Button type="submit" size="icon" disabled={loading || !newMessage.trim()}>
