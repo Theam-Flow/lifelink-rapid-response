@@ -9,7 +9,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, FileText } from "lucide-react";
+import { MessageSquare, FileText, Phone, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SOSSignal {
   id: string;
@@ -24,6 +25,8 @@ interface SOSSignal {
   lng?: number;
   lat?: number;
   distance_meters?: number | null;
+  contact_phone?: string | null;
+  contact_line_id?: string | null;
 }
 
 interface SOSActionDialogProps {
@@ -47,14 +50,49 @@ export function SOSActionDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-background">
+      <AlertDialogContent className="bg-background max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>{t('map.sosOptions')}</AlertDialogTitle>
           <AlertDialogDescription>
             {t(`emergencyTypes.${signal.type}`)} - {t('sos.severity')}: {signal.severity_level}/5
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="flex flex-col gap-3 py-4">
+        
+        {/* Quick Contact Buttons */}
+        {(signal.contact_phone || signal.contact_line_id) && (
+          <div className="space-y-2 pt-2">
+            <h4 className="text-sm font-semibold text-muted-foreground">{t('profile.contactInfo')}</h4>
+            <div className="flex gap-2">
+              {signal.contact_phone && (
+                <Button
+                  onClick={() => {
+                    window.open(`tel:${signal.contact_phone}`, '_self');
+                    onOpenChange(false);
+                  }}
+                  variant="outline"
+                  className="flex-1 h-auto py-3 flex-col gap-1"
+                >
+                  <Phone className="h-5 w-5 text-primary" />
+                  <span className="text-xs font-medium">{t('profile.callPhone')}</span>
+                </Button>
+              )}
+              {signal.contact_line_id && (
+                <Button
+                  onClick={() => {
+                    window.open(`https://line.me/ti/p/${signal.contact_line_id}`, '_blank');
+                    onOpenChange(false);
+                  }}
+                  className="flex-1 h-auto py-3 flex-col gap-1 bg-[#06C755] hover:bg-[#06C755]/90 text-white"
+                >
+                  <Mail className="h-5 w-5" />
+                  <span className="text-xs font-medium">{t('profile.openLine')}</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 py-2">
           <button
             onClick={() => {
               onViewDetails();

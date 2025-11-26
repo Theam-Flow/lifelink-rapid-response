@@ -20,6 +20,7 @@ interface Profile {
   id: string;
   full_name: string;
   phone: string | null;
+  line_id: string | null;
   avatar_url: string | null;
   role: string;
   status: string;
@@ -43,8 +44,10 @@ const Profile = () => {
     full_name: '',
     phone: '',
     avatar_url: '',
+    line_id: '',
     country_code: 'TH' as 'TH' | 'VN' | 'MY' | 'ID',
   });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -69,12 +72,51 @@ const Profile = () => {
         full_name: data.full_name || '',
         phone: data.phone || '',
         avatar_url: data.avatar_url || '',
+        line_id: data.line_id || '',
         country_code: data.country_code || 'TH',
       });
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !event.target.files || event.target.files.length === 0) return;
+    
+    const file = event.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+    
+    setUploading(true);
+    try {
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      toast.success(t('profile.updateSuccess'));
+      fetchProfile();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -88,6 +130,7 @@ const Profile = () => {
         .update({
           full_name: formData.full_name,
           phone: formData.phone || null,
+          line_id: formData.line_id || null,
           avatar_url: formData.avatar_url || null,
           country_code: formData.country_code,
         })
@@ -195,6 +238,16 @@ const Profile = () => {
                   <Shield className="h-5 w-5" />
                 </div>
               )}
+              <label className="absolute bottom-0 left-0 bg-primary text-primary-foreground rounded-full p-2 shadow-lg cursor-pointer hover:bg-primary/90 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={uploading}
+                />
+                <User className="h-5 w-5" />
+              </label>
             </div>
           </div>
 
@@ -295,16 +348,17 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="avatar_url" className="text-base">
-                          {t('profile.avatarUrl')}
+                        <Label htmlFor="line_id" className="text-base">
+                          <Mail className="h-4 w-4 inline mr-2" />
+                          {t('profile.lineId')}
                         </Label>
                         <Input
-                          id="avatar_url"
-                          type="url"
-                          placeholder="https://..."
-                          value={formData.avatar_url}
-                          onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+                          id="line_id"
+                          type="text"
+                          value={formData.line_id}
+                          onChange={(e) => setFormData({ ...formData, line_id: e.target.value })}
                           className="h-12"
+                          placeholder="@yourlineid"
                         />
                       </div>
 
@@ -374,6 +428,38 @@ const Profile = () => {
                                 <p className="text-sm text-muted-foreground mb-1">{t('profile.phone')}</p>
                                 <p className="font-semibold">{profile.phone}</p>
                               </div>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => window.open(`tel:${profile.phone}`, '_self')}
+                                className="shrink-0"
+                              >
+                                <Phone className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {profile.line_id && (
+                        <Card className="bg-muted/50 border-none">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="bg-[#06C755]/10 p-2 rounded-lg">
+                                <Mail className="h-5 w-5 text-[#06C755]" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-muted-foreground mb-1">{t('profile.lineId')}</p>
+                                <p className="font-semibold">{profile.line_id}</p>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => window.open(`https://line.me/ti/p/${profile.line_id}`, '_blank')}
+                                className="shrink-0 border-[#06C755] text-[#06C755] hover:bg-[#06C755]/10"
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
                             </div>
                           </CardContent>
                         </Card>

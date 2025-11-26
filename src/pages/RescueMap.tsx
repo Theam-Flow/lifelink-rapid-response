@@ -12,7 +12,7 @@ import { useBackendClustering } from '@/hooks/useBackendClustering';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -34,6 +34,8 @@ interface SOSSignal {
   lng?: number;
   lat?: number;
   distance_meters?: number;
+  contact_phone?: string | null;
+  contact_line_id?: string | null;
 }
 
 interface Shelter {
@@ -1276,8 +1278,53 @@ const RescueMap = () => {
                 </div>
               )}
 
+              {/* Contact Information */}
+              {(selectedSOS.contact_phone || selectedSOS.contact_line_id) && (
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.contactInfo')}</h3>
+                  <div className="space-y-2">
+                    {selectedSOS.contact_phone && (
+                      <Button
+                        onClick={() => window.open(`tel:${selectedSOS.contact_phone}`, '_self')}
+                        variant="outline"
+                        className="w-full justify-start h-auto py-3"
+                      >
+                        <Phone className="mr-3 h-5 w-5 text-primary" />
+                        <div className="text-left">
+                          <div className="text-xs text-muted-foreground">{t('profile.phone')}</div>
+                          <div className="font-semibold">{selectedSOS.contact_phone}</div>
+                        </div>
+                      </Button>
+                    )}
+                    {selectedSOS.contact_line_id && (
+                      <Button
+                        onClick={() => window.open(`https://line.me/ti/p/${selectedSOS.contact_line_id}`, '_blank')}
+                        className="w-full justify-start h-auto py-3 bg-[#06C755] hover:bg-[#06C755]/90"
+                      >
+                        <Mail className="mr-3 h-5 w-5" />
+                        <div className="text-left text-white">
+                          <div className="text-xs opacity-90">LINE ID</div>
+                          <div className="font-semibold">{selectedSOS.contact_line_id}</div>
+                        </div>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="space-y-2 pt-4 border-t">
+                <Button 
+                  className="w-full bg-[#06C755] hover:bg-[#06C755]/90 text-white" 
+                  onClick={() => {
+                    const sosUrl = `${window.location.origin}/rescue-map?sos=${selectedSOS.id}`;
+                    const text = `🚨 ${t('sos.emergency')}!\n${t(`emergencyTypes.${selectedSOS.type}`)}\n${t('sos.severity')}: ${selectedSOS.severity_level}/5\n${sosUrl}`;
+                    window.open(`https://line.me/R/msg/text/?${encodeURIComponent(text)}`, '_blank');
+                  }}
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  {t('profile.shareLine')}
+                </Button>
                 <Button 
                   className="w-full" 
                   variant="default"
