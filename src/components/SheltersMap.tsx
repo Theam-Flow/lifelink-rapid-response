@@ -44,7 +44,7 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
 
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       center: defaultCenter,
       zoom: 6,
     });
