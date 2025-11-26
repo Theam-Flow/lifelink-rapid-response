@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, Plus, MapPin, Clock, Phone, User, ArrowLeft } from 'lucide-react';
+import { Search, Plus, MapPin, Clock, Phone, User, ArrowLeft, X, Upload, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface MissingPerson {
@@ -23,7 +23,7 @@ interface MissingPerson {
   description: string | null;
   last_seen_address: string | null;
   last_seen_at: string | null;
-  photo_url: string | null;
+  photo_urls: string[] | null;
   contact_phone: string | null;
   distinctive_features: string | null;
   status: string;
@@ -39,6 +39,9 @@ const MissingPersons = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -47,7 +50,6 @@ const MissingPersons = () => {
     description: '',
     last_seen_address: '',
     last_seen_at: '',
-    photo_url: '',
     contact_phone: '',
     distinctive_features: '',
   });
@@ -97,11 +99,78 @@ const MissingPersons = () => {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (selectedFiles.length + files.length > 8) {
+      toast.error(t('missing.maxPhotos'));
+      return;
+    }
+
+    const newFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(t('missing.onlyImages'));
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('missing.maxFileSize'));
+        return false;
+      }
+      return true;
+    });
+
+    setSelectedFiles(prev => [...prev, ...newFiles]);
+    
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrls(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadPhotos = async (): Promise<string[]> => {
+    if (!user || selectedFiles.length === 0) return [];
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of selectedFiles) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('missing-persons-photos')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('missing-persons-photos')
+        .getPublicUrl(fileName);
+
+      uploadedUrls.push(publicUrl);
+    }
+
+    return uploadedUrls;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
+    setUploading(true);
+
     try {
+      const photoUrls = await uploadPhotos();
+
       const { error } = await supabase.from('missing_persons').insert({
         reporter_id: user.id,
         full_name: formData.full_name,
@@ -110,7 +179,7 @@ const MissingPersons = () => {
         description: formData.description || null,
         last_seen_address: formData.last_seen_address || null,
         last_seen_at: formData.last_seen_at || null,
-        photo_url: formData.photo_url || null,
+        photo_urls: photoUrls,
         contact_phone: formData.contact_phone || null,
         distinctive_features: formData.distinctive_features || null,
         status: 'missing',
@@ -127,12 +196,15 @@ const MissingPersons = () => {
         description: '',
         last_seen_address: '',
         last_seen_at: '',
-        photo_url: '',
         contact_phone: '',
         distinctive_features: '',
       });
+      setSelectedFiles([]);
+      setPreviewUrls([]);
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -264,17 +336,52 @@ const MissingPersons = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="photo_url">{t('missing.photoUrl')}</Label>
-                      <Input
-                        id="photo_url"
-                        type="url"
-                        placeholder="https://..."
-                        value={formData.photo_url}
-                        onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                      />
+                      <Label htmlFor="photos">{t('missing.photos')} ({selectedFiles.length}/8)</Label>
+                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                        <input
+                          id="photos"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                        <label htmlFor="photos" className="cursor-pointer">
+                          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {t('missing.uploadPhotos')}
+                          </p>
+                          <Button type="button" variant="outline" size="sm">
+                            {t('missing.selectFiles')}
+                          </Button>
+                        </label>
+                      </div>
+                      
+                      {previewUrls.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2 mt-4">
+                          {previewUrls.map((url, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-20 object-cover rounded-lg"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removeFile(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <Button type="submit" className="w-full" size="lg">
-                      {t('missing.submitReport')}
+                    <Button type="submit" className="w-full" size="lg" disabled={uploading}>
+                      {uploading ? t('missing.uploading') : t('missing.submitReport')}
                     </Button>
                   </form>
                 </DialogContent>
@@ -311,13 +418,25 @@ const MissingPersons = () => {
             filteredPersons.map((person) => (
               <Card key={person.id} className="overflow-hidden">
                 <CardContent className="p-3 md:p-6">
-                  <div className="flex gap-6">
-                    {person.photo_url && (
-                      <img
-                        src={person.photo_url}
-                        alt={person.full_name}
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {person.photo_urls && person.photo_urls.length > 0 && (
+                      <div className="flex-shrink-0">
+                        <div className="grid grid-cols-2 gap-2 w-full md:w-64">
+                          {person.photo_urls.slice(0, 4).map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt={`${person.full_name} ${idx + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                          ))}
+                        </div>
+                        {person.photo_urls.length > 4 && (
+                          <p className="text-xs text-muted-foreground mt-2 text-center">
+                            +{person.photo_urls.length - 4} {t('missing.morePhotos')}
+                          </p>
+                        )}
+                      </div>
                     )}
                     <div className="flex-1 space-y-3">
                       <div className="flex items-start justify-between">
