@@ -2,7 +2,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window)) {
-    console.warn('Notifications not supported in this browser');
     return false;
   }
 
@@ -66,7 +65,7 @@ export function setupSOSNotifications(
               distance = sosWithDistance.distance_meters;
             }
           } catch (error) {
-            console.error('Error calculating distance:', error);
+            // Silently handle distance calculation errors
           }
         }
 

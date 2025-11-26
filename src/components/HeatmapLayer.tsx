@@ -22,8 +22,6 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
 
     const addHeatmap = () => {
       if (!map || !map.isStyleLoaded()) return;
-      
-      console.log('HeatmapLayer: Adding heatmap with signals:', sosSignals.length);
 
     // Remove existing layer if it exists
     try {
@@ -33,8 +31,8 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
       if (map.getSource(layerIdRef.current)) {
         map.removeSource(layerIdRef.current);
       }
-    } catch (error) {
-      console.log('No existing heatmap to remove');
+      } catch (error) {
+        // Silently handle heatmap removal errors
     }
 
     // Convert SOS signals to GeoJSON
@@ -71,8 +69,6 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
         },
       };
     }).filter(Boolean);
-
-    console.log('HeatmapLayer: Features created:', features.length);
 
     if (features.length === 0) return;
 
@@ -114,10 +110,8 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
           'heatmap-opacity': 0.8,
         },
       });
-      
-      console.log('HeatmapLayer: Successfully added heatmap');
     } catch (error) {
-      console.error('Error adding heatmap layer:', error);
+      // Silently handle heatmap layer errors
     }
     };
 

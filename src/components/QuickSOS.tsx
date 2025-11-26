@@ -124,7 +124,6 @@ export const QuickSOS = () => {
         navigate('/rescue-map');
       }, 2000);
     } catch (error) {
-      console.error('Error sending quick SOS:', error);
       toast.error(t('sos.error'), {
         description: error instanceof Error ? error.message : t('quickSOS.noLocation'),
       });

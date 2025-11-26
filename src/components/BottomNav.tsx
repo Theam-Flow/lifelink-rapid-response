@@ -33,7 +33,7 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t-2 border-border shadow-2xl z-50 safe-area-inset-bottom pointer-events-none">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t-2 border-border shadow-2xl z-50 safe-area-inset-bottom pointer-events-none" aria-label="by @withkevinm">
       <div className="flex items-center justify-around h-20 px-1 pointer-events-auto">
         {navItems.map((item) => {
           const Icon = item.icon;

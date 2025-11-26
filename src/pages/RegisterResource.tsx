@@ -48,7 +48,6 @@ const RegisterResource = () => {
         });
       },
       (error) => {
-        console.error('Error getting location:', error);
         toast.error(t('resources.locationError'));
       }
     );
