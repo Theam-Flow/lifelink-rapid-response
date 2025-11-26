@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Users, MapPin, Heart, BarChart3, Package } from 'lucide-react';
+import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon } from 'lucide-react';
+import { Notifications } from '@/components/Notifications';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -100,9 +101,16 @@ const Index = () => {
                   </CardDescription>
                 </div>
               </div>
-              <Button variant="outline" onClick={signOut}>
-                {t('auth.signOut')}
-              </Button>
+              <div className="flex gap-2">
+                <Notifications />
+                <Button variant="outline" onClick={() => navigate('/profile')}>
+                  <UserIcon className="h-4 w-4 mr-2" />
+                  {t('index.profile')}
+                </Button>
+                <Button variant="outline" onClick={signOut}>
+                  {t('auth.signOut')}
+                </Button>
+              </div>
             </div>
           </CardHeader>
         </Card>
@@ -110,7 +118,7 @@ const Index = () => {
         {/* Main Actions */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Quick Links */}
-          <div className="md:col-span-2 grid grid-cols-2 gap-4">
+          <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card 
               className="cursor-pointer hover:shadow-lg transition-all"
               onClick={() => navigate('/resources')}
@@ -138,6 +146,36 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{t('index.metricsDesc')}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => navigate('/missing-persons')}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Search className="h-5 w-5 text-primary" />
+                  {t('index.missingPersons')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{t('index.missingPersonsDesc')}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => navigate('/shelters')}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Home className="h-5 w-5 text-primary" />
+                  {t('index.shelters')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{t('index.sheltersDesc')}</p>
               </CardContent>
             </Card>
           </div>

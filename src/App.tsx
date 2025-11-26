@@ -14,6 +14,9 @@ import RescueMap from "./pages/RescueMap";
 import Resources from "./pages/Resources";
 import RegisterResource from "./pages/RegisterResource";
 import Dashboard from "./pages/Dashboard";
+import MissingPersons from "./pages/MissingPersons";
+import Profile from "./pages/Profile";
+import Shelters from "./pages/Shelters";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +33,9 @@ const AppContent = () => {
         <Route path="/resources" element={<Resources />} />
         <Route path="/resources/register" element={<RegisterResource />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/missing-persons" element={<MissingPersons />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/shelters" element={<Shelters />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
