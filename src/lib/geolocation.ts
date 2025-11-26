@@ -2,8 +2,22 @@ export interface GeolocationResult {
   latitude: number;
   longitude: number;
   accuracy: number;
+  altitude: number | null;
+  altitudeAccuracy: number | null;
+  heading: number | null;
+  speed: number | null;
+  timestamp: number;
   error?: string;
 }
+
+export type GPSQuality = 'acquiring' | 'poor' | 'fair' | 'good' | 'excellent';
+
+export const getGPSQuality = (accuracy: number): GPSQuality => {
+  if (accuracy > 100) return 'poor';
+  if (accuracy > 50) return 'fair';
+  if (accuracy > 20) return 'good';
+  return 'excellent';
+};
 
 export const getCurrentPosition = (): Promise<GeolocationResult> => {
   return new Promise((resolve, reject) => {
@@ -18,6 +32,11 @@ export const getCurrentPosition = (): Promise<GeolocationResult> => {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
+          altitude: position.coords.altitude,
+          altitudeAccuracy: position.coords.altitudeAccuracy,
+          heading: position.coords.heading,
+          speed: position.coords.speed,
+          timestamp: position.timestamp,
         });
       },
       (error) => {
@@ -47,6 +66,11 @@ export const watchPosition = (
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
+        altitude: position.coords.altitude,
+        altitudeAccuracy: position.coords.altitudeAccuracy,
+        heading: position.coords.heading,
+        speed: position.coords.speed,
+        timestamp: position.timestamp,
       });
     },
     (error) => {
