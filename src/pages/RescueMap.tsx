@@ -399,11 +399,14 @@ const RescueMap = () => {
 
         setSelectedSOS(signal);
         setShowChat(true);
-        map.current.flyTo({
-          center: coordinates,
-          zoom: 14,
-          duration: 1000
-        });
+        
+        // Center map on clicked SOS
+        if (map.current) {
+          setTimeout(() => {
+            map.current?.setCenter(coordinates);
+            map.current?.setZoom(15);
+          }, 100);
+        }
       });
 
       // Change cursor on hover
@@ -671,12 +674,12 @@ const RescueMap = () => {
                 className="cursor-pointer hover:shadow-md transition-all"
                 onClick={() => {
                   setSelectedSOS(signal);
-                  if (signal.lng && signal.lat && map.current && map.current.loaded()) {
-                    map.current.flyTo({
-                      center: [signal.lng, signal.lat],
-                      zoom: 14,
-                      duration: 1000
-                    });
+                  // Center map on SOS location immediately
+                  if (signal.lng && signal.lat && map.current) {
+                    setTimeout(() => {
+                      map.current?.setCenter([signal.lng!, signal.lat!]);
+                      map.current?.setZoom(15);
+                    }, 100);
                   }
                 }}
               >
@@ -754,12 +757,12 @@ const RescueMap = () => {
                 onClick={() => {
                   setSelectedSOS(signal);
                   setShowSOSList(false);
-                  if (signal.lng && signal.lat && map.current && map.current.loaded()) {
-                    map.current.flyTo({
-                      center: [signal.lng, signal.lat],
-                      zoom: 14,
-                      duration: 1000
-                    });
+                  // Center map on SOS location
+                  if (signal.lng && signal.lat && map.current) {
+                    setTimeout(() => {
+                      map.current?.setCenter([signal.lng!, signal.lat!]);
+                      map.current?.setZoom(15);
+                    }, 100);
                   }
                 }}
               >
