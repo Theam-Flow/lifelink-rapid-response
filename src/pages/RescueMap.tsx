@@ -890,7 +890,7 @@ const RescueMap = () => {
         {/* Mobile Recenter Button */}
         {isMobile && userLocation && (
           <Button
-            className="absolute top-20 right-4 z-10 h-10 w-10"
+            className="absolute top-[180px] right-4 z-10 h-10 w-10"
             variant="outline"
             size="icon"
             onClick={recenterToUserLocation}
