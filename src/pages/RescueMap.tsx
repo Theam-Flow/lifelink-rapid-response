@@ -12,7 +12,7 @@ import { useBackendClustering } from '@/hooks/useBackendClustering';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin, Moon, Sun } from 'lucide-react';
 import { HeatmapCanvasLayer } from '@/components/HeatmapCanvasLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -73,6 +73,7 @@ const RescueMap = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showOnlyNearby, setShowOnlyNearby] = useState(false); // Toggle para filtro de distancia
+  const [isDarkMode, setIsDarkMode] = useState(false); // Toggle para modo noche del mapa
   const sosNotificationChannelRef = useRef<ReturnType<typeof setupSOSNotifications> | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
@@ -131,29 +132,52 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Using reliable OpenStreetMap standard style
+    // Using reliable OpenStreetMap styles with day/night modes
+    const lightStyle = {
+      version: 8 as const,
+      sources: {
+        'osm': {
+          type: 'raster' as const,
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors'
+        }
+      },
+      layers: [
+        {
+          id: 'osm',
+          type: 'raster' as const,
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+
+    const darkStyle = {
+      version: 8 as const,
+      sources: {
+        'carto-dark': {
+          type: 'raster' as const,
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors © CARTO'
+        }
+      },
+      layers: [
+        {
+          id: 'carto-dark',
+          type: 'raster' as const,
+          source: 'carto-dark',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
-          }
-        },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 19
-          }
-        ]
-      },
+      style: isDarkMode ? darkStyle : lightStyle,
       center: [100.5018, 13.7563],
       zoom: 11,
     });
@@ -233,6 +257,55 @@ const RescueMap = () => {
       }
     };
   }, [t]);
+
+  // Toggle between day and night mode dynamically
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const lightStyle = {
+      version: 8 as const,
+      sources: {
+        'osm': {
+          type: 'raster' as const,
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors'
+        }
+      },
+      layers: [
+        {
+          id: 'osm',
+          type: 'raster' as const,
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+
+    const darkStyle = {
+      version: 8 as const,
+      sources: {
+        'carto-dark': {
+          type: 'raster' as const,
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors © CARTO'
+        }
+      },
+      layers: [
+        {
+          id: 'carto-dark',
+          type: 'raster' as const,
+          source: 'carto-dark',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
+
+    map.current.setStyle(isDarkMode ? darkStyle : lightStyle);
+  }, [isDarkMode, mapLoaded]);
 
   // SUPER-OPTIMIZED HTML markers with viewport culling, clustering, and massive scale support
   useEffect(() => {
@@ -759,6 +832,15 @@ const RescueMap = () => {
                 {notificationsEnabled ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
                 {notificationsEnabled ? t('map.disableNotifications') : t('map.enableNotifications')}
               </Button>
+              <Button
+                variant={isDarkMode ? 'default' : 'outline'}
+                size="sm"
+                className="w-full"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+              >
+                {isDarkMode ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
+                {isDarkMode ? 'Modo Noche' : 'Modo Día'}
+              </Button>
             </Card>
           </div>
         )}
@@ -800,6 +882,14 @@ const RescueMap = () => {
                   onClick={toggleNotifications}
                 >
                   {notificationsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                </Button>
+                <Button 
+                  variant={isDarkMode ? 'default' : 'ghost'} 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                >
+                  {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
