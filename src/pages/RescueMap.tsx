@@ -9,7 +9,7 @@ import { useRescuerTracking } from '@/hooks/useRescuerTracking';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Loader2, Radio, Layers, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Loader2, Radio, Layers, MessageSquare, X } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -43,10 +43,21 @@ const RescueMap = () => {
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
-  const [showSOSList, setShowSOSList] = useState(true);
+  const [showSOSList, setShowSOSList] = useState(false); // Changed to false by default
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Fetch Mapbox token
   useEffect(() => {
@@ -366,10 +377,17 @@ const RescueMap = () => {
   };
 
   return (
-    <div className="relative h-screen w-full flex">
-      {/* Map */}
+    <div className="relative h-screen w-full flex flex-col md:flex-row">
+      {/* Map Container */}
       <div className="flex-1 relative">
-        <div ref={mapContainer} className="absolute inset-0 md:inset-0" style={{ bottom: window.innerWidth < 768 ? '80px' : '0' }} />
+        <div 
+          ref={mapContainer} 
+          className="absolute inset-0" 
+          style={{ 
+            bottom: isMobile ? '80px' : '0',
+            top: isMobile ? '0' : '0'
+          }} 
+        />
         
         {/* Heatmap Layer */}
         {showHeatmap && <HeatmapLayer map={map.current} sosSignals={sosSignals} />}
@@ -386,46 +404,94 @@ const RescueMap = () => {
           </div>
         )}
         
-        {/* Controls */}
-        <div className="absolute top-4 left-4 z-10 space-y-2">
-          <Card className="p-4 bg-background/90 backdrop-blur">
-            <div className="flex items-center gap-4">
+        {/* Desktop Controls - Top Left */}
+        {!isMobile && (
+          <div className="absolute top-4 left-4 z-10 space-y-2">
+            <Card className="p-4 bg-background/90 backdrop-blur">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h1 className="text-xl font-bold">{t('map.title')}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    SOS: {sosSignals.length} | {t('map.rescuers_count')}: {rescuers.length}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
+              <Button
+                variant={showHeatmap ? 'default' : 'outline'}
+                size="sm"
+                className="w-full"
+                onClick={() => setShowHeatmap(!showHeatmap)}
+              >
+                <Layers className="mr-2 h-4 w-4" />
+                {t('map.heatmap')}
+              </Button>
+              <Button
+                variant={isSharing ? 'destructive' : 'default'}
+                size="sm"
+                className="w-full"
+                onClick={isSharing ? stopSharing : startSharing}
+              >
+                <Radio className="mr-2 h-4 w-4" />
+                {isSharing ? t('map.stopTracking') : t('map.shareLocation')}
+              </Button>
+            </Card>
+          </div>
+        )}
+
+        {/* Mobile Header - Fixed at top */}
+        {isMobile && (
+          <div className="absolute top-0 left-0 right-0 z-10 bg-background/95 backdrop-blur border-b">
+            <div className="flex items-center justify-between p-3">
               <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <div>
-                <h1 className="text-xl font-bold">{t('map.title')}</h1>
-                <p className="text-sm text-muted-foreground">
-                  SOS: {sosSignals.length} | {t('map.rescuers_count')}: {rescuers.length}
+              <div className="flex-1 text-center">
+                <h1 className="text-sm font-bold">{t('map.title')}</h1>
+                <p className="text-xs text-muted-foreground">
+                  SOS: {sosSignals.length} | Rescuers: {rescuers.length}
                 </p>
               </div>
+              <div className="flex gap-1">
+                <Button 
+                  variant={showHeatmap ? 'default' : 'ghost'} 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setShowHeatmap(!showHeatmap)}
+                >
+                  <Layers className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={isSharing ? 'destructive' : 'ghost'} 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={isSharing ? stopSharing : startSharing}
+                >
+                  <Radio className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </Card>
+          </div>
+        )}
 
-          <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
-            <Button
-              variant={showHeatmap ? 'default' : 'outline'}
-              size="sm"
-              className="w-full"
-              onClick={() => setShowHeatmap(!showHeatmap)}
-            >
-              <Layers className="mr-2 h-4 w-4" />
-              {t('map.heatmap')}
-            </Button>
-            <Button
-              variant={isSharing ? 'destructive' : 'default'}
-              size="sm"
-              className="w-full"
-              onClick={isSharing ? stopSharing : startSharing}
-            >
-              <Radio className="mr-2 h-4 w-4" />
-              {isSharing ? t('map.stopTracking') : t('map.shareLocation')}
-            </Button>
-          </Card>
-        </div>
+        {/* Mobile Floating SOS List Button */}
+        {isMobile && !showSOSList && !showChat && sosSignals.length > 0 && (
+          <Button
+            className="absolute bottom-24 right-4 z-10 shadow-lg h-12 px-4"
+            variant="default"
+            onClick={() => setShowSOSList(true)}
+          >
+            Ver SOS ({sosSignals.length})
+          </Button>
+        )}
 
-        {/* SOS Details */}
-        {selectedSOS && !showChat && (
+        {/* Desktop SOS Details (bottom card when selected) */}
+        {!isMobile && selectedSOS && !showChat && (
           <div className="absolute bottom-4 left-4 right-4 z-10 max-w-md mx-auto">
             <Card className="p-4 bg-background/95 backdrop-blur space-y-3">
               <div className="flex items-start justify-between">
@@ -464,13 +530,13 @@ const RescueMap = () => {
         )}
       </div>
 
-      {/* SOS List Panel */}
-      {showSOSList && !showChat && sosSignals.length > 0 && (
+      {/* Desktop SOS List Panel - Right Side */}
+      {!isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
         <div className="w-80 border-l bg-background overflow-y-auto">
           <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-background z-10">
             <h2 className="font-bold text-lg">SOS Activos ({sosSignals.length})</h2>
             <Button variant="ghost" size="icon" onClick={() => setShowSOSList(false)}>
-              <ArrowLeft className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
           <div className="p-2 space-y-2">
@@ -546,8 +612,103 @@ const RescueMap = () => {
         </div>
       )}
 
-      {/* Show SOS List Toggle (when hidden) */}
-      {!showSOSList && !showChat && sosSignals.length > 0 && (
+      {/* Mobile SOS List - Bottom Sheet */}
+      {isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-50 bg-background border-t rounded-t-3xl shadow-2xl" style={{ maxHeight: '70vh', paddingBottom: '80px' }}>
+          <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-background z-10 rounded-t-3xl">
+            <h2 className="font-bold text-lg">SOS Activos ({sosSignals.length})</h2>
+            <Button variant="ghost" size="icon" onClick={() => setShowSOSList(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="overflow-y-auto p-2 space-y-2" style={{ maxHeight: 'calc(70vh - 140px)' }}>
+            {sosSignals.map((signal, index) => (
+              <Card 
+                key={signal.id}
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => {
+                  setSelectedSOS(signal);
+                  setShowSOSList(false);
+                  if (signal.lng && signal.lat) {
+                    map.current?.flyTo({
+                      center: [signal.lng, signal.lat],
+                      zoom: 14,
+                      duration: 1000
+                    });
+                  }
+                }}
+              >
+                <div className="p-3">
+                  <div className="flex items-start gap-2 mb-2">
+                    <AlertCircle 
+                      className="h-5 w-5 mt-0.5" 
+                      style={{ color: getSeverityColor(signal.severity_level) }}
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">{t(`emergencyTypes.${signal.type}`)}</h3>
+                      <div className="text-xs text-muted-foreground">
+                        {t('sos.severity')}: {signal.severity_level}/5
+                      </div>
+                      {signal.distance_meters !== undefined && (
+                        <div className="text-xs text-primary font-medium mt-1">
+                          {signal.distance_meters < 1000 
+                            ? `${Math.round(signal.distance_meters)}m` 
+                            : `${(signal.distance_meters / 1000).toFixed(1)}km`}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      #{index + 1}
+                    </div>
+                  </div>
+                  {signal.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{signal.description}</p>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        assignToMe(signal.id);
+                      }}
+                    >
+                      {t('map.assign')}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigateToLocation(signal);
+                      }}
+                    >
+                      <Navigation className="h-3 w-3 mr-1" />
+                      IR
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSOS(signal);
+                        setShowChat(true);
+                        setShowSOSList(false);
+                      }}
+                    >
+                      <MessageSquare className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop - Show SOS List Toggle Button (when hidden) */}
+      {!isMobile && !showSOSList && !showChat && sosSignals.length > 0 && (
         <Button
           className="absolute right-4 top-4 z-10"
           variant="default"
@@ -558,9 +719,9 @@ const RescueMap = () => {
         </Button>
       )}
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Full width on mobile, sidebar on desktop */}
       {showChat && selectedSOS && (
-        <div className="w-96 border-l bg-background">
+        <div className={isMobile ? "fixed inset-0 z-50 bg-background" : "w-96 border-l bg-background"}>
           <Chat sosId={selectedSOS.id} onClose={() => setShowChat(false)} />
         </div>
       )}
