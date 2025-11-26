@@ -224,7 +224,7 @@ const Index = () => {
                 variant="secondary" 
                 className="w-full h-16 text-xl font-bold"
               >
-                {t('map_title')}
+                {t('map.title')}
               </Button>
             </CardContent>
           </Card>
