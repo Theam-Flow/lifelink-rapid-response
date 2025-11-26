@@ -100,54 +100,62 @@ const RescueMap = () => {
 
     mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
+    const newMap = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       center: [100.5018, 13.7563],
       zoom: 11,
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Get user's current location and center map
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lng: longitude, lat: latitude });
-          
-          map.current?.flyTo({
-            center: [longitude, latitude],
-            zoom: 14,
-            duration: 2000
-          });
+    // Wait for map to fully load before allowing operations
+    newMap.on('load', () => {
+      map.current = newMap;
 
-          // Add a marker for user's location
-          new mapboxgl.Marker({ color: '#3b82f6' })
-            .setLngLat([longitude, latitude])
-            .setPopup(new mapboxgl.Popup().setHTML('<p>Tu ubicación</p>'))
-            .addTo(map.current!);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          toast.error(t('map.errorLoadingLocation') || 'No se pudo obtener tu ubicación');
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    }
+      // Get user's current location and center map
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lng: longitude, lat: latitude });
+            
+            map.current?.flyTo({
+              center: [longitude, latitude],
+              zoom: 14,
+              duration: 2000
+            });
+
+            // Add a marker for user's location
+            new mapboxgl.Marker({ color: '#3b82f6' })
+              .setLngLat([longitude, latitude])
+              .setPopup(new mapboxgl.Popup().setHTML('<p>Tu ubicación</p>'))
+              .addTo(map.current!);
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+            toast.error(t('map.errorLoadingLocation') || 'No se pudo obtener tu ubicación');
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      }
+    });
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [mapboxToken, t]);
 
   // Fetch SOS signals
   useEffect(() => {
-    if (!map.current || !mapboxToken) return;
+    if (!map.current || !map.current.loaded() || !mapboxToken) return;
 
     const fetchSOSSignals = async () => {
       // If user location available, fetch with distance
@@ -172,36 +180,42 @@ const RescueMap = () => {
           markersRef.current.forEach(marker => marker.remove());
           markersRef.current = [];
 
-          // Add markers for each SOS
-          data.forEach((signal: SOSSignal) => {
-            if (!map.current || !signal.lng || !signal.lat) return;
+            // Add markers for each SOS
+            data.forEach((signal: SOSSignal) => {
+              if (!map.current || !map.current.loaded() || !signal.lng || !signal.lat) return;
 
-            const el = document.createElement('div');
-            el.className = 'sos-marker';
-            el.style.backgroundColor = getSeverityColor(signal.severity_level);
-            el.style.width = '30px';
-            el.style.height = '30px';
-            el.style.borderRadius = '50%';
-            el.style.border = '3px solid white';
-            el.style.cursor = 'pointer';
-            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+              const el = document.createElement('div');
+              el.className = 'sos-marker';
+              el.style.backgroundColor = getSeverityColor(signal.severity_level);
+              el.style.width = '30px';
+              el.style.height = '30px';
+              el.style.borderRadius = '50%';
+              el.style.border = '3px solid white';
+              el.style.cursor = 'pointer';
+              el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
-            const marker = new mapboxgl.Marker(el)
-              .setLngLat([signal.lng, signal.lat])
-              .addTo(map.current!);
+              try {
+                const marker = new mapboxgl.Marker(el)
+                  .setLngLat([signal.lng, signal.lat])
+                  .addTo(map.current!);
 
-            marker.getElement().addEventListener('click', () => {
-              setSelectedSOS(signal);
-              setShowChat(true);
-              map.current?.flyTo({
-                center: [signal.lng!, signal.lat!],
-                zoom: 14,
-                duration: 1000
-              });
+                marker.getElement().addEventListener('click', () => {
+                  setSelectedSOS(signal);
+                  setShowChat(true);
+                  if (map.current && map.current.loaded()) {
+                    map.current.flyTo({
+                      center: [signal.lng!, signal.lat!],
+                      zoom: 14,
+                      duration: 1000
+                    });
+                  }
+                });
+
+                markersRef.current.push(marker);
+              } catch (error) {
+                console.error('Error adding marker:', error);
+              }
             });
-
-            markersRef.current.push(marker);
-          });
         }
       } else {
         // Fallback to old method if no user location
@@ -253,7 +267,7 @@ const RescueMap = () => {
             };
 
             extractCoords().then((coords) => {
-              if (!coords || !map.current) return;
+              if (!coords || !map.current || !map.current.loaded()) return;
               
               const lng = coords.lng;
               const lat = coords.lat;
@@ -270,21 +284,27 @@ const RescueMap = () => {
               el.style.cursor = 'pointer';
               el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
-              const marker = new mapboxgl.Marker(el)
-                .setLngLat([lng, lat])
-                .addTo(map.current!);
+              try {
+                const marker = new mapboxgl.Marker(el)
+                  .setLngLat([lng, lat])
+                  .addTo(map.current!);
 
-              marker.getElement().addEventListener('click', () => {
-                setSelectedSOS(signal);
-                setShowChat(true);
-                map.current?.flyTo({
-                  center: [lng, lat],
-                  zoom: 14,
-                  duration: 1000
+                marker.getElement().addEventListener('click', () => {
+                  setSelectedSOS(signal);
+                  setShowChat(true);
+                  if (map.current && map.current.loaded()) {
+                    map.current.flyTo({
+                      center: [lng, lat],
+                      zoom: 14,
+                      duration: 1000
+                    });
+                  }
                 });
-              });
 
-              markersRef.current.push(marker);
+                markersRef.current.push(marker);
+              } catch (error) {
+                console.error('Error adding marker:', error);
+              }
             });
           });
         }
@@ -546,8 +566,8 @@ const RescueMap = () => {
                 className="cursor-pointer hover:shadow-md transition-all"
                 onClick={() => {
                   setSelectedSOS(signal);
-                  if (signal.lng && signal.lat) {
-                    map.current?.flyTo({
+                  if (signal.lng && signal.lat && map.current && map.current.loaded()) {
+                    map.current.flyTo({
                       center: [signal.lng, signal.lat],
                       zoom: 14,
                       duration: 1000
@@ -629,8 +649,8 @@ const RescueMap = () => {
                 onClick={() => {
                   setSelectedSOS(signal);
                   setShowSOSList(false);
-                  if (signal.lng && signal.lat) {
-                    map.current?.flyTo({
+                  if (signal.lng && signal.lat && map.current && map.current.loaded()) {
+                    map.current.flyTo({
                       center: [signal.lng, signal.lat],
                       zoom: 14,
                       duration: 1000
