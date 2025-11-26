@@ -29,6 +29,7 @@ const RescueMap = () => {
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [isLoadingToken, setIsLoadingToken] = useState(true);
@@ -89,26 +90,34 @@ const RescueMap = () => {
     };
   }, [mapboxToken]);
 
-  // Fetch SOS signals
+  // Fetch SOS signals and set up real-time updates
   useEffect(() => {
+    if (!map.current || !mapboxToken) return;
+
     const fetchSOSSignals = async () => {
       const { data, error } = await supabase
         .from('sos_signals')
         .select('*')
-        .eq('status', 'active')
+        .in('status', ['active', 'acknowledged'])
         .order('severity_level', { ascending: false });
 
       if (error) {
-        toast.error('Error loading SOS signals', { description: error.message });
+        console.error('Error fetching SOS signals:', error);
+        toast.error('Error al cargar señales SOS');
         return;
       }
 
-      setSOSSignals((data as any[]) || []);
+      if (data) {
+        // Clear existing markers
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
 
-      // Add markers to map
-      if (map.current && data) {
+        setSOSSignals(data);
+
+        // Add markers for each SOS signal
         data.forEach((signal) => {
-          // Parse PostGIS POINT format: "POINT(lng lat)"
+          if (!map.current) return;
+          
           const locationStr = String(signal.location || '');
           const coords = locationStr
             .replace('POINT(', '')
@@ -116,50 +125,71 @@ const RescueMap = () => {
             .split(' ')
             .map(parseFloat);
 
-          if (coords.length === 2) {
-            const [lng, lat] = coords;
-            
-            const el = document.createElement('div');
-            el.className = 'sos-marker';
-            el.style.backgroundColor = getSeverityColor(signal.severity_level);
-            el.style.width = '30px';
-            el.style.height = '30px';
-            el.style.borderRadius = '50%';
-            el.style.border = '3px solid white';
-            el.style.cursor = 'pointer';
-            el.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.8)';
-
-            new mapboxgl.Marker(el)
-              .setLngLat([lng, lat])
-              .addTo(map.current!);
-
-            el.addEventListener('click', () => {
-              setSelectedSOS(signal as any);
-              map.current?.flyTo({ center: [lng, lat], zoom: 15 });
-            });
+          if (coords.length !== 2) {
+            console.error('Invalid coordinates for signal:', signal.id);
+            return;
           }
+
+          const [lng, lat] = coords;
+
+          // Validate coordinates
+          if (isNaN(lat) || isNaN(lng)) {
+            console.error('Invalid coordinates for signal:', signal.id);
+            return;
+          }
+
+          const el = document.createElement('div');
+          el.className = 'sos-marker';
+          el.style.backgroundColor = getSeverityColor(signal.severity_level);
+          el.style.width = '30px';
+          el.style.height = '30px';
+          el.style.borderRadius = '50%';
+          el.style.border = '3px solid white';
+          el.style.cursor = 'pointer';
+          el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([lng, lat])
+            .addTo(map.current);
+
+          marker.getElement().addEventListener('click', () => {
+            setSelectedSOS(signal);
+            map.current?.flyTo({
+              center: [lng, lat],
+              zoom: 14,
+              duration: 1000
+            });
+          });
+
+          markersRef.current.push(marker);
         });
       }
     };
 
     fetchSOSSignals();
 
-    // Subscribe to realtime updates
+    // Subscribe to real-time changes
     const channel = supabase
-      .channel('sos-updates')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'sos_signals',
-      }, () => {
-        fetchSOSSignals();
-      })
+      .channel('sos_signals_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sos_signals',
+        },
+        () => {
+          fetchSOSSignals();
+        }
+      )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      channel.unsubscribe();
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
     };
-  }, []);
+  }, [mapboxToken]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
@@ -167,22 +197,28 @@ const RescueMap = () => {
   };
 
   const assignToMe = async (sosId: string) => {
+    if (!user) {
+      toast.error('Debes iniciar sesión para asignar rescates');
+      navigate('/auth');
+      return;
+    }
+
     const { error } = await supabase
       .from('sos_signals')
       .update({
-        assigned_rescuer_id: user?.id,
         status: 'acknowledged',
+        assigned_rescuer_id: user.id,
         acknowledged_at: new Date().toISOString(),
       })
       .eq('id', sosId);
 
     if (error) {
-      toast.error('Assignment failed', { description: error.message });
-      return;
+      toast.error('Error al asignar rescate');
+      console.error(error);
+    } else {
+      toast.success('Rescate asignado correctamente');
+      setSelectedSOS(null);
     }
-
-    toast.success('Mission assigned', { description: 'Navigate to the location' });
-    setSelectedSOS(null);
   };
 
   const navigateToLocation = (location: unknown) => {
