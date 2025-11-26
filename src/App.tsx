@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { BottomNav } from "@/components/BottomNav";
 import '@/lib/i18n';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -38,6 +39,7 @@ const AppContent = () => {
         <Route path="/shelters" element={<Shelters />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <BottomNav />
     </BrowserRouter>
   );
 };

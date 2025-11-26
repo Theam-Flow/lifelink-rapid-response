@@ -157,3 +157,77 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Emergency Animations for Sprint 1 */
+@keyframes pulse-sos {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.7); 
+  }
+  50% { 
+    transform: scale(1.05); 
+    box-shadow: 0 0 0 20px hsl(var(--destructive) / 0); 
+  }
+}
+
+@keyframes wave {
+  0% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(2.5); 
+    opacity: 0; 
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes countup {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scale-in {
+  from { 
+    transform: scale(0.8); 
+    opacity: 0; 
+  }
+  to { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+@layer utilities {
+  .animate-pulse-sos { 
+    animation: pulse-sos 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+  }
+  .animate-wave { 
+    animation: wave 1.5s ease-out forwards; 
+  }
+  .animate-shake { 
+    animation: shake 0.5s ease-in-out; 
+  }
+  .animate-countup { 
+    animation: countup 0.5s ease-out forwards; 
+  }
+  .animate-scale-in { 
+    animation: scale-in 0.3s ease-out forwards; 
+  }
+  
+  /* Safe area for mobile devices with notches */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
