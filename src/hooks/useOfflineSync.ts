@@ -13,11 +13,10 @@ export const useOfflineSync = () => {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
           setSwRegistration(registration);
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          // Silently handle SW registration errors
         });
 
       // Listen for messages from service worker
