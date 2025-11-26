@@ -733,15 +733,6 @@ const RescueMap = () => {
 
             <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
               <Button
-                variant={showOnlyNearby ? 'default' : 'outline'}
-                size="sm"
-                className="w-full"
-                onClick={() => setShowOnlyNearby(!showOnlyNearby)}
-              >
-                <MapPin className="mr-2 h-4 w-4" />
-                {showOnlyNearby ? 'Cercanos (200km)' : 'Todos (1000km)'}
-              </Button>
-              <Button
                 variant={showHeatmap ? 'default' : 'outline'}
                 size="sm"
                 className="w-full"
@@ -786,15 +777,6 @@ const RescueMap = () => {
                 </p>
               </div>
               <div className="flex gap-1">
-                <Button 
-                  variant={showOnlyNearby ? 'default' : 'ghost'} 
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setShowOnlyNearby(!showOnlyNearby)}
-                  title={showOnlyNearby ? t('map.showAll') : t('map.showNearby')}
-                >
-                  <MapPin className="h-4 w-4" />
-                </Button>
                 <Button 
                   variant={showHeatmap ? 'default' : 'ghost'} 
                   size="icon"
@@ -899,7 +881,18 @@ const RescueMap = () => {
       {!isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
         <div className="w-80 border-l bg-background overflow-y-auto">
           <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10">
-            <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+            <div className="flex flex-col gap-1">
+              <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+              <Button 
+                variant={showOnlyNearby ? 'default' : 'secondary'}
+                size="sm"
+                className="h-7 text-xs w-fit"
+                onClick={() => setShowOnlyNearby(!showOnlyNearby)}
+              >
+                <MapPin className="h-3 w-3 mr-1" />
+                {showOnlyNearby ? 'Cercanos 200km' : 'Todos 1000km'}
+              </Button>
+            </div>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowSOSList(false)}>
               <X className="h-3 w-3" />
             </Button>
@@ -999,7 +992,18 @@ const RescueMap = () => {
       {isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-50 bg-background border-t rounded-t-3xl shadow-2xl" style={{ maxHeight: '70vh', paddingBottom: '80px' }}>
           <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10 rounded-t-3xl">
-            <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+              <Button 
+                variant={showOnlyNearby ? 'default' : 'secondary'}
+                size="sm"
+                className="h-6 text-xs px-2"
+                onClick={() => setShowOnlyNearby(!showOnlyNearby)}
+              >
+                <MapPin className="h-3 w-3 mr-1" />
+                {showOnlyNearby ? 'Cercanos 200km' : 'Todos 1000km'}
+              </Button>
+            </div>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowSOSList(false)}>
               <X className="h-3 w-3" />
             </Button>
