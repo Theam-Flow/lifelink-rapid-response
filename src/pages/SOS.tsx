@@ -28,7 +28,32 @@ const SOS = () => {
     severityLevel: 3,
     victimCount: 1,
     description: '',
+    contact_phone: '',
+    contact_line_id: '',
   });
+
+  // Fetch user profile to pre-populate contact info
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('phone, line_id')
+        .eq('id', user.id)
+        .single();
+      
+      if (data && !error) {
+        setFormData(prev => ({
+          ...prev,
+          contact_phone: data.phone || '',
+          contact_line_id: data.line_id || '',
+        }));
+      }
+    };
+    
+    fetchProfile();
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -158,6 +183,8 @@ const SOS = () => {
         severity_level: formData.severityLevel,
         victim_count: formData.victimCount,
         description: sanitizedDescription,
+        contact_phone: formData.contact_phone || null,
+        contact_line_id: formData.contact_line_id || null,
         status: 'active' as any,
       }]);
 
@@ -227,16 +254,26 @@ const SOS = () => {
             {t('mobileSOS.tapToSend')}
           </p>
 
-          {/* Add Details Option */}
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => setShowDetails(true)}
-            className="mt-4"
-          >
-            <ChevronDown className="mr-2 h-5 w-5" />
-            {t('mobileSOS.moreDetails')}
-          </Button>
+          {/* Add Details Option - Now more prominent */}
+          <Card className="w-full max-w-md bg-primary/10 border-2 border-primary">
+            <CardContent className="pt-6 pb-6">
+              <div className="text-center space-y-3">
+                <h3 className="text-lg font-semibold text-primary">{t('profile.addContactDetails')}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t('profile.contactDetailsDesc')}
+                </p>
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={() => setShowDetails(true)}
+                  className="w-full"
+                >
+                  <ChevronDown className="mr-2 h-5 w-5" />
+                  {t('mobileSOS.moreDetails')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -354,6 +391,44 @@ const SOS = () => {
                 className="min-h-24"
               />
             </div>
+
+            {/* Contact Information Section - Prominent */}
+            <Card className="bg-primary/5 border-2 border-primary">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  {t('profile.contactInfo')}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {t('profile.contactDetailsDesc')}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">{t('profile.phone')}</Label>
+                  <input
+                    type="tel"
+                    value={formData.contact_phone}
+                    onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                    placeholder="+66 XXX XXX XXX"
+                    className="w-full h-12 px-3 rounded-md border border-input bg-background"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <span className="text-[#06C755]">LINE</span> ID
+                  </Label>
+                  <input
+                    type="text"
+                    value={formData.contact_line_id}
+                    onChange={(e) => setFormData({ ...formData, contact_line_id: e.target.value })}
+                    placeholder="@yourlineid"
+                    className="w-full h-12 px-3 rounded-md border border-input bg-background"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             <Button
               type="submit"
