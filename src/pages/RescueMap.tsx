@@ -173,9 +173,16 @@ const RescueMap = () => {
 
   // Fetch SOS signals and setup clustering
   useEffect(() => {
-    if (!mapLoaded || !map.current) return;
+    if (!mapLoaded || !map.current) {
+      console.log('Map not ready:', { mapLoaded, hasMap: !!map.current });
+      return;
+    }
+
+    console.log('Starting SOS fetch...');
 
     const fetchSOSSignals = async () => {
+      console.log('Fetching SOS signals, userLocation:', userLocation);
+      
       // Try to fetch with distance if user location is available
       if (userLocation) {
         const { data, error } = await supabase
@@ -188,6 +195,7 @@ const RescueMap = () => {
           console.error('Error fetching SOS signals with distance:', error);
           // Don't return, fallback to regular fetch
         } else if (data) {
+          console.log('Fetched SOS with distance:', data.length, 'signals');
           setSOSSignals(data as SOSSignal[]);
           
           // Convert to GeoJSON format for clustering
@@ -214,12 +222,14 @@ const RescueMap = () => {
             })).filter((f: any) => f.geometry.coordinates[0] && f.geometry.coordinates[1])
           };
 
+          console.log('Calling updateClusterLayers with', geojson.features.length, 'features');
           updateClusterLayers(geojson);
           return; // Success with distance, don't need fallback
         }
       }
       
       // Fallback: fetch without distance (always runs if no user location or if distance fetch failed)
+      console.log('Fetching SOS signals (fallback mode)...');
       const { data, error } = await supabase
         .from('sos_signals')
         .select(`
@@ -284,6 +294,7 @@ const RescueMap = () => {
           features
         };
 
+        console.log('Calling updateClusterLayers (fallback) with', geojson.features.length, 'features');
         updateClusterLayers(geojson);
       }
     };
