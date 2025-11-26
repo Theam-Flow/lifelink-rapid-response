@@ -8,9 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle } from 'lucide-react';
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+import { ArrowLeft, Navigation, AlertCircle, Loader2 } from 'lucide-react';
 
 interface SOSSignal {
   id: string;
@@ -33,19 +31,49 @@ const RescueMap = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
+  const [isLoadingToken, setIsLoadingToken] = useState(true);
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+
+  // Fetch Mapbox token from edge function
+  useEffect(() => {
+    const fetchMapboxToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        
+        if (error) {
+          console.error('Error fetching Mapbox token:', error);
+          toast.error('Error al cargar el mapa', {
+            description: 'No se pudo obtener el token de Mapbox',
+          });
+          setIsLoadingToken(false);
+          return;
+        }
+
+        if (data?.token) {
+          setMapboxToken(data.token);
+        } else {
+          toast.error('Error de configuración', {
+            description: 'El token de Mapbox no está configurado',
+          });
+        }
+      } catch (err) {
+        console.error('Exception fetching Mapbox token:', err);
+        toast.error('Error al cargar el mapa', {
+          description: 'Error al conectar con el servidor',
+        });
+      } finally {
+        setIsLoadingToken(false);
+      }
+    };
+
+    fetchMapboxToken();
+  }, []);
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !mapboxToken) return;
 
-    if (!MAPBOX_TOKEN) {
-      toast.error('Error de configuración', {
-        description: 'El token de Mapbox no está configurado correctamente',
-      });
-      return;
-    }
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = mapboxToken;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -59,7 +87,7 @@ const RescueMap = () => {
     return () => {
       map.current?.remove();
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Fetch SOS signals
   useEffect(() => {
@@ -175,6 +203,16 @@ const RescueMap = () => {
   return (
     <div className="relative h-screen w-full">
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Loading State */}
+      {isLoadingToken && (
+        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
+          <Card className="p-6 flex items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="text-lg font-medium">Cargando mapa...</span>
+          </Card>
+        </div>
+      )}
       
       {/* Header */}
       <div className="absolute top-4 left-4 z-10">
