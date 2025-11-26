@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Activity, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ShelterActivityLogsProps {
   shelterId: string;
@@ -20,6 +21,7 @@ interface ActivityLog {
 }
 
 const ShelterActivityLogs = ({ shelterId }: ShelterActivityLogsProps) => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,21 +81,21 @@ const ShelterActivityLogs = ({ shelterId }: ShelterActivityLogsProps) => {
 
   const getActionLabel = (actionType: string) => {
     const labels: Record<string, string> = {
-      'check_in': 'Check-In',
-      'check_out': 'Check-Out',
-      'supply_update': 'Suministro',
-      'alert_created': 'Alerta',
-      'capacity_update': 'Capacidad',
-      'info_update': 'Información',
-      'photo_added': 'Foto Agregada',
-      'photo_removed': 'Foto Eliminada',
-      'status_change': 'Estado',
+      'check_in': t('shelters.checkInType'),
+      'check_out': t('shelters.checkOutType'),
+      'supply_update': t('shelters.supplyType'),
+      'alert_created': t('shelters.alertType'),
+      'capacity_update': t('shelters.capacityType'),
+      'info_update': t('shelters.infoType'),
+      'photo_added': t('shelters.photoAdded'),
+      'photo_removed': t('shelters.photoRemoved'),
+      'status_change': t('shelters.statusChange'),
     };
     return labels[actionType] || actionType;
   };
 
   if (loading) {
-    return <div>Cargando registros...</div>;
+    return <div>{t('shelters.loadingLogs')}</div>;
   }
 
   return (
@@ -102,40 +104,34 @@ const ShelterActivityLogs = ({ shelterId }: ShelterActivityLogsProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Registro de Actividades
+            {t('shelters.activityLogs')}
           </CardTitle>
           <CardDescription>
-            Historial completo de todas las acciones realizadas en el shelter
+            {t('shelters.completeHistory')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No hay actividades registradas</p>
+              <p>{t('shelters.noActivitiesRegistered')}</p>
             </div>
           ) : (
             <ScrollArea className="h-[600px]">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fecha y Hora</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead>Detalles</TableHead>
+                    <TableHead>{t('shelters.dateTime')}</TableHead>
+                    <TableHead>{t('shelters.typeAction')}</TableHead>
+                    <TableHead>{t('shelters.descriptionAction')}</TableHead>
+                    <TableHead>{t('shelters.details')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {logs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell className="font-mono text-sm">
-                        {new Date(log.created_at).toLocaleString('es', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {new Date(log.created_at).toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getActionColor(log.action_type)}>
