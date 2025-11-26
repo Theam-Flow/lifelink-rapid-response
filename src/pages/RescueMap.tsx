@@ -93,10 +93,39 @@ const RescueMap = () => {
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Get user's current location and center map
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          map.current?.flyTo({
+            center: [longitude, latitude],
+            zoom: 14,
+            duration: 2000
+          });
+
+          // Add a marker for user's location
+          new mapboxgl.Marker({ color: '#3b82f6' })
+            .setLngLat([longitude, latitude])
+            .setPopup(new mapboxgl.Popup().setHTML('<p>Tu ubicación</p>'))
+            .addTo(map.current!);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          toast.error(t('map.errorLoadingLocation') || 'No se pudo obtener tu ubicación');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+
     return () => {
       map.current?.remove();
     };
-  }, [mapboxToken]);
+  }, [mapboxToken, t]);
 
   // Fetch SOS signals
   useEffect(() => {
