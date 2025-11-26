@@ -45,6 +45,7 @@ const MissingPersons = () => {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentGalleryPhotos, setCurrentGalleryPhotos] = useState<string[]>([]);
+  const [currentPerson, setCurrentPerson] = useState<MissingPerson | null>(null);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -220,9 +221,10 @@ const MissingPersons = () => {
     }
   };
 
-  const openGallery = (photos: string[], index: number) => {
+  const openGallery = (photos: string[], index: number, person: MissingPerson) => {
     setCurrentGalleryPhotos(photos);
     setCurrentImageIndex(index);
+    setCurrentPerson(person);
     setGalleryOpen(true);
   };
 
@@ -449,7 +451,7 @@ const MissingPersons = () => {
                             <div
                               key={idx}
                               className="relative group cursor-pointer hover-scale"
-                              onClick={() => openGallery(person.photo_urls!, idx)}
+                              onClick={() => openGallery(person.photo_urls!, idx, person)}
                             >
                               <img
                                 src={url}
@@ -527,68 +529,192 @@ const MissingPersons = () => {
         {/* Image Gallery Dialog */}
         <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
           <DialogContent 
-            className="max-w-4xl p-0 bg-black/95 border-0"
+            className="max-w-7xl p-0 bg-black border-destructive border-4"
             onKeyDown={handleKeyDown}
           >
-            <div className="relative">
+            <div className="relative grid md:grid-cols-[300px_1fr_300px] gap-0">
               <button
                 onClick={() => setGalleryOpen(false)}
-                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-destructive hover:bg-destructive/80 transition-colors"
               >
                 <X className="h-6 w-6 text-white" />
               </button>
 
-              {currentGalleryPhotos.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all hover-scale"
-                  >
-                    <ChevronLeft className="h-8 w-8 text-white" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all hover-scale"
-                  >
-                    <ChevronRight className="h-8 w-8 text-white" />
-                  </button>
-                </>
-              )}
+              {/* Left Panel - Person Info */}
+              {currentPerson && (
+                <div className="hidden md:block bg-destructive/10 border-r border-destructive/30 p-6 text-white overflow-y-auto max-h-[90vh]">
+                  <div className="space-y-4">
+                    <div className="text-center border-b border-destructive/30 pb-4">
+                      <h2 className="text-3xl font-bold text-destructive mb-2">{t('missing.wanted')}</h2>
+                      <Badge variant="destructive" className="text-lg px-4 py-1">
+                        {t(`missing.status_${currentPerson.status}`)}
+                      </Badge>
+                    </div>
 
-              <div className="relative w-full h-[80vh] flex items-center justify-center">
-                <img
-                  src={currentGalleryPhotos[currentImageIndex]}
-                  alt={`Photo ${currentImageIndex + 1}`}
-                  className="max-h-full max-w-full object-contain animate-fade-in"
-                />
-              </div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-destructive text-sm font-semibold mb-1">{t('missing.fullName')}</p>
+                        <p className="text-xl font-bold">{currentPerson.full_name}</p>
+                      </div>
 
-              {currentGalleryPhotos.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full">
-                  <p className="text-white text-sm">
-                    {currentImageIndex + 1} / {currentGalleryPhotos.length}
-                  </p>
+                      {currentPerson.age && (
+                        <div>
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.age')}</p>
+                          <p className="text-lg">{currentPerson.age} {t('missing.yearsOld')}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.gender && (
+                        <div>
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.gender')}</p>
+                          <p className="text-lg capitalize">{currentPerson.gender}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.description && (
+                        <div>
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.description')}</p>
+                          <p className="text-sm">{currentPerson.description}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.distinctive_features && (
+                        <div className="bg-destructive/20 p-3 rounded border border-destructive/30">
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.distinctiveFeatures')}</p>
+                          <p className="text-sm">{currentPerson.distinctive_features}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.last_seen_address && (
+                        <div>
+                          <p className="text-destructive text-sm font-semibold mb-1 flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            {t('missing.lastSeenAddress')}
+                          </p>
+                          <p className="text-sm">{currentPerson.last_seen_address}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.last_seen_at && (
+                        <div>
+                          <p className="text-destructive text-sm font-semibold mb-1 flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {t('missing.lastSeenTime')}
+                          </p>
+                          <p className="text-sm">{format(new Date(currentPerson.last_seen_at), 'PPp')}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.contact_phone && (
+                        <div className="bg-destructive/30 p-3 rounded border border-destructive">
+                          <p className="text-white text-sm font-semibold mb-1 flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            {t('missing.contactPhone')}
+                          </p>
+                          <p className="text-lg font-bold">{currentPerson.contact_phone}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Thumbnail strip */}
-              {currentGalleryPhotos.length > 1 && (
-                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-lg max-w-full overflow-x-auto">
-                  {currentGalleryPhotos.map((url, idx) => (
+              {/* Center - Image */}
+              <div className="relative bg-black flex items-center justify-center min-h-[70vh] md:min-h-[90vh]">
+                {currentGalleryPhotos.length > 1 && (
+                  <>
                     <button
-                      key={idx}
-                      onClick={() => setCurrentImageIndex(idx)}
-                      className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 transition-all ${
-                        idx === currentImageIndex ? 'border-primary scale-110' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-destructive/80 hover:bg-destructive transition-all hover-scale"
                     >
-                      <img
-                        src={url}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <ChevronLeft className="h-8 w-8 text-white" />
                     </button>
-                  ))}
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-destructive/80 hover:bg-destructive transition-all hover-scale"
+                    >
+                      <ChevronRight className="h-8 w-8 text-white" />
+                    </button>
+                  </>
+                )}
+
+                <img
+                  src={currentGalleryPhotos[currentImageIndex]}
+                  alt={`Photo ${currentImageIndex + 1}`}
+                  className="max-h-full max-w-full object-contain animate-fade-in p-4"
+                />
+
+                {currentGalleryPhotos.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-destructive px-4 py-2 rounded-full">
+                    <p className="text-white text-sm font-bold">
+                      {currentImageIndex + 1} / {currentGalleryPhotos.length}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Panel - Mobile Info & Thumbnails */}
+              {currentPerson && (
+                <div className="hidden md:block bg-destructive/10 border-l border-destructive/30 p-6 text-white overflow-y-auto max-h-[90vh]">
+                  <div className="space-y-4">
+                    <div className="text-center border-b border-destructive/30 pb-4">
+                      <h3 className="text-xl font-bold text-destructive mb-2">{t('missing.reportedOn')}</h3>
+                      <p className="text-sm">{format(new Date(currentPerson.created_at), 'PPp')}</p>
+                    </div>
+
+                    {/* Thumbnails */}
+                    {currentGalleryPhotos.length > 1 && (
+                      <div className="space-y-2">
+                        <p className="text-destructive text-sm font-semibold">{t('missing.allPhotos')}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {currentGalleryPhotos.map((url, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentImageIndex(idx)}
+                              className={`rounded overflow-hidden border-2 transition-all hover-scale ${
+                                idx === currentImageIndex ? 'border-destructive ring-2 ring-destructive' : 'border-white/20 opacity-60 hover:opacity-100'
+                              }`}
+                            >
+                              <img
+                                src={url}
+                                alt={`Thumbnail ${idx + 1}`}
+                                className="w-full h-20 object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-destructive/30 p-4 rounded border border-destructive text-center">
+                      <p className="text-sm mb-2">{t('missing.helpFind')}</p>
+                      <p className="text-xs opacity-80">{t('missing.shareInfo')}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Info Panel */}
+              {currentPerson && (
+                <div className="md:hidden bg-destructive/10 border-t border-destructive/30 p-4 text-white">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-destructive font-semibold">{t('missing.fullName')}</p>
+                      <p className="font-bold">{currentPerson.full_name}</p>
+                    </div>
+                    {currentPerson.age && (
+                      <div>
+                        <p className="text-destructive font-semibold">{t('missing.age')}</p>
+                        <p>{currentPerson.age} {t('missing.yearsOld')}</p>
+                      </div>
+                    )}
+                    {currentPerson.contact_phone && (
+                      <div className="col-span-2 bg-destructive/30 p-2 rounded text-center">
+                        <p className="text-xs font-semibold mb-1">{t('missing.contactPhone')}</p>
+                        <p className="font-bold">{currentPerson.contact_phone}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
