@@ -189,12 +189,16 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
     const blurCtx = blurCanvas.getContext('2d', { alpha: true });
     if (!drawCtx || !blurCtx) return;
 
-    // Set canvas size
-    const rect = blurCanvas.getBoundingClientRect();
-    drawCanvas.width = rect.width;
-    drawCanvas.height = rect.height;
-    blurCanvas.width = rect.width;
-    blurCanvas.height = rect.height;
+    // CRITICAL: Use exact map canvas size for perfect alignment
+    const mapCanvas = map.getCanvas();
+    const width = mapCanvas.width;
+    const height = mapCanvas.height;
+    
+    // Set canvas size to match map canvas exactly
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+    blurCanvas.width = width;
+    blurCanvas.height = height;
 
     // Clear canvases
     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
