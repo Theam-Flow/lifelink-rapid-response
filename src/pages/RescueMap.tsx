@@ -444,6 +444,9 @@ const RescueMap = () => {
         cursor: pointer;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         pointer-events: auto;
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
       `;
 
       // Optimized popup - lazy creation
@@ -780,7 +783,7 @@ const RescueMap = () => {
       <div className="flex-1 relative">
         <div 
           ref={mapContainer} 
-          className="absolute inset-0 [&_.maplibregl-ctrl-bottom-left]:!-bottom-4 [&_.maplibregl-ctrl-bottom-right]:!-bottom-4" 
+          className={`absolute inset-0 [&_.maplibregl-ctrl-bottom-left]:!-bottom-4 [&_.maplibregl-ctrl-bottom-right]:!-bottom-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}
           style={{ 
             bottom: isMobile ? '60px' : '0',
             top: isMobile ? '75px' : '0'
@@ -853,7 +856,7 @@ const RescueMap = () => {
 
         {/* Mobile Header - Fixed at top */}
         {isMobile && (
-          <div className={`absolute top-0 left-0 right-0 z-10 backdrop-blur border-b ${isDarkMode ? 'bg-gray-900/95 text-white border-gray-700' : 'bg-background/95'}`}>
+          <div className={`absolute top-0 left-0 right-0 z-10 backdrop-blur ${isDarkMode ? 'bg-gray-900/95 text-white border-gray-900' : 'bg-background/95 border-b'}`}>
             <div className="flex items-center justify-between p-2">
               <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                 <ArrowLeft className="h-4 w-4" />
@@ -924,7 +927,7 @@ const RescueMap = () => {
         {/* Mobile Recenter Button */}
         {isMobile && userLocation && (
           <Button
-            className="absolute top-[180px] right-4 z-10 h-10 w-10"
+            className={`absolute top-[180px] right-4 z-10 h-10 w-10 ${isDarkMode ? 'bg-gray-800 text-white hover:bg-gray-700 border-gray-700' : ''}`}
             variant="outline"
             size="icon"
             onClick={recenterToUserLocation}

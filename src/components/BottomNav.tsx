@@ -50,7 +50,7 @@ export const BottomNav = ({ isDarkMode = false }: BottomNavProps) => {
               className={cn(
                 'flex flex-col items-center justify-center transition-all duration-200 min-h-[48px] min-w-[48px]',
                 item.isEmergency ? 'flex-[1.5] px-4' : 'flex-1 px-2',
-                isActive && !item.isEmergency ? 'text-primary' : 'text-muted-foreground',
+                isDarkMode && !item.isEmergency ? 'text-white' : isActive && !item.isEmergency ? 'text-primary' : 'text-muted-foreground',
               )}
             >
               {item.isEmergency ? (
