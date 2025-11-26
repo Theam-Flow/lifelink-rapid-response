@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, MapPin, Phone, Users, Home, CheckCircle, AlertTriangle, Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Users, Home, CheckCircle, AlertTriangle, Plus, Edit, Trash2, Map as MapIcon, List } from 'lucide-react';
 import { ShelterForm } from '@/components/ShelterForm';
+import { SheltersMap } from '@/components/SheltersMap';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   AlertDialog,
@@ -44,6 +46,7 @@ const Shelters = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingShelter, setEditingShelter] = useState<Shelter | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetchShelters();
@@ -143,59 +146,83 @@ const Shelters = () => {
                   <CardDescription className="text-base">{t('shelters.subtitle')}</CardDescription>
                 </div>
               </div>
-              {user && (
-                <Button onClick={() => setFormOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('shelters.createShelter')}
-                </Button>
-              )}
+              <div className="flex gap-2">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'map')}>
+                  <TabsList>
+                    <TabsTrigger value="list" className="gap-2">
+                      <List className="h-4 w-4" />
+                      {t('shelters.listView')}
+                    </TabsTrigger>
+                    <TabsTrigger value="map" className="gap-2">
+                      <MapIcon className="h-4 w-4" />
+                      {t('shelters.mapView')}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                {user && (
+                  <Button onClick={() => setFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('shelters.createShelter')}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
         </Card>
 
         {/* Statistics */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <Home className="h-8 w-8 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold">{shelters.length}</p>
-                  <p className="text-sm text-muted-foreground">{t('shelters.totalShelters')}</p>
+        {viewMode === 'list' && (
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <Home className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-2xl font-bold">{shelters.length}</p>
+                    <p className="text-sm text-muted-foreground">{t('shelters.totalShelters')}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-8 w-8 text-green-500" />
-                <div>
-                  <p className="text-2xl font-bold">
-                    {shelters.filter(s => s.is_verified).length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{t('shelters.verified')}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <div>
+                    <p className="text-2xl font-bold">
+                      {shelters.filter(s => s.is_verified).length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{t('shelters.verified')}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-secondary" />
-                <div>
-                  <p className="text-2xl font-bold">
-                    {shelters.reduce((sum, s) => sum + (s.capacity_current || 0), 0)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{t('shelters.totalOccupants')}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <Users className="h-8 w-8 text-secondary" />
+                  <div>
+                    <p className="text-2xl font-bold">
+                      {shelters.reduce((sum, s) => sum + (s.capacity_current || 0), 0)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{t('shelters.totalOccupants')}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Map View */}
+        {viewMode === 'map' && (
+          <div className="h-[600px] rounded-lg overflow-hidden">
+            <SheltersMap shelters={shelters} />
+          </div>
+        )}
 
         {/* Shelters List */}
-        <div className="grid gap-6">
+        {viewMode === 'list' && (
+          <div className="grid gap-6">
           {shelters.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
@@ -328,6 +355,7 @@ const Shelters = () => {
             })
           )}
         </div>
+        )}
       </div>
 
       <ShelterForm
