@@ -77,11 +77,12 @@ const RescueMap = () => {
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
 
   // OPTIMIZACIÓN: React Query para caching + paginación
-  const { data: sosSignalsData, refetch: refetchSOS } = useSOSPagination({
-    userLocation,
-    radiusKm: 200, // Increased radius to show more SOS signals
-    pageSize: 500, // Increased page size for better coverage
-    enabled: mapLoaded
+  // Siempre usa Bangkok como centro base para asegurar cobertura inicial
+  const { data: sosSignalsData, refetch: refetchSOS, isLoading: sosLoading } = useSOSPagination({
+    userLocation: userLocation || { lng: 100.5018, lat: 13.7563 }, // Siempre proveer ubicación
+    radiusKm: userLocation ? 200 : 1000, // 1000km si no hay ubicación exacta
+    pageSize: 500,
+    enabled: mapLoaded // Siempre habilitado cuando el mapa está listo
   });
 
   // Actualizar estado local cuando cambien los datos
