@@ -7,11 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle } from 'lucide-react';
-
-// Mapbox token from environment variable
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+import { ArrowLeft, Navigation, AlertCircle, Key } from 'lucide-react';
 
 interface SOSSignal {
   id: string;
@@ -34,19 +32,26 @@ const RescueMap = () => {
   const map = useRef<mapboxgl.Map | null>(null);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>(() => {
+    return localStorage.getItem('mapbox_token') || '';
+  });
+  const [tokenInput, setTokenInput] = useState('');
+  const [showTokenInput, setShowTokenInput] = useState(!mapboxToken);
+
+  const saveToken = () => {
+    if (tokenInput.trim()) {
+      localStorage.setItem('mapbox_token', tokenInput.trim());
+      setMapboxToken(tokenInput.trim());
+      setShowTokenInput(false);
+      toast.success('Token guardado', { description: 'El mapa se cargará ahora' });
+    }
+  };
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !mapboxToken) return;
 
-    if (!MAPBOX_TOKEN) {
-      toast.error('Mapbox token required', {
-        description: 'Please configure your Mapbox access token',
-      });
-      return;
-    }
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = mapboxToken;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -60,7 +65,7 @@ const RescueMap = () => {
     return () => {
       map.current?.remove();
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Fetch SOS signals
   useEffect(() => {
@@ -177,6 +182,44 @@ const RescueMap = () => {
     <div className="relative h-screen w-full">
       <div ref={mapContainer} className="absolute inset-0" />
       
+      {/* Token Input Modal */}
+      {showTokenInput && (
+        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
+          <Card className="p-6 max-w-md w-full mx-4 space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Key className="h-6 w-6" />
+              <h2 className="text-xl font-bold">Token de Mapbox Requerido</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Para usar el mapa, necesitas un token público de Mapbox. Obtén uno gratis en{' '}
+              <a 
+                href="https://account.mapbox.com/access-tokens/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                mapbox.com
+              </a>
+            </p>
+            <Input
+              type="text"
+              placeholder="pk.eyJ1IjoiZXhhbXBsZS..."
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              className="font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button onClick={saveToken} className="flex-1">
+                Guardar Token
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Cancelar
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="absolute top-4 left-4 z-10">
         <Card className="p-4 bg-background/90 backdrop-blur">
@@ -194,6 +237,16 @@ const RescueMap = () => {
                 {t('map_active_sos')}: {sosSignals.length}
               </p>
             </div>
+            {mapboxToken && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowTokenInput(true)}
+                title="Cambiar token"
+              >
+                <Key className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </Card>
       </div>
