@@ -71,9 +71,13 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Get current zoom for radius calculation
+      // Get current zoom for radius calculation - much smaller for subtle effect
       const zoom = map.getZoom();
-      const baseRadius = zoom < 10 ? 40 : zoom < 12 ? 60 : zoom < 14 ? 80 : 100;
+      const baseRadius = zoom < 10 ? 8 : zoom < 12 ? 12 : zoom < 14 ? 16 : 20;
+      
+      // Pulsation effect using timestamp
+      const time = Date.now() / 1000;
+      const pulse = 0.85 + Math.sin(time * 2) * 0.15; // oscillates between 0.7 and 1.0
 
       // Draw each SOS signal as a radial gradient
       sosSignals.forEach(signal => {
@@ -97,7 +101,7 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
 
         // Calculate radius based on severity (higher severity = larger radius)
         const severityMultiplier = 0.5 + (signal.severity_level / 5) * 0.5; // 0.5 to 1.0
-        const radius = baseRadius * severityMultiplier;
+        const radius = baseRadius * severityMultiplier * pulse;
 
         // Create radial gradient (emergency colors: yellow -> orange -> red)
         const gradient = ctx.createRadialGradient(
@@ -105,23 +109,23 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
           point.x, point.y, radius
         );
 
-        // Color based on severity
-        const alpha = 0.6 + (signal.severity_level / 5) * 0.4; // 0.6 to 1.0
+        // Much lower alpha for subtle effect - 90% less intense
+        const alpha = (0.06 + (signal.severity_level / 5) * 0.04) * pulse; // 0.06 to 0.1
         
         if (signal.severity_level <= 2) {
-          // Low severity: Yellow to Orange
+          // Low severity: Yellow to Orange - subtle gradient
           gradient.addColorStop(0, `rgba(255, 255, 0, ${alpha})`);
-          gradient.addColorStop(0.5, `rgba(255, 200, 0, ${alpha * 0.6})`);
+          gradient.addColorStop(0.4, `rgba(255, 200, 0, ${alpha * 0.5})`);
           gradient.addColorStop(1, `rgba(255, 200, 0, 0)`);
         } else if (signal.severity_level <= 3) {
-          // Medium severity: Orange
+          // Medium severity: Orange - subtle gradient
           gradient.addColorStop(0, `rgba(255, 150, 0, ${alpha})`);
-          gradient.addColorStop(0.5, `rgba(255, 100, 0, ${alpha * 0.6})`);
+          gradient.addColorStop(0.4, `rgba(255, 100, 0, ${alpha * 0.5})`);
           gradient.addColorStop(1, `rgba(255, 100, 0, 0)`);
         } else {
-          // High severity: Red to Dark Red
+          // High severity: Red to Dark Red - subtle gradient
           gradient.addColorStop(0, `rgba(255, 50, 0, ${alpha})`);
-          gradient.addColorStop(0.5, `rgba(255, 0, 0, ${alpha * 0.6})`);
+          gradient.addColorStop(0.4, `rgba(255, 0, 0, ${alpha * 0.5})`);
           gradient.addColorStop(1, `rgba(255, 0, 0, 0)`);
         }
 
@@ -132,11 +136,14 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
         ctx.fill();
       });
 
-      // Apply blur for smoother heatmap effect
-      ctx.filter = 'blur(20px)';
+      // Apply subtle blur for smoother heatmap effect
+      ctx.filter = 'blur(12px)';
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       ctx.filter = 'none';
       ctx.putImageData(imageData, 0, 0);
+      
+      // Request animation frame for pulsation
+      requestAnimationFrame(drawHeatmap);
     };
 
     // Draw on map move/zoom
