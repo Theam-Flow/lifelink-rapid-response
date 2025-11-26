@@ -47,18 +47,22 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
       style: {
         version: 8,
         sources: {
-          'osm': {
+          'osm-hot': {
             type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tiles: [
+              'https://tile-a.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+              'https://tile-b.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+              'https://tile-c.openstreetmap.fr/hot/{z}/{x}/{y}.png'
+            ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
           }
         },
         layers: [
           {
-            id: 'osm',
+            id: 'osm-hot',
             type: 'raster',
-            source: 'osm',
+            source: 'osm-hot',
             minzoom: 0,
             maxzoom: 19
           }
