@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin } from 'lucide-react';
-import { HeatmapLayer } from '@/components/HeatmapLayer';
+import { HeatmapCanvasLayer } from '@/components/HeatmapCanvasLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
 import { SOSActionDialog } from '@/components/SOSActionDialog';
@@ -708,8 +708,8 @@ const RescueMap = () => {
           }} 
         />
         
-        {/* Heatmap Layer */}
-        {showHeatmap && <HeatmapLayer map={map.current} sosSignals={sosSignals} />}
+        {/* Heatmap Layer - HTML Canvas */}
+        {showHeatmap && <HeatmapCanvasLayer map={map.current} sosSignals={sosSignals} />}
         
         {/* Rescuer Tracker */}
         <RescuerTracker map={map.current} rescuers={rescuers} />
