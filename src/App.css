@@ -40,3 +40,18 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Mapbox mobile adjustments */
+@media (max-width: 768px) {
+  .mapboxgl-ctrl-bottom-left {
+    bottom: 100px !important;
+  }
+  
+  .mapboxgl-ctrl-bottom-right {
+    bottom: 90px !important;
+  }
+  
+  .mapboxgl-ctrl-logo {
+    margin-bottom: 10px !important;
+  }
+}
