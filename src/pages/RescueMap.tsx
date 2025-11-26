@@ -524,7 +524,7 @@ const RescueMap = () => {
       // Create marker element
       const el = document.createElement('div');
       el.className = `sos-marker sos-marker-severity-${signal.severity_level}`;
-      el.style.zIndex = '1000';
+      el.style.zIndex = '500';
 
       // Create popup with signal info
       const popup = new maplibregl.Popup({ 
@@ -1241,7 +1241,7 @@ const RescueMap = () => {
 
       {/* Chat Panel - Full width on mobile, sidebar on desktop */}
       {showChat && selectedSOS && (
-        <div className={isMobile ? "fixed inset-0 z-50 bg-background" : "w-96 border-l bg-background"}>
+        <div className={isMobile ? "fixed inset-0 z-[2000] bg-background" : "w-96 border-l bg-background z-[1500]"}>
           <Chat sosId={selectedSOS.id} onClose={() => setShowChat(false)} />
         </div>
       )}
