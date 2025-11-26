@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle, XCircle, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 interface Alert {
   id: string;
@@ -22,6 +23,7 @@ interface ShelterAlertsProps {
 }
 
 const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
+  const { t } = useTranslation();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('active');
@@ -80,11 +82,11 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
 
       if (error) throw error;
 
-      toast.success("Alerta resuelta");
+      toast.success(t('shelters.alertResolved'));
       fetchAlerts();
     } catch (error) {
       console.error("Error resolving alert:", error);
-      toast.error("Error al resolver alerta");
+      toast.error(t('shelters.errorResolvingAlert'));
     }
   };
 
@@ -114,7 +116,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
   const criticalCount = alerts.filter(a => !a.is_resolved && a.severity === 'critical').length;
 
   if (loading) {
-    return <div>Cargando alertas...</div>;
+    return <div>{t('shelters.loadingAlerts')}</div>;
   }
 
   return (
@@ -126,7 +128,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold">{alerts.length}</p>
-                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-sm text-muted-foreground">{t('shelters.total')}</p>
               </div>
               <Bell className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -138,7 +140,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold">{activeCount}</p>
-                <p className="text-sm text-muted-foreground">Activas</p>
+                <p className="text-sm text-muted-foreground">{t('shelters.active')}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-orange-500" />
             </div>
@@ -150,7 +152,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-destructive">{criticalCount}</p>
-                <p className="text-sm text-muted-foreground">Críticas</p>
+                <p className="text-sm text-muted-foreground">{t('shelters.critical')}</p>
               </div>
               <XCircle className="h-8 w-8 text-destructive" />
             </div>
@@ -162,7 +164,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-green-500">{alerts.filter(a => a.is_resolved).length}</p>
-                <p className="text-sm text-muted-foreground">Resueltas</p>
+                <p className="text-sm text-muted-foreground">{t('shelters.resolved')}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
@@ -176,19 +178,19 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
           variant={filter === 'all' ? 'default' : 'outline'}
           onClick={() => setFilter('all')}
         >
-          Todas
+          {t('shelters.all')}
         </Button>
         <Button
           variant={filter === 'active' ? 'default' : 'outline'}
           onClick={() => setFilter('active')}
         >
-          Activas
+          {t('shelters.active')}
         </Button>
         <Button
           variant={filter === 'resolved' ? 'default' : 'outline'}
           onClick={() => setFilter('resolved')}
         >
-          Resueltas
+          {t('shelters.resolved')}
         </Button>
       </div>
 
@@ -198,7 +200,11 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-              <p className="text-muted-foreground">No hay alertas {filter === 'active' ? 'activas' : filter === 'resolved' ? 'resueltas' : ''}</p>
+              <p className="text-muted-foreground">
+                {filter === 'active' && t('shelters.noActiveAlerts')}
+                {filter === 'resolved' && t('shelters.noResolvedAlerts')}
+                {filter === 'all' && t('shelters.noAlerts')}
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -216,12 +222,12 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
                         </Badge>
                         {alert.is_resolved && (
                           <Badge variant="outline" className="text-green-500">
-                            Resuelta
+                            {t('shelters.resolved')}
                           </Badge>
                         )}
                       </div>
                       <CardDescription>
-                        {new Date(alert.created_at).toLocaleString('es')}
+                        {new Date(alert.created_at).toLocaleString()}
                       </CardDescription>
                     </div>
                   </div>
@@ -231,7 +237,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
                       onClick={() => handleResolveAlert(alert.id)}
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Resolver
+                      {t('shelters.resolveAlert')}
                     </Button>
                   )}
                 </div>
@@ -241,7 +247,7 @@ const ShelterAlerts = ({ shelterId }: ShelterAlertsProps) => {
                   <p className="text-sm text-muted-foreground">{alert.description}</p>
                   {alert.resolved_at && (
                     <p className="text-xs text-green-500 mt-2">
-                      Resuelta el {new Date(alert.resolved_at).toLocaleString('es')}
+                      {t('shelters.resolvedOn')} {new Date(alert.resolved_at).toLocaleString()}
                     </p>
                   )}
                 </CardContent>

@@ -104,7 +104,7 @@ const ShelterManage = () => {
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{shelter.name}</h1>
-            <p className="text-sm text-muted-foreground">Panel de Administración</p>
+            <p className="text-sm text-muted-foreground">{t('shelters.managementPanel')}</p>
           </div>
         </div>
 

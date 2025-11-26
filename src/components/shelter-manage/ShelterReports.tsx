@@ -156,7 +156,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Check-ins</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.checkIns')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{reportData.stats.checkIns}</p>
@@ -165,7 +165,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Check-outs</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.checkOuts')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{reportData.stats.checkOuts}</p>
@@ -174,7 +174,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Actualizaciones</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.updates')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{reportData.stats.supplyUpdates}</p>
@@ -183,7 +183,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Actividades</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.activities')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{reportData.stats.totalActivities}</p>
@@ -192,7 +192,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Alertas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.alerts')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{reportData.stats.totalAlerts}</p>
@@ -201,7 +201,7 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Críticas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('shelters.critical')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-destructive">{reportData.stats.criticalAlerts}</p>
@@ -212,21 +212,21 @@ ${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
       {/* Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Resumen del Período</CardTitle>
+          <CardTitle>{t('shelters.periodSummary')}</CardTitle>
         </CardHeader>
         <CardContent className="prose prose-sm dark:prose-invert max-w-none">
           <p>
-            Durante los últimos <strong>{reportData.period} días</strong>, el shelter ha registrado{" "}
-            <strong>{reportData.stats.totalActivities} actividades</strong> en total.
+            {t('shelters.duringLast')} <strong>{reportData.period} {t('common.days')}</strong>, {t('shelters.shelterRecorded')}{" "}
+            <strong>{reportData.stats.totalActivities} {t('shelters.activities')}</strong> {t('shelters.inTotal')}.
           </p>
           <p>
-            Se realizaron <strong>{reportData.stats.checkIns} check-ins</strong> y{" "}
-            <strong>{reportData.stats.checkOuts} check-outs</strong>, con una ocupación actual de{" "}
-            <strong>{reportData.shelter.capacity_current}/{reportData.shelter.capacity_max}</strong> personas.
+            {t('shelters.performedCheckIns')} <strong>{reportData.stats.checkIns} {t('shelters.checkIns')}</strong> {t('common.and')}{" "}
+            <strong>{reportData.stats.checkOuts} {t('shelters.checkOuts')}</strong>, {t('shelters.withCurrentOccupancy')}{" "}
+            <strong>{reportData.shelter.capacity_current}/{reportData.shelter.capacity_max}</strong> {t('shelters.people')}.
           </p>
           {reportData.stats.criticalAlerts > 0 && (
             <p className="text-destructive">
-              ⚠️ Se registraron <strong>{reportData.stats.criticalAlerts} alertas críticas</strong> que requieren atención inmediata.
+              ⚠️ {t('shelters.criticalAlertsRegistered')} <strong>{reportData.stats.criticalAlerts} {t('shelters.criticalAlerts')}</strong> {t('shelters.requireImmediateAttention')}.
             </p>
           )}
         </CardContent>
