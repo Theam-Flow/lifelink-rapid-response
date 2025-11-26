@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export const useOfflineSync = () => {
+  const { t } = useTranslation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
@@ -21,8 +23,8 @@ export const useOfflineSync = () => {
       // Listen for messages from service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'SYNC_COMPLETE') {
-          toast.success('Datos sincronizados', {
-            description: 'Conexión restaurada',
+          toast.success(t('offline.syncComplete'), {
+            description: t('offline.connectionRestored'),
           });
         }
       });
@@ -31,8 +33,8 @@ export const useOfflineSync = () => {
     // Online/offline event listeners
     const handleOnline = () => {
       setIsOnline(true);
-      toast.success('Conexión restaurada', {
-        description: 'Sincronizando datos...',
+      toast.success(t('offline.connectionRestored'), {
+        description: t('offline.syncingData'),
       });
       
       // Trigger sync if service worker supports it
@@ -43,8 +45,8 @@ export const useOfflineSync = () => {
 
     const handleOffline = () => {
       setIsOnline(false);
-      toast.warning('Sin conexión', {
-        description: 'Modo offline activado',
+      toast.warning(t('offline.noConnection'), {
+        description: t('offline.offlineMode'),
         duration: 5000,
       });
     };
