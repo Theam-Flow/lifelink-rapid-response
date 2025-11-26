@@ -12,7 +12,7 @@ import { useBackendClustering } from '@/hooks/useBackendClustering';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -72,17 +72,19 @@ const RescueMap = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showOnlyNearby, setShowOnlyNearby] = useState(false); // Toggle para filtro de distancia
   const sosNotificationChannelRef = useRef<ReturnType<typeof setupSOSNotifications> | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
 
   // OPTIMIZACIÓN: React Query para caching + paginación
-  // Siempre usa Bangkok como centro base para asegurar cobertura inicial
+  // Radio dinámico basado en el toggle del usuario
+  const effectiveRadius = showOnlyNearby ? 200 : 1000;
   const { data: sosSignalsData, refetch: refetchSOS, isLoading: sosLoading } = useSOSPagination({
-    userLocation: userLocation || { lng: 100.5018, lat: 13.7563 }, // Siempre proveer ubicación
-    radiusKm: userLocation ? 200 : 1000, // 1000km si no hay ubicación exacta
+    userLocation: userLocation || { lng: 100.5018, lat: 13.7563 },
+    radiusKm: effectiveRadius,
     pageSize: 500,
-    enabled: mapLoaded // Siempre habilitado cuando el mapa está listo
+    enabled: mapLoaded
   });
 
   // Actualizar estado local cuando cambien los datos
@@ -731,6 +733,15 @@ const RescueMap = () => {
 
             <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
               <Button
+                variant={showOnlyNearby ? 'default' : 'outline'}
+                size="sm"
+                className="w-full"
+                onClick={() => setShowOnlyNearby(!showOnlyNearby)}
+              >
+                <MapPin className="mr-2 h-4 w-4" />
+                {showOnlyNearby ? 'Cercanos (200km)' : 'Todos (1000km)'}
+              </Button>
+              <Button
                 variant={showHeatmap ? 'default' : 'outline'}
                 size="sm"
                 className="w-full"
@@ -775,6 +786,15 @@ const RescueMap = () => {
                 </p>
               </div>
               <div className="flex gap-1">
+                <Button 
+                  variant={showOnlyNearby ? 'default' : 'ghost'} 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setShowOnlyNearby(!showOnlyNearby)}
+                  title={showOnlyNearby ? t('map.showAll') : t('map.showNearby')}
+                >
+                  <MapPin className="h-4 w-4" />
+                </Button>
                 <Button 
                   variant={showHeatmap ? 'default' : 'ghost'} 
                   size="icon"
