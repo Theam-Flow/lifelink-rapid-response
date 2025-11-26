@@ -293,16 +293,16 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       map.once('load', updateHeatmap);
     }
 
-    // Redraw on map movement
-    map.on('move', updateHeatmap);
-    map.on('zoom', updateHeatmap);
+    // Only redraw when movement/zoom is FINISHED (not during animation)
+    map.on('moveend', updateHeatmap);
+    map.on('zoomend', updateHeatmap);
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      map.off('move', updateHeatmap);
-      map.off('zoom', updateHeatmap);
+      map.off('moveend', updateHeatmap);
+      map.off('zoomend', updateHeatmap);
     };
   }, [map, parsedSignals]);
 
