@@ -494,7 +494,6 @@ const RescueMap = () => {
     });
 
     markersRef.current = markers;
-    console.log(`✅ Rendered ${markers.length} optimized markers`);
 
     // Update markers on map move (viewport culling)
     const updateVisibleMarkers = () => {
