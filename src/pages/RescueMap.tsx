@@ -9,10 +9,11 @@ import { useRescuerTracking } from '@/hooks/useRescuerTracking';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Loader2, Radio, Layers, MessageSquare, X } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
+import { requestNotificationPermission, setupSOSNotifications } from '@/lib/notifications';
 
 interface SOSSignal {
   id: string;
@@ -60,6 +61,8 @@ const RescueMap = () => {
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const sosNotificationChannelRef = useRef<ReturnType<typeof setupSOSNotifications> | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
 
@@ -170,11 +173,8 @@ const RescueMap = () => {
     if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
-      console.log('fetchSOSSignals: Starting fetch...');
-      
       // If user location available, fetch with distance
       if (userLocation) {
-        console.log('fetchSOSSignals: Using user location', userLocation);
         const { data, error } = await supabase
           .rpc('get_sos_with_distance', { 
             user_lng: userLocation.lng, 
@@ -188,7 +188,6 @@ const RescueMap = () => {
         }
 
         if (data) {
-          console.log('fetchSOSSignals: Got signals with distance:', data.length);
           setSOSSignals(data as SOSSignal[]);
           
           // Convert to GeoJSON format for clustering
@@ -215,12 +214,10 @@ const RescueMap = () => {
             })).filter((f: any) => f.geometry.coordinates[0] && f.geometry.coordinates[1])
           };
 
-          console.log('fetchSOSSignals: Created geojson with features:', geojson.features.length);
           updateClusterLayers(geojson);
         }
       } else {
         // Fallback to old method if no user location
-        console.log('fetchSOSSignals: No user location, using fallback');
         const { data, error } = await supabase
           .from('sos_signals')
           .select(`
@@ -245,7 +242,6 @@ const RescueMap = () => {
         }
 
         if (data) {
-          console.log('fetchSOSSignals: Got signals (fallback):', data.length);
           setSOSSignals(data);
 
           // Process coordinates and create GeoJSON
@@ -285,7 +281,6 @@ const RescueMap = () => {
             features
           };
 
-          console.log('fetchSOSSignals: Created geojson (fallback) with features:', features.length);
           updateClusterLayers(geojson);
         }
       }
@@ -293,11 +288,8 @@ const RescueMap = () => {
 
     const updateClusterLayers = (geojson: any) => {
       if (!map.current) {
-        console.log('updateClusterLayers: No map available');
         return;
       }
-
-      console.log('updateClusterLayers: Adding layers with features:', geojson.features.length);
 
       // Remove existing source and layers if they exist
       try {
@@ -306,7 +298,7 @@ const RescueMap = () => {
         if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
         if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
       } catch (e) {
-        console.log('No existing layers to remove');
+        // No existing layers to remove
       }
 
       // Add source with clustering enabled
@@ -317,8 +309,6 @@ const RescueMap = () => {
         clusterMaxZoom: 14,
         clusterRadius: 50
       });
-
-      console.log('updateClusterLayers: Source added successfully');
 
       // Add cluster circles layer
       map.current.addLayer({
@@ -389,8 +379,6 @@ const RescueMap = () => {
           'circle-opacity': 1
         }
       });
-
-      console.log('updateClusterLayers: All layers added successfully');
 
       // Click event on clusters to zoom in
       map.current.on('click', 'clusters', async (e) => {
@@ -500,8 +488,6 @@ const RescueMap = () => {
   useEffect(() => {
     if (!map.current || !mapLoaded || sosSignals.length === 0) return;
 
-    console.log('Creating HTML markers for', sosSignals.length, 'SOS signals');
-
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
@@ -581,8 +567,6 @@ const RescueMap = () => {
 
       markersRef.current.push(marker);
     });
-
-    console.log('Created', markersRef.current.length, 'HTML markers');
   }, [sosSignals, mapLoaded, t]);
 
   // Fetch shelters
@@ -608,8 +592,6 @@ const RescueMap = () => {
   // Create HTML markers for shelters
   useEffect(() => {
     if (!map.current || !mapLoaded || shelters.length === 0) return;
-
-    console.log('Creating shelter markers for', shelters.length, 'shelters');
 
     // Clear existing shelter markers
     shelterMarkersRef.current.forEach(marker => marker.remove());
@@ -711,8 +693,6 @@ const RescueMap = () => {
 
       shelterMarkersRef.current.push(marker);
     });
-
-    console.log('Created', shelterMarkersRef.current.length, 'shelter markers');
   }, [shelters, mapLoaded, t]);
 
   const getShelterIcon = (type: string) => {
@@ -724,6 +704,38 @@ const RescueMap = () => {
       case 'community_center': return '🏛️';
       case 'sports_complex': return '🏟️';
       default: return '🏠';
+    }
+  };
+
+  // Setup SOS notifications
+  useEffect(() => {
+    if (userLocation && notificationsEnabled) {
+      sosNotificationChannelRef.current = setupSOSNotifications(userLocation);
+    }
+
+    return () => {
+      if (sosNotificationChannelRef.current) {
+        supabase.removeChannel(sosNotificationChannelRef.current);
+      }
+    };
+  }, [userLocation, notificationsEnabled]);
+
+  const toggleNotifications = async () => {
+    if (!notificationsEnabled) {
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        setNotificationsEnabled(true);
+        toast.success('Notificaciones activadas', {
+          description: 'Recibirás alertas de nuevos SOS cercanos'
+        });
+      } else {
+        toast.error('Permisos denegados', {
+          description: 'Activa los permisos en la configuración del navegador'
+        });
+      }
+    } else {
+      setNotificationsEnabled(false);
+      toast.info('Notificaciones desactivadas');
     }
   };
 
@@ -843,6 +855,15 @@ const RescueMap = () => {
                 <Radio className="mr-2 h-4 w-4" />
                 {isSharing ? t('map.stopTracking') : t('map.shareLocation')}
               </Button>
+              <Button
+                variant={notificationsEnabled ? 'default' : 'outline'}
+                size="sm"
+                className="w-full"
+                onClick={toggleNotifications}
+              >
+                {notificationsEnabled ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
+                Alertas
+              </Button>
             </Card>
           </div>
         )}
@@ -876,6 +897,14 @@ const RescueMap = () => {
                   onClick={isSharing ? stopSharing : startSharing}
                 >
                   <Radio className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={notificationsEnabled ? 'default' : 'ghost'} 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={toggleNotifications}
+                >
+                  {notificationsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
