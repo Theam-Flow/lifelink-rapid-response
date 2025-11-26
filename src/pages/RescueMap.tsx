@@ -300,175 +300,8 @@ const RescueMap = () => {
     };
 
     const updateClusterLayers = (geojson: any) => {
-      if (!map.current) {
-        console.log('No map reference');
-        return;
-      }
-
-      console.log('Updating cluster layers with', geojson.features.length, 'features');
-
-      // Update source data if exists, otherwise create it
-      const source = map.current.getSource('sos-signals') as maplibregl.GeoJSONSource;
-      if (source) {
-        console.log('Updating existing source data');
-        source.setData(geojson);
-      } else {
-        console.log('Creating new source and layers');
-        // First time setup: Add source and layers
-        map.current.addSource('sos-signals', {
-          type: 'geojson',
-          data: geojson,
-          cluster: true,
-          clusterMaxZoom: 14,
-          clusterRadius: 50
-        });
-
-        // Add cluster circles layer
-        map.current.addLayer({
-          id: 'clusters',
-          type: 'circle',
-          source: 'sos-signals',
-          filter: ['has', 'point_count'],
-          paint: {
-            'circle-color': [
-              'step',
-              ['get', 'point_count'],
-              '#FF6347',
-              100,
-              '#FF4500',
-              750,
-              '#DC143C'
-            ],
-            'circle-radius': [
-              'step',
-              ['get', 'point_count'],
-              20,
-              100,
-              30,
-              750,
-              40
-            ],
-            'circle-stroke-width': 2,
-            'circle-stroke-color': '#fff'
-          }
-        });
-
-        // Add cluster count labels
-        map.current.addLayer({
-          id: 'cluster-count',
-          type: 'symbol',
-          source: 'sos-signals',
-          filter: ['has', 'point_count'],
-          layout: {
-            'text-field': '{point_count_abbreviated}',
-            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-            'text-size': 12
-          },
-          paint: {
-            'text-color': '#ffffff'
-          }
-        });
-
-        // Add unclustered points layer - BRIGHT CIRCLES
-        map.current.addLayer({
-          id: 'unclustered-point',
-          type: 'circle',
-          source: 'sos-signals',
-          filter: ['!', ['has', 'point_count']],
-          paint: {
-            'circle-color': [
-              'match',
-              ['get', 'severity_level'],
-              1, '#FFA500',
-              2, '#FF6347',
-              3, '#FF4500',
-              4, '#DC143C',
-              5, '#FF0000',
-              '#FF0000'
-            ],
-            'circle-radius': 12,
-            'circle-stroke-width': 4,
-            'circle-stroke-color': '#fff',
-            'circle-opacity': 0.9
-          }
-        });
-
-        console.log('Layers created successfully');
-
-        // Click event on clusters to zoom in (only add once)
-        map.current.on('click', 'clusters', async (e) => {
-          if (!map.current) return;
-          const features = map.current.queryRenderedFeatures(e.point, {
-            layers: ['clusters']
-          });
-          if (!features.length) return;
-          const clusterId = features[0].properties.cluster_id;
-          
-          try {
-            const zoom = await (map.current.getSource('sos-signals') as maplibregl.GeoJSONSource).getClusterExpansionZoom(clusterId);
-            if (!map.current) return;
-            
-            map.current.easeTo({
-              center: (features[0].geometry as any).coordinates,
-              zoom: zoom
-            });
-          } catch (err) {
-            console.error('Error expanding cluster:', err);
-          }
-        });
-
-        // Click event on unclustered points (only add once)
-        map.current.on('click', 'unclustered-point', (e) => {
-          console.log('Clicked on unclustered point');
-          if (!map.current || !e.features || e.features.length === 0) return;
-          
-          const feature = e.features[0];
-          const coordinates = (feature.geometry as any).coordinates.slice();
-          const properties = feature.properties;
-
-          // Reconstruct signal from properties
-          const signal: SOSSignal = {
-            id: properties.id,
-            severity_level: properties.severity_level,
-            type: properties.type,
-            description: properties.description,
-            victim_count: properties.victim_count,
-            status: properties.status,
-            created_at: properties.created_at,
-            user_id: properties.user_id,
-            accuracy_meters: properties.accuracy_meters || null,
-            lng: coordinates[0],
-            lat: coordinates[1],
-            distance_meters: properties.distance_meters,
-          };
-
-          setSelectedSOS(signal);
-          setShowActionDialog(true);
-          
-          // Center map on clicked SOS
-          if (map.current) {
-            map.current.flyTo({
-              center: coordinates,
-              zoom: 15,
-              duration: 800
-            });
-          }
-        });
-
-        // Change cursor on hover (only add once)
-        map.current.on('mouseenter', 'clusters', () => {
-          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-        });
-        map.current.on('mouseleave', 'clusters', () => {
-          if (map.current) map.current.getCanvas().style.cursor = '';
-        });
-        map.current.on('mouseenter', 'unclustered-point', () => {
-          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-        });
-        map.current.on('mouseleave', 'unclustered-point', () => {
-          if (map.current) map.current.getCanvas().style.cursor = '';
-        });
-      }
+      // Markers are now handled by HTML elements, not layers
+      console.log('GeoJSON data received with', geojson.features.length, 'features');
     };
 
     fetchSOSSignals();
@@ -525,6 +358,106 @@ const RescueMap = () => {
 
   // SOS points are now rendered using MapLibre layers (clustering system)
   // No HTML markers needed - the circle layers handle both visualization and interaction
+
+  // Create HTML markers for SOS signals - VISIBLE AND CLICKABLE
+  useEffect(() => {
+    if (!map.current || !mapLoaded || sosSignals.length === 0) {
+      console.log('Skipping marker creation:', { hasMap: !!map.current, mapLoaded, signalsCount: sosSignals.length });
+      return;
+    }
+
+    console.log('Creating HTML markers for', sosSignals.length, 'SOS signals');
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Create a marker for each SOS signal
+    sosSignals.forEach(signal => {
+      let lng: number, lat: number;
+
+      // Get coordinates
+      if (signal.lng !== undefined && signal.lat !== undefined) {
+        lng = signal.lng;
+        lat = signal.lat;
+      } else if (signal.location) {
+        const locationStr = String(signal.location || '');
+        const coords = locationStr
+          .replace('POINT(', '')
+          .replace(')', '')
+          .split(' ')
+          .map(parseFloat);
+        
+        if (coords.length !== 2 || coords.some(isNaN)) {
+          console.error('Invalid coordinates for signal', signal.id);
+          return;
+        }
+        [lng, lat] = coords;
+      } else {
+        console.error('No location data for signal', signal.id);
+        return;
+      }
+
+      // Get color based on severity
+      const colors = {
+        1: '#FFA500',
+        2: '#FF6347',
+        3: '#FF4500',
+        4: '#DC143C',
+        5: '#FF0000'
+      };
+      const color = colors[signal.severity_level as keyof typeof colors] || '#FF0000';
+
+      // Create marker element
+      const el = document.createElement('div');
+      el.style.width = '24px';
+      el.style.height = '24px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = color;
+      el.style.border = '3px solid white';
+      el.style.cursor = 'pointer';
+      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      el.style.transition = 'transform 0.2s';
+      
+      // Hover effect
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'scale(1.2)';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'scale(1)';
+      });
+
+      // Click handler
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('Marker clicked:', signal.id);
+        setSelectedSOS(signal);
+        setShowActionDialog(true);
+        
+        // Center map on clicked marker
+        if (map.current) {
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 15,
+            duration: 1000
+          });
+        }
+      });
+
+      // Create marker
+      const marker = new maplibregl.Marker({ 
+        element: el,
+        anchor: 'center'
+      })
+        .setLngLat([lng, lat])
+        .addTo(map.current!);
+
+      markersRef.current.push(marker);
+      console.log('Marker created at', lng, lat);
+    });
+
+    console.log('Total markers created:', markersRef.current.length);
+  }, [sosSignals, mapLoaded, t]);
 
   // Fetch shelters
   useEffect(() => {
