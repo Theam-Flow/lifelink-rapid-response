@@ -783,7 +783,7 @@ const RescueMap = () => {
       <div className="flex-1 relative">
         <div 
           ref={mapContainer} 
-          className={`absolute inset-0 [&_.maplibregl-ctrl-bottom-left]:!-bottom-4 [&_.maplibregl-ctrl-bottom-right]:!-bottom-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}
+          className={`absolute inset-0 ${isDarkMode ? 'bg-gray-900 [&_.maplibregl-ctrl-bottom-left]:!bottom-[-20px] [&_.maplibregl-ctrl-bottom-right]:!bottom-[-20px]' : 'bg-gray-100 [&_.maplibregl-ctrl-bottom-left]:!-bottom-4 [&_.maplibregl-ctrl-bottom-right]:!-bottom-4'}`}
           style={{ 
             bottom: isMobile ? '60px' : '0',
             top: isMobile ? '75px' : '0'
