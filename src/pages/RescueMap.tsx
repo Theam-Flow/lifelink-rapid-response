@@ -265,7 +265,7 @@ const RescueMap = () => {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">{t('map_title')}</h1>
+                <h1 className="text-xl font-bold">{t('map.title')}</h1>
                 <p className="text-sm text-muted-foreground">
                   SOS: {sosSignals.length} | {t('map.rescuers_count')}: {rescuers.length}
                 </p>
@@ -320,11 +320,11 @@ const RescueMap = () => {
 
               <div className="flex gap-2">
                 <Button onClick={() => assignToMe(selectedSOS.id)} className="flex-1" variant="default">
-                  {t('map_assign')}
+                  {t('map.assign')}
                 </Button>
                 <Button onClick={() => navigateToLocation(selectedSOS.location)} variant="secondary" className="flex-1">
                   <Navigation className="mr-2 h-4 w-4" />
-                  {t('map_navigate')}
+                  {t('map.navigate')}
                 </Button>
                 <Button onClick={() => setShowChat(true)} variant="outline" size="icon">
                   <MessageSquare className="h-4 w-4" />
