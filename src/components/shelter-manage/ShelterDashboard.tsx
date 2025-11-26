@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Users, Package, AlertCircle, TrendingUp, Activity } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 interface ShelterDashboardProps {
   shelter: any;
@@ -12,6 +13,7 @@ interface ShelterDashboardProps {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--destructive))'];
 
 const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalAlerts: 0,
     unresolvedAlerts: 0,
@@ -107,52 +109,52 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ocupación Actual</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('shelters.currentOccupancy')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{shelter.capacity_current || 0}/{shelter.capacity_max || 0}</div>
             <p className={`text-xs ${getCapacityColor()}`}>
-              {capacityPercentage}% de capacidad
+              {capacityPercentage}% {t('shelters.ofCapacity')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alertas Activas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('shelters.activeAlerts')}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.unresolvedAlerts}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.totalAlerts} total
+              {stats.totalAlerts} {t('shelters.total')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Suministros Críticos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('shelters.criticalSupplies')}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.criticalSupplies}</div>
             <p className="text-xs text-destructive">
-              Requieren atención
+              {t('shelters.requireAttention')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actividad (24h)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('shelters.recentActivity')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.recentActivity}</div>
             <p className="text-xs text-muted-foreground">
-              Eventos registrados
+              {t('shelters.eventsRegistered')}
             </p>
           </CardContent>
         </Card>
@@ -162,7 +164,7 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Tendencia de Ocupación (7 días)</CardTitle>
+            <CardTitle>{t('shelters.occupancyTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -181,7 +183,7 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Estado de Suministros</CardTitle>
+            <CardTitle>{t('shelters.suppliesStatus')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -201,7 +203,7 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
       {/* Capacity Visual Map */}
       <Card>
         <CardHeader>
-          <CardTitle>Mapa de Ocupación Visual</CardTitle>
+          <CardTitle>{t('shelters.visualOccupancyMap')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-10 gap-2">
@@ -213,18 +215,18 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
                     ? "bg-primary border-primary"
                     : "bg-muted border-muted-foreground/20"
                 }`}
-                title={i < (shelter.capacity_current || 0) ? "Ocupado" : "Disponible"}
+                title={i < (shelter.capacity_current || 0) ? t('shelters.occupied') : t('shelters.available')}
               />
             ))}
           </div>
           <div className="flex items-center gap-4 mt-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-primary border-2 border-primary" />
-              <span className="text-sm">Ocupado ({shelter.capacity_current || 0})</span>
+              <span className="text-sm">{t('shelters.occupied')} ({shelter.capacity_current || 0})</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-muted border-2 border-muted-foreground/20" />
-              <span className="text-sm">Disponible ({(shelter.capacity_max || 0) - (shelter.capacity_current || 0)})</span>
+              <span className="text-sm">{t('shelters.available')} ({(shelter.capacity_max || 0) - (shelter.capacity_current || 0)})</span>
             </div>
           </div>
         </CardContent>
@@ -233,23 +235,23 @@ const ShelterDashboard = ({ shelter }: ShelterDashboardProps) => {
       {/* Quick Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Estado General</CardTitle>
+          <CardTitle>{t('shelters.generalStatus')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Verificado</span>
+              <span className="text-sm">{t('shelters.verified')}</span>
               <Badge variant={shelter.is_verified ? "default" : "secondary"}>
-                {shelter.is_verified ? "Sí" : "No"}
+                {shelter.is_verified ? t('common.yes') : t('common.no')}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Tipo</span>
+              <span className="text-sm">{t('shelters.type')}</span>
               <Badge variant="outline">{shelter.type}</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Contacto</span>
-              <span className="text-sm text-muted-foreground">{shelter.contact_phone || "N/A"}</span>
+              <span className="text-sm">{t('shelters.contactPhone')}</span>
+              <span className="text-sm text-muted-foreground">{shelter.contact_phone || t('shelters.na')}</span>
             </div>
           </div>
         </CardContent>

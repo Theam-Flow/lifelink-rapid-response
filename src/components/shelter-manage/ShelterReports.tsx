@@ -6,12 +6,14 @@ import { Download, FileText, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 interface ShelterReportsProps {
   shelterId: string;
 }
 
 const ShelterReports = ({ shelterId }: ShelterReportsProps) => {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState("7days");
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -72,7 +74,7 @@ const ShelterReports = ({ shelterId }: ShelterReportsProps) => {
       });
     } catch (error) {
       console.error("Error generating report:", error);
-      toast.error("Error al generar reporte");
+      toast.error(t('shelters.errorGeneratingReport'));
     } finally {
       setLoading(false);
     }
@@ -82,87 +84,73 @@ const ShelterReports = ({ shelterId }: ShelterReportsProps) => {
     if (!reportData) return;
 
     const report = `
-REPORTE DE SHELTER - ${reportData.shelter.name}
-Período: Últimos ${reportData.period} días
-Generado: ${new Date().toLocaleString('es')}
+${t('shelters.reportsAndStatistics')} - ${reportData.shelter.name}
+${t('shelters.reportPeriod')}: ${reportData.period} ${t('common.days')}
+${new Date().toLocaleString()}
 
 ========================================
-ESTADÍSTICAS GENERALES
+${t('shelters.statistics')}
 ========================================
-Capacidad Actual: ${reportData.shelter.capacity_current}/${reportData.shelter.capacity_max}
-Total de Actividades: ${reportData.stats.totalActivities}
-Check-ins: ${reportData.stats.checkIns}
-Check-outs: ${reportData.stats.checkOuts}
-Actualizaciones de Suministros: ${reportData.stats.supplyUpdates}
-Total de Alertas: ${reportData.stats.totalAlerts}
-Alertas Críticas: ${reportData.stats.criticalAlerts}
-
-========================================
-ÚLTIMAS ACTIVIDADES
-========================================
-${reportData.logs.slice(0, 20).map((log: any) => 
-  `${new Date(log.created_at).toLocaleString('es')} - ${log.action_type}: ${log.description}`
-).join('\n')}
-
-========================================
-ALERTAS RECIENTES
-========================================
-${reportData.alerts.slice(0, 10).map((alert: any) => 
-  `[${alert.severity.toUpperCase()}] ${alert.title} - ${new Date(alert.created_at).toLocaleString('es')}`
-).join('\n')}
+${t('shelters.currentCapacity')}: ${reportData.shelter.capacity_current}/${reportData.shelter.capacity_max}
+${t('shelters.activities')}: ${reportData.stats.totalActivities}
+${t('shelters.checkIns')}: ${reportData.stats.checkIns}
+${t('shelters.checkOuts')}: ${reportData.stats.checkOuts}
+${t('shelters.updates')}: ${reportData.stats.supplyUpdates}
+${t('shelters.alerts')}: ${reportData.stats.totalAlerts}
+${t('shelters.critical')}: ${reportData.stats.criticalAlerts}
     `.trim();
 
     const blob = new Blob([report], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `reporte-shelter-${new Date().toISOString().split('T')[0]}.txt`;
+    a.download = `report-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Reporte exportado exitosamente");
+    toast.success(t('shelters.reportExported'));
   };
 
   if (!reportData) {
-    return <div>Cargando reporte...</div>;
+    return <div>{t('shelters.loadingReport')}</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Report Controls */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Reportes y Estadísticas</CardTitle>
-              <CardDescription>
-                Visualiza y exporta reportes de actividad
-              </CardDescription>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{t('shelters.reportsAndStatistics')}</CardTitle>
+                <CardDescription>
+                  {t('shelters.viewExportReports')}
+                </CardDescription>
+              </div>
+              <Button onClick={exportReport}>
+                <Download className="h-4 w-4 mr-2" />
+                {t('shelters.exportReport')}
+              </Button>
             </div>
-            <Button onClick={exportReport}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Reporte
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Período del Reporte</label>
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7days">Últimos 7 días</SelectItem>
-                <SelectItem value="30days">Últimos 30 días</SelectItem>
-                <SelectItem value="90days">Últimos 90 días</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('shelters.reportPeriod')}</label>
+              <Select value={period} onValueChange={setPeriod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7days">{t('shelters.last7Days')}</SelectItem>
+                  <SelectItem value="30days">{t('shelters.last30Days')}</SelectItem>
+                  <SelectItem value="90days">{t('shelters.last90Days')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
