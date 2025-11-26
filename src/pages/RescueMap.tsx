@@ -334,19 +334,35 @@ const RescueMap = () => {
     }
   };
 
-  const navigateToLocation = (location: unknown) => {
-    const locationStr = String(location || '');
-    const coords = locationStr
-      .replace('POINT(', '')
-      .replace(')', '')
-      .split(' ')
-      .map(parseFloat);
-
-    if (coords.length === 2) {
-      const [lng, lat] = coords;
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-      window.open(url, '_blank');
+  const navigateToLocation = (signal: SOSSignal) => {
+    let lng: number, lat: number;
+    
+    // Use lng/lat if available (from distance function)
+    if (signal.lng !== undefined && signal.lat !== undefined) {
+      lng = signal.lng;
+      lat = signal.lat;
+    } else if (signal.location) {
+      // Parse location string as fallback
+      const locationStr = String(signal.location || '');
+      const coords = locationStr
+        .replace('POINT(', '')
+        .replace(')', '')
+        .split(' ')
+        .map(parseFloat);
+      
+      if (coords.length !== 2 || coords.some(isNaN)) {
+        toast.error('Ubicación no válida');
+        return;
+      }
+      [lng, lat] = coords;
+    } else {
+      toast.error('Ubicación no disponible');
+      return;
     }
+
+    // Use Google Maps URL that works on both Android and iOS
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -435,7 +451,7 @@ const RescueMap = () => {
                 <Button onClick={() => assignToMe(selectedSOS.id)} className="flex-1" variant="default">
                   {t('map.assign')}
                 </Button>
-                <Button onClick={() => navigateToLocation(selectedSOS.location)} variant="secondary" className="flex-1">
+                <Button onClick={() => navigateToLocation(selectedSOS)} variant="secondary" className="flex-1">
                   <Navigation className="mr-2 h-4 w-4" />
                   {t('map.navigate')}
                 </Button>
