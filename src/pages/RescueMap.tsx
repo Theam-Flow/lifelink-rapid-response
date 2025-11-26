@@ -134,7 +134,18 @@ const RescueMap = () => {
     const fetchSOSSignals = async () => {
       const { data, error } = await supabase
         .from('sos_signals')
-        .select('*')
+        .select(`
+          id,
+          type,
+          severity_level,
+          status,
+          description,
+          victim_count,
+          created_at,
+          user_id,
+          accuracy_meters,
+          location
+        `)
         .in('status', ['active', 'acknowledged'])
         .order('severity_level', { ascending: false });
 
@@ -145,6 +156,8 @@ const RescueMap = () => {
       }
 
       if (data) {
+        console.log('SOS Signals fetched:', data);
+        
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
@@ -153,19 +166,26 @@ const RescueMap = () => {
         data.forEach((signal) => {
           if (!map.current) return;
           
-          const locationStr = String(signal.location || '');
-          const coords = locationStr
-            .replace('POINT(', '')
-            .replace(')', '')
-            .split(' ')
-            .map(parseFloat);
+          // Extract coordinates using PostGIS helper
+          const extractCoords = async () => {
+            const { data: coordData, error: coordError } = await supabase
+              .rpc('get_sos_coordinates', { sos_id: signal.id });
+            
+            if (coordError || !coordData || coordData.length === 0) {
+              console.error('Error getting coordinates for signal:', signal.id, coordError);
+              return null;
+            }
+            
+            return coordData[0];
+          };
 
-          if (coords.length !== 2 || coords.some(isNaN)) {
-            console.error('Invalid coordinates for signal:', signal.id);
-            return;
-          }
+          extractCoords().then((coords) => {
+            if (!coords || !map.current) return;
+            
+            const lng = coords.lng;
+            const lat = coords.lat;
 
-          const [lng, lat] = coords;
+            console.log(`Creating marker for SOS ${signal.id} at [${lng}, ${lat}]`);
 
           const el = document.createElement('div');
           el.className = 'sos-marker';
