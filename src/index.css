@@ -230,4 +230,15 @@ All colors MUST be HSL.
   .safe-area-inset-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Ensure smooth scrolling on mobile */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 }

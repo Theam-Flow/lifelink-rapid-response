@@ -92,7 +92,7 @@ const Index = () => {
   // Mobile-first simplified view
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background pb-20">
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background pb-28 overflow-y-auto">
         {/* Simple Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
