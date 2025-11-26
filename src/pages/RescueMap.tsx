@@ -244,6 +244,7 @@ const RescueMap = () => {
       }
 
       if (data) {
+        console.log('Fetched SOS signals (fallback):', data.length, 'signals');
         setSOSSignals(data);
 
         // Process coordinates and create GeoJSON
@@ -289,14 +290,19 @@ const RescueMap = () => {
 
     const updateClusterLayers = (geojson: any) => {
       if (!map.current) {
+        console.log('No map reference');
         return;
       }
+
+      console.log('Updating cluster layers with', geojson.features.length, 'features');
 
       // Update source data if exists, otherwise create it
       const source = map.current.getSource('sos-signals') as maplibregl.GeoJSONSource;
       if (source) {
+        console.log('Updating existing source data');
         source.setData(geojson);
       } else {
+        console.log('Creating new source and layers');
         // First time setup: Add source and layers
         map.current.addSource('sos-signals', {
           type: 'geojson',
@@ -376,6 +382,8 @@ const RescueMap = () => {
           }
         });
 
+        console.log('Layers created successfully');
+
         // Click event on clusters to zoom in (only add once)
         map.current.on('click', 'clusters', async (e) => {
           if (!map.current) return;
@@ -400,6 +408,7 @@ const RescueMap = () => {
 
         // Click event on unclustered points (only add once)
         map.current.on('click', 'unclustered-point', (e) => {
+          console.log('Clicked on unclustered point');
           if (!map.current || !e.features || e.features.length === 0) return;
           
           const feature = e.features[0];
