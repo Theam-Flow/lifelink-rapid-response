@@ -33,10 +33,10 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
+            urlPattern: /^https:\/\/tile-[abc]\.openstreetmap\.fr\/hot\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'osm-tiles-cache',
+              cacheName: 'osm-hot-tiles-cache',
               expiration: {
                 maxEntries: 500,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
