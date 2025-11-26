@@ -63,10 +63,29 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // MapLibre doesn't need a token! Using CartoDB Positron style
+    // Using reliable OpenStreetMap tiles
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [
+          {
+            id: 'osm',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 19
+          }
+        ]
+      },
       center: [100.5018, 13.7563],
       zoom: 11,
     });
