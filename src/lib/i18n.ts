@@ -535,6 +535,8 @@ const resources = {
         status_missing: 'Missing',
         status_deceased: 'Deceased',
         status_unknown: 'Unknown',
+        signOut: 'Sign Out',
+        signOutSuccess: 'Signed out successfully',
       },
       notifications: {
         title: 'Notifications',
@@ -1112,6 +1114,8 @@ const resources = {
         status_missing: 'สูญหาย',
         status_deceased: 'เสียชีวิต',
         status_unknown: 'ไม่ทราบ',
+        signOut: 'ออกจากระบบ',
+        signOutSuccess: 'ออกจากระบบสำเร็จ',
       },
       notifications: {
         title: 'การแจ้งเตือน',
@@ -1655,6 +1659,8 @@ const resources = {
         status_missing: 'Mất tích',
         status_deceased: 'Đã qua đời',
         status_unknown: 'Không rõ',
+        signOut: 'Đăng xuất',
+        signOutSuccess: 'Đăng xuất thành công',
       },
       notifications: {
         title: 'Thông báo',
