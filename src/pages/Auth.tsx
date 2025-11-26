@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { AlertCircle, Globe } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const Auth = () => {
   const { t, i18n } = useTranslation();
@@ -57,9 +58,6 @@ const Auth = () => {
     }
   };
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-destructive/20 to-background p-4">
@@ -70,17 +68,7 @@ const Auth = () => {
               <AlertCircle className="h-8 w-8 text-destructive" />
               <CardTitle className="text-2xl font-bold">LifeLink Asia</CardTitle>
             </div>
-            <Select defaultValue="th" onValueChange={changeLanguage}>
-              <SelectTrigger className="w-24">
-                <Globe className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">EN</SelectItem>
-                <SelectItem value="th">TH</SelectItem>
-                <SelectItem value="vi">VI</SelectItem>
-              </SelectContent>
-            </Select>
+            <LanguageSwitcher />
           </div>
           <CardDescription>{t('auth.welcome')}</CardDescription>
         </CardHeader>
