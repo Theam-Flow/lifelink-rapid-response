@@ -187,31 +187,32 @@ const RescueMap = () => {
 
             console.log(`Creating marker for SOS ${signal.id} at [${lng}, ${lat}]`);
 
-          const el = document.createElement('div');
-          el.className = 'sos-marker';
-          el.style.backgroundColor = getSeverityColor(signal.severity_level);
-          el.style.width = '30px';
-          el.style.height = '30px';
-          el.style.borderRadius = '50%';
-          el.style.border = '3px solid white';
-          el.style.cursor = 'pointer';
-          el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            const el = document.createElement('div');
+            el.className = 'sos-marker';
+            el.style.backgroundColor = getSeverityColor(signal.severity_level);
+            el.style.width = '30px';
+            el.style.height = '30px';
+            el.style.borderRadius = '50%';
+            el.style.border = '3px solid white';
+            el.style.cursor = 'pointer';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([lng, lat])
-            .addTo(map.current);
+            const marker = new mapboxgl.Marker(el)
+              .setLngLat([lng, lat])
+              .addTo(map.current!);
 
-          marker.getElement().addEventListener('click', () => {
-            setSelectedSOS(signal);
-            setShowChat(true);
-            map.current?.flyTo({
-              center: [lng, lat],
-              zoom: 14,
-              duration: 1000
+            marker.getElement().addEventListener('click', () => {
+              setSelectedSOS(signal);
+              setShowChat(true);
+              map.current?.flyTo({
+                center: [lng, lat],
+                zoom: 14,
+                duration: 1000
+              });
             });
-          });
 
-          markersRef.current.push(marker);
+            markersRef.current.push(marker);
+          });
         });
       }
     };
@@ -238,7 +239,7 @@ const RescueMap = () => {
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
     };
-  }, [mapboxToken]);
+  }, [mapboxToken, t]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];

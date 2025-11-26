@@ -940,6 +940,13 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_sos_coordinates: {
+        Args: { sos_id: string }
+        Returns: {
+          lat: number
+          lng: number
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_rescuer: { Args: { _user_id: string }; Returns: boolean }
