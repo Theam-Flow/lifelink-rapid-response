@@ -10,8 +10,8 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Navigation, AlertCircle } from 'lucide-react';
 
-// Mapbox token placeholder - users will need to add their own
-const MAPBOX_TOKEN = 'YOUR_MAPBOX_TOKEN_HERE';
+// Mapbox token from environment variable
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 interface SOSSignal {
   id: string;
@@ -39,9 +39,9 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    if (MAPBOX_TOKEN === 'YOUR_MAPBOX_TOKEN_HERE') {
+    if (!MAPBOX_TOKEN) {
       toast.error('Mapbox token required', {
-        description: 'Please add your Mapbox access token to use the map',
+        description: 'Please configure your Mapbox access token',
       });
       return;
     }
