@@ -69,8 +69,23 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
           table: 'messages',
           filter: `sos_id=eq.${sosId}`,
         },
-        (payload) => {
-          fetchMessages();
+        async (payload) => {
+          // Fetch the full message with profile data
+          const { data: newMessageData, error } = await supabase
+            .from('messages')
+            .select(`
+              *,
+              profiles:user_id (full_name)
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (!error && newMessageData) {
+            setMessages(prev => [...prev, newMessageData as any]);
+          } else {
+            // Fallback to fetching all messages
+            fetchMessages();
+          }
         }
       )
       .subscribe();
