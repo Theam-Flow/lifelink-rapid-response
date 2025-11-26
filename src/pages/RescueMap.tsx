@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRescuerTracking } from '@/hooks/useRescuerTracking';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
@@ -60,6 +60,7 @@ const RescueMap = () => {
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [showSOSList, setShowSOSList] = useState(false); // Changed to false by default
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -677,11 +678,13 @@ const RescueMap = () => {
   };
 
   const handleViewDetails = () => {
-    // Just show the details, don't open chat
+    // Show details panel
     setShowChat(false);
+    setShowDetails(true);
   };
 
   const handleOpenChat = () => {
+    setShowDetails(false);
     setShowChat(true);
   };
 
@@ -1111,6 +1114,137 @@ const RescueMap = () => {
         onViewDetails={handleViewDetails}
         onChat={handleOpenChat}
       />
+
+      {/* Details Panel - Full width on mobile, sidebar on desktop */}
+      {showDetails && selectedSOS && (
+        <div className={isMobile ? "fixed inset-0 z-[2000] bg-background overflow-y-auto" : "w-96 h-full border-l bg-background z-[1500] overflow-y-auto"}>
+          <Card className="h-full border-none rounded-none">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle 
+                    className="h-5 w-5" 
+                    style={{ color: getSeverityColor(selectedSOS.severity_level) }}
+                  />
+                  {t('map.sosDetails')}
+                </CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setShowDetails(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {/* Emergency Type */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.type')}</h3>
+                <p className="text-lg font-semibold">{t(`emergencyTypes.${selectedSOS.type}`)}</p>
+              </div>
+
+              {/* Severity Level */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.severity')}</h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-2 w-8 rounded ${
+                          level <= selectedSOS.severity_level ? 'bg-destructive' : 'bg-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold">{selectedSOS.severity_level}/5</span>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.status')}</h3>
+                <p className="capitalize">{selectedSOS.status || 'active'}</p>
+              </div>
+
+              {/* Description */}
+              {selectedSOS.description && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.description')}</h3>
+                  <p className="text-sm">{selectedSOS.description}</p>
+                </div>
+              )}
+
+              {/* Victim Count */}
+              {selectedSOS.victim_count && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.victimCount')}</h3>
+                  <p className="text-lg font-semibold">{selectedSOS.victim_count} {t('sos.people')}</p>
+                </div>
+              )}
+
+              {/* Distance */}
+              {selectedSOS.distance_meters !== undefined && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('map.distance')}</h3>
+                  <p className="text-lg font-semibold text-primary">
+                    {selectedSOS.distance_meters < 1000 
+                      ? `${Math.round(selectedSOS.distance_meters)}m` 
+                      : `${(selectedSOS.distance_meters / 1000).toFixed(1)}km`}
+                  </p>
+                </div>
+              )}
+
+              {/* Location Accuracy */}
+              {selectedSOS.accuracy_meters && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.accuracy')}</h3>
+                  <p className="text-sm">±{Math.round(selectedSOS.accuracy_meters)}m</p>
+                </div>
+              )}
+
+              {/* Created At */}
+              {selectedSOS.created_at && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">{t('sos.createdAt')}</h3>
+                  <p className="text-sm">
+                    {new Date(selectedSOS.created_at).toLocaleString()}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-4 border-t">
+                <Button 
+                  className="w-full" 
+                  variant="default"
+                  onClick={() => {
+                    setShowDetails(false);
+                    setShowChat(true);
+                  }}
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  {t('map.chat')}
+                </Button>
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigateToLocation(selectedSOS)}
+                >
+                  <Navigation className="mr-2 h-4 w-4" />
+                  {t('map.navigate')}
+                </Button>
+                {user?.id && (
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => assignToMe(selectedSOS.id)}
+                  >
+                    {t('map.assign')}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Chat Panel - Full width on mobile, sidebar on desktop */}
       {showChat && selectedSOS && (
