@@ -71,9 +71,9 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Get current zoom for radius calculation - much smaller for subtle effect
+      // Get current zoom for radius calculation - balanced for visibility
       const zoom = map.getZoom();
-      const baseRadius = zoom < 10 ? 8 : zoom < 12 ? 12 : zoom < 14 ? 16 : 20;
+      const baseRadius = zoom < 10 ? 15 : zoom < 12 ? 22 : zoom < 14 ? 30 : 38;
       
       // Pulsation effect using timestamp
       const time = Date.now() / 1000;
@@ -109,8 +109,8 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
           point.x, point.y, radius
         );
 
-        // Much lower alpha for subtle effect - 90% less intense
-        const alpha = (0.06 + (signal.severity_level / 5) * 0.04) * pulse; // 0.06 to 0.1
+        // Balanced alpha for visibility - subtle but present
+        const alpha = (0.15 + (signal.severity_level / 5) * 0.15) * pulse; // 0.15 to 0.3
         
         if (signal.severity_level <= 2) {
           // Low severity: Yellow to Orange - subtle gradient
@@ -137,7 +137,7 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       });
 
       // Apply subtle blur for smoother heatmap effect
-      ctx.filter = 'blur(12px)';
+      ctx.filter = 'blur(15px)';
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       ctx.filter = 'none';
       ctx.putImageData(imageData, 0, 0);
