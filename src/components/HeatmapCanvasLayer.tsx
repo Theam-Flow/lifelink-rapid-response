@@ -80,12 +80,15 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       height: 100%;
       pointer-events: none;
       z-index: 1;
+      overflow: hidden;
     `;
 
     // Draw canvas (hidden, used for rendering)
     const drawCanvas = document.createElement('canvas');
     drawCanvas.style.cssText = `
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       display: none;
@@ -95,6 +98,8 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
     const blurCanvas = document.createElement('canvas');
     blurCanvas.style.cssText = `
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       opacity: 0.85;
@@ -189,19 +194,26 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
     const blurCtx = blurCanvas.getContext('2d', { alpha: true });
     if (!drawCtx || !blurCtx) return;
 
-    // CRITICAL: Use exact map canvas size for perfect alignment
+    // CRITICAL: Get exact pixel dimensions from map canvas
     const mapCanvas = map.getCanvas();
-    const width = mapCanvas.width;
-    const height = mapCanvas.height;
+    const pixelRatio = window.devicePixelRatio || 1;
+    const width = mapCanvas.clientWidth * pixelRatio;
+    const height = mapCanvas.clientHeight * pixelRatio;
     
-    // Set canvas size to match map canvas exactly
-    drawCanvas.width = width;
-    drawCanvas.height = height;
-    blurCanvas.width = width;
-    blurCanvas.height = height;
+    // Set canvas internal resolution
+    if (drawCanvas.width !== width || drawCanvas.height !== height) {
+      drawCanvas.width = width;
+      drawCanvas.height = height;
+      blurCanvas.width = width;
+      blurCanvas.height = height;
+      
+      // Scale context to match device pixel ratio
+      drawCtx.scale(pixelRatio, pixelRatio);
+      blurCtx.scale(pixelRatio, pixelRatio);
+    }
 
     // Clear canvases
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    drawCtx.clearRect(0, 0, width / pixelRatio, height / pixelRatio);
 
     const zoom = map.getZoom();
     const bounds = map.getBounds();
@@ -268,9 +280,12 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       drawCtx.fill();
     });
 
-    // Copy to blur canvas
-    blurCtx.clearRect(0, 0, blurCanvas.width, blurCanvas.height);
-    blurCtx.drawImage(drawCanvas, 0, 0);
+    // Copy to blur canvas (clear first, scale properly)
+    blurCtx.clearRect(0, 0, width / pixelRatio, height / pixelRatio);
+    blurCtx.save();
+    blurCtx.scale(1, 1);
+    blurCtx.drawImage(drawCanvas, 0, 0, width, height, 0, 0, width / pixelRatio, height / pixelRatio);
+    blurCtx.restore();
 
     // Continue animation if there are high severity signals
     const hasHighSeverity = clusters.some(c => c.maxSeverity >= 4);
@@ -279,7 +294,7 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
     }
   };
 
-  // Trigger redraw on data or map changes
+  // Trigger redraw on data or map changes + during movement for smooth animation
   useEffect(() => {
     if (!map || parsedSignals.length === 0) return;
 
@@ -297,7 +312,9 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       map.once('load', updateHeatmap);
     }
 
-    // Only redraw when movement/zoom is FINISHED (not during animation)
+    // Redraw continuously during movement/zoom for perfect alignment
+    map.on('move', updateHeatmap);
+    map.on('zoom', updateHeatmap);
     map.on('moveend', updateHeatmap);
     map.on('zoomend', updateHeatmap);
 
@@ -305,6 +322,8 @@ export const HeatmapCanvasLayer = ({ map, sosSignals }: HeatmapCanvasLayerProps)
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      map.off('move', updateHeatmap);
+      map.off('zoom', updateHeatmap);
       map.off('moveend', updateHeatmap);
       map.off('zoomend', updateHeatmap);
     };
