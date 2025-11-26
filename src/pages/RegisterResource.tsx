@@ -118,15 +118,19 @@ const RegisterResource = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
       <div className="max-w-2xl mx-auto space-y-6 py-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/resources')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{t('resources.registerTitle')}</h1>
-            <p className="text-muted-foreground">{t('resources.registerDescription')}</p>
-          </div>
-        </div>
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/resources')}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <CardTitle className="text-2xl md:text-3xl">{t('resources.registerTitle')}</CardTitle>
+                <CardDescription className="text-sm md:text-base">{t('resources.registerDescription')}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
 
         <Card>
           <CardHeader>

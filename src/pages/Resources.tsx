@@ -118,23 +118,27 @@ const Resources = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
       <div className="max-w-6xl mx-auto space-y-6 py-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">{t('resources.title')}</h1>
-              <p className="text-muted-foreground">
-                {t('resources.registerDescription')}
-              </p>
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                  <CardTitle className="text-2xl md:text-3xl">{t('resources.title')}</CardTitle>
+                  <CardDescription className="text-sm md:text-base">
+                    {t('resources.registerDescription')}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button onClick={() => navigate('/resources/register')} className="w-full sm:w-auto sm:self-end">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('resources.addResource')}
+              </Button>
             </div>
-          </div>
-          <Button onClick={() => navigate('/resources/register')}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('resources.addResource')}
-          </Button>
-        </div>
+          </CardHeader>
+        </Card>
 
         {/* Resource Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -136,31 +136,31 @@ const Shelters = () => {
         {/* Header */}
         <Card className="border-2 border-primary">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                   <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                  <CardTitle className="text-3xl">{t('shelters.title')}</CardTitle>
-                  <CardDescription className="text-base">{t('shelters.subtitle')}</CardDescription>
+                  <CardTitle className="text-2xl md:text-3xl">{t('shelters.title')}</CardTitle>
+                  <CardDescription className="text-sm md:text-base">{t('shelters.subtitle')}</CardDescription>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'map')}>
-                  <TabsList>
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'map')} className="w-full sm:w-auto">
+                  <TabsList className="grid w-full grid-cols-2 sm:w-auto">
                     <TabsTrigger value="list" className="gap-2">
                       <List className="h-4 w-4" />
-                      {t('shelters.listView')}
+                      <span className="hidden sm:inline">{t('shelters.listView')}</span>
                     </TabsTrigger>
                     <TabsTrigger value="map" className="gap-2">
                       <MapIcon className="h-4 w-4" />
-                      {t('shelters.mapView')}
+                      <span className="hidden sm:inline">{t('shelters.mapView')}</span>
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
                 {user && (
-                  <Button onClick={() => setFormOpen(true)}>
+                  <Button onClick={() => setFormOpen(true)} className="w-full sm:w-auto">
                     <Plus className="h-4 w-4 mr-2" />
                     {t('shelters.createShelter')}
                   </Button>
