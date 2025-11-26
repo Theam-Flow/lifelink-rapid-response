@@ -195,7 +195,7 @@ export type Database = {
           last_seen_address: string | null
           last_seen_at: string | null
           last_seen_location: unknown
-          photo_url: string | null
+          photo_urls: string[] | null
           reporter_id: string
           status: Database["public"]["Enums"]["user_status"] | null
           updated_at: string | null
@@ -215,7 +215,7 @@ export type Database = {
           last_seen_address?: string | null
           last_seen_at?: string | null
           last_seen_location?: unknown
-          photo_url?: string | null
+          photo_urls?: string[] | null
           reporter_id: string
           status?: Database["public"]["Enums"]["user_status"] | null
           updated_at?: string | null
@@ -235,7 +235,7 @@ export type Database = {
           last_seen_address?: string | null
           last_seen_at?: string | null
           last_seen_location?: unknown
-          photo_url?: string | null
+          photo_urls?: string[] | null
           reporter_id?: string
           status?: Database["public"]["Enums"]["user_status"] | null
           updated_at?: string | null
