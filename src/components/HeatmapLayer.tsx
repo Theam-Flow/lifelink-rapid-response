@@ -17,13 +17,11 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
 
   useEffect(() => {
     if (!map || sosSignals.length === 0) {
-      console.log('HeatmapLayer: No map or no signals', { hasMap: !!map, signalsCount: sosSignals.length });
       return;
     }
 
-    // Wait a bit for map to be ready
-    const timer = setTimeout(() => {
-      if (!map) return;
+    const addHeatmap = () => {
+      if (!map || !map.isStyleLoaded()) return;
       
       console.log('HeatmapLayer: Adding heatmap with signals:', sosSignals.length);
 
@@ -121,10 +119,17 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
     } catch (error) {
       console.error('Error adding heatmap layer:', error);
     }
-    }, 500);
+    };
+
+    // Wait for style to load before adding heatmap
+    if (map.isStyleLoaded()) {
+      addHeatmap();
+    } else {
+      map.once('styledata', addHeatmap);
+    }
 
     return () => {
-      clearTimeout(timer);
+      map.off('styledata', addHeatmap);
       try {
         if (map) {
           if (map.getLayer(layerIdRef.current)) {
