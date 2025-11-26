@@ -52,32 +52,40 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current || !mapboxToken || map.current) return;
 
     mapboxgl.accessToken = mapboxToken;
 
     // Default center (Thailand)
     const defaultCenter: [number, number] = [100.5018, 13.7563];
 
-    map.current = new mapboxgl.Map({
+    const newMap = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
       center: defaultCenter,
       zoom: 6,
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Wait for map to load before allowing other operations
+    newMap.on('load', () => {
+      map.current = newMap;
+    });
 
     return () => {
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [mapboxToken]);
 
   // Update shelter markers
   useEffect(() => {
-    if (!map.current || shelters.length === 0) return;
+    if (!map.current || !map.current.loaded() || shelters.length === 0) return;
 
     // Remove existing markers
     markers.current.forEach((marker) => marker.remove());
@@ -137,11 +145,15 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
     });
 
     // Fit bounds if we have valid coordinates
-    if (hasValidCoordinates && markers.current.length > 0) {
-      map.current.fitBounds(bounds, {
-        padding: 100,
-        maxZoom: 15,
-      });
+    if (hasValidCoordinates && markers.current.length > 0 && map.current) {
+      try {
+        map.current.fitBounds(bounds, {
+          padding: 100,
+          maxZoom: 15,
+        });
+      } catch (error) {
+        console.error('Error fitting bounds:', error);
+      }
     }
   }, [shelters, onShelterSelect]);
 
