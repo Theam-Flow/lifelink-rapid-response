@@ -26,11 +26,6 @@ export const BottomNav = () => {
       path: '/rescue-map',
     },
     {
-      icon: Building2,
-      label: t('bottomNav.shelters'),
-      path: '/shelters',
-    },
-    {
       icon: User,
       label: t('bottomNav.profile'),
       path: '/profile',
@@ -38,8 +33,8 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-40 safe-area-inset-bottom">
-      <div className="flex items-center justify-around h-16 px-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-2xl z-40 safe-area-inset-bottom">
+      <div className="flex items-center justify-around h-20 px-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -49,22 +44,20 @@ export const BottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'flex flex-col items-center justify-center flex-1 h-full transition-all duration-200',
-                isActive ? 'text-primary' : 'text-muted-foreground',
-                item.isEmergency && 'relative'
+                'flex flex-col items-center justify-center transition-all duration-200 min-h-[48px] min-w-[48px]',
+                item.isEmergency ? 'flex-[1.5] px-4' : 'flex-1 px-2',
+                isActive && !item.isEmergency ? 'text-primary' : 'text-muted-foreground',
               )}
             >
               {item.isEmergency ? (
-                <div className="relative flex flex-col items-center">
-                  <div className="absolute -top-8 w-16 h-16 bg-destructive rounded-full flex items-center justify-center shadow-xl animate-pulse-sos">
-                    <Icon className="w-8 h-8 text-destructive-foreground" />
-                  </div>
-                  <span className="text-[10px] font-medium mt-10">{item.label}</span>
+                <div className="flex flex-col items-center gap-1 bg-destructive text-destructive-foreground rounded-2xl px-6 py-3 shadow-xl animate-pulse-sos w-full">
+                  <Icon className="w-8 h-8" />
+                  <span className="text-xs font-bold uppercase">{item.label}</span>
                 </div>
               ) : (
                 <>
-                  <Icon className={cn('w-6 h-6 mb-1', isActive && 'animate-scale-in')} />
-                  <span className="text-[10px] font-medium">{item.label}</span>
+                  <Icon className={cn('w-7 h-7 mb-1', isActive && 'animate-scale-in')} />
+                  <span className="text-xs font-medium">{item.label}</span>
                 </>
               )}
             </button>

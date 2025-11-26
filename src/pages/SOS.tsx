@@ -9,15 +9,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, MapPin, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MapPin, AlertTriangle, Loader2, RefreshCw, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const SOS = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number; accuracy: number } | null>(null);
   const [formData, setFormData] = useState({
     type: 'flood_trap',
@@ -58,6 +61,48 @@ const SOS = () => {
           onClick: fetchLocation,
         },
       });
+    }
+  };
+
+  const sendQuickSOS = async () => {
+    if (!user) {
+      toast.error(t('sos.loginRequired'));
+      navigate('/auth');
+      return;
+    }
+
+    if (!userLocation) {
+      toast.error(t('sos.noLocation'));
+      return;
+    }
+
+    setLoading(true);
+
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    try {
+      const { error } = await supabase.from('sos_signals').insert([{
+        user_id: user.id,
+        location: `POINT(${userLocation.longitude} ${userLocation.latitude})` as any,
+        accuracy_meters: userLocation.accuracy,
+        type: 'flood_trap',
+        severity_level: 5,
+        victim_count: 1,
+        description: 'Quick Emergency SOS',
+        status: 'active' as any,
+      }]);
+
+      if (error) throw error;
+
+      toast.success(t('sos.success'));
+      setTimeout(() => navigate('/rescue-map'), 1500);
+    } catch (error) {
+      console.error('Error sending quick SOS:', error);
+      toast.error(t('sos.error'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,12 +154,75 @@ const SOS = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background p-4">
-      <div className="max-w-2xl mx-auto space-y-4 py-8">
-        <Button variant="ghost" onClick={() => navigate('/')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+  // Mobile-first quick SOS view
+  if (isMobile && !showDetails) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background flex flex-col p-4">
+        <Button variant="ghost" onClick={() => navigate('/')} className="self-start mb-4">
+          <ArrowLeft className="mr-2 h-5 w-5" />
           {t('common.back')}
+        </Button>
+
+        <div className="flex-1 flex flex-col items-center justify-center space-y-6 pb-24">
+          {/* Giant Quick Emergency Button */}
+          <button
+            onClick={sendQuickSOS}
+            disabled={!userLocation || loading || locationLoading}
+            className="w-72 h-72 rounded-full bg-destructive text-destructive-foreground shadow-2xl animate-pulse-sos disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-4 active:scale-95 transition-transform"
+          >
+            <AlertTriangle className="w-32 h-32 animate-pulse" />
+            <span className="text-3xl font-bold uppercase">{t('mobileSOS.quickEmergency')}</span>
+          </button>
+
+          {/* Location Status */}
+          <div className="text-center space-y-2">
+            {userLocation ? (
+              <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
+                <MapPin className="h-5 w-5 text-primary" />
+                {t('sos.locationAccuracy')}: {Math.round(userLocation.accuracy)}m
+              </p>
+            ) : locationLoading ? (
+              <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {t('sos.acquiringLocation')}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-destructive">{t('sos.noLocation')}</p>
+                <Button onClick={fetchLocation} variant="outline" size="lg">
+                  <RefreshCw className="mr-2 h-5 w-5" />
+                  {t('sos.retry')}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <p className="text-center text-base text-muted-foreground max-w-xs">
+            {t('mobileSOS.tapToSend')}
+          </p>
+
+          {/* Add Details Option */}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowDetails(true)}
+            className="mt-4"
+          >
+            <ChevronDown className="mr-2 h-5 w-5" />
+            {t('mobileSOS.moreDetails')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop or detailed form view
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background p-4 pb-24 md:pb-4">
+      <div className="max-w-2xl mx-auto space-y-4 py-8">
+        <Button variant="ghost" onClick={() => isMobile && showDetails ? setShowDetails(false) : navigate('/')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {isMobile && showDetails ? t('common.back') : t('common.back')}
         </Button>
 
         <Card className="border-2 border-destructive">

@@ -5,14 +5,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon } from 'lucide-react';
+import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon, Building2 } from 'lucide-react';
 import { Notifications } from '@/components/Notifications';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { QuickSOS } from '@/components/QuickSOS';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { user, loading, signOut } = useAuth();
   const [stats, setStats] = useState({
     activeSOS: 0,
@@ -87,6 +89,121 @@ const Index = () => {
 
   if (!user) return null;
 
+  // Mobile-first simplified view
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background pb-20">
+        {/* Simple Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-8 w-8 text-destructive" />
+            <h1 className="text-xl font-bold">LifeLink</h1>
+          </div>
+          <div className="flex gap-2">
+            <LanguageSwitcher />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+              <UserIcon className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Giant SOS Button - Most Important */}
+        <div className="flex items-center justify-center py-12 px-4">
+          <button
+            onClick={() => navigate('/sos')}
+            className="w-64 h-64 rounded-full bg-destructive text-destructive-foreground shadow-2xl animate-pulse-sos flex flex-col items-center justify-center gap-4 active:scale-95 transition-transform"
+          >
+            <AlertCircle className="w-28 h-28 animate-pulse" />
+            <span className="text-3xl font-bold uppercase">{t('sos.emergency')}</span>
+          </button>
+        </div>
+
+        {/* Compact Statistics */}
+        <div className="grid grid-cols-3 gap-3 px-4 mb-6">
+          <Card className="border-destructive/50">
+            <CardContent className="pt-4 pb-3 text-center">
+              <p className="text-2xl font-bold text-destructive">{stats.activeSOS}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-1">{t('index.activeSOS')}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/50">
+            <CardContent className="pt-4 pb-3 text-center">
+              <p className="text-2xl font-bold text-primary">{stats.activeRescuers}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-1">{t('index.activeRescuers')}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-secondary/50">
+            <CardContent className="pt-4 pb-3 text-center">
+              <p className="text-2xl font-bold text-secondary">{stats.peopleRescued}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight mt-1">{t('index.peopleRescued')}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Access Cards */}
+        <div className="px-4 space-y-3">
+          <Card 
+            className="border-2 border-primary hover:shadow-lg transition-all active:scale-98 cursor-pointer"
+            onClick={() => navigate('/rescue-map')}
+          >
+            <CardContent className="flex items-center gap-4 py-4">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <MapPin className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-base">{t('index.rescuerHelp')}</h3>
+                <p className="text-xs text-muted-foreground">{t('index.rescuerDesc')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
+              onClick={() => navigate('/resources')}
+            >
+              <CardContent className="pt-4 pb-3 text-center">
+                <Package className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">{t('index.resources')}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
+              onClick={() => navigate('/shelters')}
+            >
+              <CardContent className="pt-4 pb-3 text-center">
+                <Building2 className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">{t('index.shelters')}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
+              onClick={() => navigate('/missing-persons')}
+            >
+              <CardContent className="pt-4 pb-3 text-center">
+                <Search className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">{t('index.missingPersons')}</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
+              onClick={() => navigate('/dashboard')}
+            >
+              <CardContent className="pt-4 pb-3 text-center">
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <p className="text-sm font-medium">{t('index.metrics')}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop view
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-20 md:pb-4">
       <div className="max-w-4xl mx-auto space-y-6 py-8">
