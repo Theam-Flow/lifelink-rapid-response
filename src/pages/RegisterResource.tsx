@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeInput, validatePhone } from '@/lib/validation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,19 +63,36 @@ const RegisterResource = () => {
       return;
     }
 
+    // Validate and sanitize inputs
+    const sanitizedName = sanitizeInput(formData.name.trim());
+    const sanitizedVolunteer = formData.volunteer_operator ? sanitizeInput(formData.volunteer_operator.trim()) : null;
+    const sanitizedContact = formData.contact_info ? sanitizeInput(formData.contact_info.trim()) : null;
+    const sanitizedLicense = formData.license_plate ? sanitizeInput(formData.license_plate.trim()) : null;
+    const sanitizedNotes = formData.notes ? sanitizeInput(formData.notes.trim()) : null;
+
+    if (sanitizedName.length < 3) {
+      toast.error('Resource name must be at least 3 characters');
+      return;
+    }
+
+    if (sanitizedContact && !validatePhone(sanitizedContact).isValid) {
+      toast.error('Invalid phone number format');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const { error } = await supabase.from('resources').insert({
-        name: formData.name,
+        name: sanitizedName,
         type: formData.type,
         status: formData.status,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
         available_now: formData.available_now,
-        volunteer_operator: formData.volunteer_operator || null,
-        contact_info: formData.contact_info || null,
-        license_plate: formData.license_plate || null,
-        notes: formData.notes || null,
+        volunteer_operator: sanitizedVolunteer,
+        contact_info: sanitizedContact,
+        license_plate: sanitizedLicense,
+        notes: sanitizedNotes,
         owner_id: user.id,
         current_location: `POINT(${currentLocation.lng} ${currentLocation.lat})`,
       });
@@ -84,7 +102,6 @@ const RegisterResource = () => {
       toast.success(t('resources.registerSuccess'));
       navigate('/resources');
     } catch (error) {
-      console.error('Error registering resource:', error);
       toast.error(t('resources.registerError'));
     } finally {
       setSubmitting(false);

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { validateMessage, sanitizeInput } from '@/lib/validation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,6 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching messages:', error);
         return;
       }
 
@@ -105,18 +105,26 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
     e.preventDefault();
     if (!newMessage.trim() || !user || !sosId) return;
 
+    // Validate and sanitize message
+    const sanitizedMessage = sanitizeInput(newMessage.trim());
+    const validation = validateMessage(sanitizedMessage);
+
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.from('messages').insert({
       user_id: user.id,
       sos_id: sosId,
-      content: newMessage.trim(),
+      content: sanitizedMessage,
       type: 'text',
     });
 
     if (error) {
       toast.error(t('chat.sendError'));
-      console.error(error);
     } else {
       setNewMessage('');
     }
