@@ -264,13 +264,13 @@ const Shelters = () => {
                         </div>
                         {user && shelter.manager_id === user.id && (
                           <div className="flex gap-2">
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => navigate(`/shelters/manage/${shelter.id}`)}
-                            >
-                              Administrar
-                            </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate(`/shelters/manage/${shelter.id}`)}
+                >
+                  {t('shelters.manage')}
+                </Button>
                             <Button
                               variant="ghost"
                               size="icon"
