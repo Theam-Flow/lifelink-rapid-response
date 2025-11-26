@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, Plus, MapPin, Clock, Phone, User, ArrowLeft, X, Upload, ImageIcon } from 'lucide-react';
+import { Search, Plus, MapPin, Clock, Phone, User, ArrowLeft, X, Upload, ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface MissingPerson {
@@ -42,6 +42,9 @@ const MissingPersons = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentGalleryPhotos, setCurrentGalleryPhotos] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -215,6 +218,26 @@ const MissingPersons = () => {
       case 'danger': return 'destructive';
       default: return 'secondary';
     }
+  };
+
+  const openGallery = (photos: string[], index: number) => {
+    setCurrentGalleryPhotos(photos);
+    setCurrentImageIndex(index);
+    setGalleryOpen(true);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % currentGalleryPhotos.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + currentGalleryPhotos.length) % currentGalleryPhotos.length);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') nextImage();
+    if (e.key === 'ArrowLeft') prevImage();
+    if (e.key === 'Escape') setGalleryOpen(false);
   };
 
   if (loading) {
@@ -423,17 +446,26 @@ const MissingPersons = () => {
                       <div className="flex-shrink-0">
                         <div className="grid grid-cols-2 gap-2 w-full md:w-64">
                           {person.photo_urls.slice(0, 4).map((url, idx) => (
-                            <img
+                            <div
                               key={idx}
-                              src={url}
-                              alt={`${person.full_name} ${idx + 1}`}
-                              className="w-full h-32 object-cover rounded-lg"
-                            />
+                              className="relative group cursor-pointer hover-scale"
+                              onClick={() => openGallery(person.photo_urls!, idx)}
+                            >
+                              <img
+                                src={url}
+                                alt={`${person.full_name} ${idx + 1}`}
+                                className="w-full h-32 object-cover rounded-lg transition-all"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all rounded-lg flex items-center justify-center">
+                                <ImageIcon className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </div>
                           ))}
                         </div>
-                        {person.photo_urls.length > 4 && (
+                        {person.photo_urls.length > 1 && (
                           <p className="text-xs text-muted-foreground mt-2 text-center">
-                            +{person.photo_urls.length - 4} {t('missing.morePhotos')}
+                            {person.photo_urls.length} {t('missing.photos')}
+                            {person.photo_urls.length > 4 && ` (+${person.photo_urls.length - 4} ${t('missing.morePhotos')})`}
                           </p>
                         )}
                       </div>
@@ -491,6 +523,77 @@ const MissingPersons = () => {
             ))
           )}
         </div>
+
+        {/* Image Gallery Dialog */}
+        <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+          <DialogContent 
+            className="max-w-4xl p-0 bg-black/95 border-0"
+            onKeyDown={handleKeyDown}
+          >
+            <div className="relative">
+              <button
+                onClick={() => setGalleryOpen(false)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+
+              {currentGalleryPhotos.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all hover-scale"
+                  >
+                    <ChevronLeft className="h-8 w-8 text-white" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-all hover-scale"
+                  >
+                    <ChevronRight className="h-8 w-8 text-white" />
+                  </button>
+                </>
+              )}
+
+              <div className="relative w-full h-[80vh] flex items-center justify-center">
+                <img
+                  src={currentGalleryPhotos[currentImageIndex]}
+                  alt={`Photo ${currentImageIndex + 1}`}
+                  className="max-h-full max-w-full object-contain animate-fade-in"
+                />
+              </div>
+
+              {currentGalleryPhotos.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full">
+                  <p className="text-white text-sm">
+                    {currentImageIndex + 1} / {currentGalleryPhotos.length}
+                  </p>
+                </div>
+              )}
+
+              {/* Thumbnail strip */}
+              {currentGalleryPhotos.length > 1 && (
+                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 rounded-lg max-w-full overflow-x-auto">
+                  {currentGalleryPhotos.map((url, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 transition-all ${
+                        idx === currentImageIndex ? 'border-primary scale-110' : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={url}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
