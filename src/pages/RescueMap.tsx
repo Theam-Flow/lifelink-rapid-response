@@ -505,8 +505,57 @@ const RescueMap = () => {
     }
   }, [userLocation, mapLoaded]);
 
-  // SOS markers are now handled by the clustering system in the previous useEffect
-  // No need for separate HTML markers as they conflict with the clustering layers
+  // Create HTML markers for SOS signals (visual only, clicks handled by layers)
+  useEffect(() => {
+    if (!map.current || !mapLoaded || sosSignals.length === 0) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Create a marker for each SOS signal
+    sosSignals.forEach(signal => {
+      let lng: number, lat: number;
+
+      // Get coordinates
+      if (signal.lng !== undefined && signal.lat !== undefined) {
+        lng = signal.lng;
+        lat = signal.lat;
+      } else if (signal.location) {
+        const locationStr = String(signal.location || '');
+        const coords = locationStr
+          .replace('POINT(', '')
+          .replace(')', '')
+          .split(' ')
+          .map(parseFloat);
+        
+        if (coords.length !== 2 || coords.some(isNaN)) {
+          console.error('Invalid coordinates for signal', signal.id);
+          return;
+        }
+        [lng, lat] = coords;
+      } else {
+        console.error('No location data for signal', signal.id);
+        return;
+      }
+
+      // Create marker element with pointer-events: none so clicks pass through to the layers
+      const el = document.createElement('div');
+      el.className = `sos-marker sos-marker-severity-${signal.severity_level}`;
+      el.style.pointerEvents = 'none'; // Critical: let clicks pass through to map layers
+      el.style.zIndex = '500';
+
+      // Create marker (no popup or click handlers, just visual)
+      const marker = new maplibregl.Marker({ 
+        element: el,
+        anchor: 'center'
+      })
+        .setLngLat([lng, lat])
+        .addTo(map.current!);
+
+      markersRef.current.push(marker);
+    });
+  }, [sosSignals, mapLoaded, t]);
 
   // Fetch shelters
   useEffect(() => {
