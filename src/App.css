@@ -49,10 +49,15 @@
     display: none !important;
   }
   
-  /* Ocultar logo y atribución */
-  .mapboxgl-ctrl-logo,
+  /* Bajar más el logo y atribución en lugar de ocultarlos */
+  .mapboxgl-ctrl-logo {
+    bottom: -50px !important;
+    display: block !important;
+  }
+  
   .mapboxgl-ctrl-attrib {
-    display: none !important;
+    bottom: -50px !important;
+    display: block !important;
   }
   
   /* Mantener solo los controles superiores */
