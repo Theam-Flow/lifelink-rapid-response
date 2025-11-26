@@ -46,6 +46,7 @@ const RescueMap = () => {
   const [showSOSList, setShowSOSList] = useState(false); // Changed to false by default
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
 
@@ -112,6 +113,7 @@ const RescueMap = () => {
     // Wait for map to fully load before allowing operations
     newMap.on('load', () => {
       map.current = newMap;
+      setMapLoaded(true);
 
       // Get user's current location and center map
       if (navigator.geolocation) {
@@ -155,7 +157,7 @@ const RescueMap = () => {
 
   // Fetch SOS signals
   useEffect(() => {
-    if (!map.current || !map.current.loaded() || !mapboxToken) return;
+    if (!mapLoaded || !map.current || !mapboxToken) return;
 
     const fetchSOSSignals = async () => {
       // If user location available, fetch with distance
@@ -333,7 +335,7 @@ const RescueMap = () => {
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
     };
-  }, [mapboxToken, t, userLocation]);
+  }, [mapLoaded, mapboxToken, t, userLocation]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
