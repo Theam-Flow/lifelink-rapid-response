@@ -136,7 +136,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
   }
 
   return (
-    <Card className="w-full flex flex-col h-full shadow-lg border-border/50">
+    <Card className="w-full flex flex-col shadow-lg border-border/50">
       <CardHeader className="flex flex-row items-center justify-between pb-3 border-b bg-muted/30">
         <CardTitle className="flex items-center gap-2 text-lg">
           <MessageSquare className="h-5 w-5 text-primary" />
@@ -148,8 +148,8 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
           </Button>
         )}
       </CardHeader>
-      <CardContent className="p-0 flex-1 flex flex-col">
-        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+      <CardContent className="p-0 flex flex-col">
+        <ScrollArea className="h-[400px] px-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="py-12 text-center">
               <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
