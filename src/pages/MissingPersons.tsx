@@ -46,6 +46,10 @@ const MissingPersons = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentGalleryPhotos, setCurrentGalleryPhotos] = useState<string[]>([]);
   const [currentPerson, setCurrentPerson] = useState<MissingPerson | null>(null);
+  const [ageFilter, setAgeFilter] = useState<string>('all');
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [cityFilter, setCityFilter] = useState<string>('');
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -74,17 +78,50 @@ const MissingPersons = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = persons;
+
+    // Search term filter
     if (searchTerm) {
-      const filtered = persons.filter(person =>
+      filtered = filtered.filter(person =>
         person.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.last_seen_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.distinctive_features?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredPersons(filtered);
-    } else {
-      setFilteredPersons(persons);
     }
-  }, [searchTerm, persons]);
+
+    // City filter
+    if (cityFilter) {
+      filtered = filtered.filter(person =>
+        person.last_seen_address?.toLowerCase().includes(cityFilter.toLowerCase())
+      );
+    }
+
+    // Age filter
+    if (ageFilter !== 'all' && ageFilter) {
+      filtered = filtered.filter(person => {
+        if (!person.age) return false;
+        const age = person.age;
+        switch (ageFilter) {
+          case 'child': return age < 18;
+          case 'adult': return age >= 18 && age < 60;
+          case 'senior': return age >= 60;
+          default: return true;
+        }
+      });
+    }
+
+    // Gender filter
+    if (genderFilter !== 'all') {
+      filtered = filtered.filter(person => person.gender === genderFilter);
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(person => person.status === statusFilter);
+    }
+
+    setFilteredPersons(filtered);
+  }, [searchTerm, cityFilter, ageFilter, genderFilter, statusFilter, persons]);
 
   const fetchMissingPersons = async () => {
     try {
@@ -415,18 +452,68 @@ const MissingPersons = () => {
           </CardHeader>
         </Card>
 
-        {/* Search */}
+        {/* Search and Filters */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 md:pt-6 space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
               <Input
                 placeholder={t('missing.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12"
+                className="pl-9 md:pl-10 h-10 md:h-12 text-sm md:text-base"
               />
             </div>
+            
+            {/* Filters Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <Select value={ageFilter} onValueChange={setAgeFilter}>
+                <SelectTrigger className="h-9 md:h-10 text-xs md:text-sm">
+                  <SelectValue placeholder={t('missing.filterAge')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('missing.allAges')}</SelectItem>
+                  <SelectItem value="child">{t('missing.ageChild')}</SelectItem>
+                  <SelectItem value="adult">{t('missing.ageAdult')}</SelectItem>
+                  <SelectItem value="senior">{t('missing.ageSenior')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger className="h-9 md:h-10 text-xs md:text-sm">
+                  <SelectValue placeholder={t('missing.filterGender')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('missing.allGenders')}</SelectItem>
+                  <SelectItem value="male">{t('missing.male')}</SelectItem>
+                  <SelectItem value="female">{t('missing.female')}</SelectItem>
+                  <SelectItem value="other">{t('missing.other')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 md:h-10 text-xs md:text-sm">
+                  <SelectValue placeholder={t('missing.filterStatus')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('missing.allStatuses')}</SelectItem>
+                  <SelectItem value="missing">{t('missing.status_missing')}</SelectItem>
+                  <SelectItem value="safe">{t('missing.status_safe')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Input
+                placeholder={t('missing.filterCity')}
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+                className="h-9 md:h-10 text-xs md:text-sm"
+              />
+            </div>
+
+            {/* Results count */}
+            <p className="text-xs md:text-sm text-muted-foreground text-center">
+              {filteredPersons.length} {t('missing.resultsFound')}
+            </p>
           </CardContent>
         </Card>
 
@@ -442,11 +529,12 @@ const MissingPersons = () => {
           ) : (
             filteredPersons.map((person) => (
               <Card key={person.id} className="overflow-hidden">
-                <CardContent className="p-3 md:p-6">
-                  <div className="flex flex-col md:flex-row gap-6">
+                <CardContent className="p-2 md:p-6">
+                  <div className="flex gap-2 md:gap-6">
+                    {/* Compact photo grid for mobile */}
                     {person.photo_urls && person.photo_urls.length > 0 && (
                       <div className="flex-shrink-0">
-                        <div className="grid grid-cols-2 gap-2 w-full md:w-64">
+                        <div className="grid grid-cols-2 gap-1 md:gap-2 w-24 md:w-64">
                           {person.photo_urls.slice(0, 4).map((url, idx) => (
                             <div
                               key={idx}
@@ -456,65 +544,69 @@ const MissingPersons = () => {
                               <img
                                 src={url}
                                 alt={`${person.full_name} ${idx + 1}`}
-                                className="w-full h-32 object-cover rounded-lg transition-all"
+                                className="w-full h-12 md:h-32 object-cover rounded md:rounded-lg transition-all"
                               />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all rounded-lg flex items-center justify-center">
-                                <ImageIcon className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all rounded md:rounded-lg flex items-center justify-center">
+                                <ImageIcon className="h-3 w-3 md:h-6 md:w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                               </div>
                             </div>
                           ))}
                         </div>
                         {person.photo_urls.length > 1 && (
-                          <p className="text-xs text-muted-foreground mt-2 text-center">
+                          <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 text-center">
                             {person.photo_urls.length} {t('missing.photos')}
-                            {person.photo_urls.length > 4 && ` (+${person.photo_urls.length - 4} ${t('missing.morePhotos')})`}
                           </p>
                         )}
                       </div>
                     )}
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-2xl font-bold">{person.full_name}</h3>
-                          {person.age && person.gender && (
-                            <p className="text-muted-foreground">
-                              {person.age} {t('missing.yearsOld')} • {person.gender}
+                    
+                    {/* Compact info for mobile */}
+                    <div className="flex-1 space-y-1 md:space-y-3 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm md:text-2xl font-bold truncate">{person.full_name}</h3>
+                          {person.age && (
+                            <p className="text-xs md:text-base text-muted-foreground">
+                              {person.age} {t('missing.yearsOld')} {person.gender && `• ${person.gender}`}
                             </p>
                           )}
                         </div>
-                        <Badge variant={getStatusColor(person.status)}>
+                        <Badge variant={getStatusColor(person.status)} className="text-[10px] md:text-sm px-1 py-0 md:px-2 md:py-1 flex-shrink-0">
                           {t(`missing.status_${person.status}`)}
                         </Badge>
                       </div>
                       
+                      {/* Hide description on mobile, show on desktop */}
                       {person.description && (
-                        <p className="text-foreground">{person.description}</p>
+                        <p className="hidden md:block text-foreground line-clamp-2">{person.description}</p>
                       )}
                       
+                      {/* Compact distinctive features */}
                       {person.distinctive_features && (
-                        <div className="bg-accent/50 p-3 rounded-lg">
-                          <p className="text-sm font-semibold mb-1">{t('missing.distinctiveFeatures')}:</p>
-                          <p className="text-sm">{person.distinctive_features}</p>
+                        <div className="bg-accent/50 p-1.5 md:p-3 rounded md:rounded-lg">
+                          <p className="text-[10px] md:text-sm font-semibold mb-0.5 md:mb-1">{t('missing.distinctiveFeatures')}:</p>
+                          <p className="text-[10px] md:text-sm line-clamp-2">{person.distinctive_features}</p>
                         </div>
                       )}
                       
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      {/* Compact location info */}
+                      <div className="flex flex-col md:flex-row md:flex-wrap gap-1 md:gap-4 text-[10px] md:text-sm text-muted-foreground">
                         {person.last_seen_address && (
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            <span>{person.last_seen_address}</span>
+                          <div className="flex items-center gap-1 md:gap-2 min-w-0">
+                            <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                            <span className="truncate">{person.last_seen_address}</span>
                           </div>
                         )}
                         {person.last_seen_at && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{format(new Date(person.last_seen_at), 'PPp')}</span>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <Clock className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                            <span>{format(new Date(person.last_seen_at), 'PP')}</span>
                           </div>
                         )}
                         {person.contact_phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <span>{person.contact_phone}</span>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <Phone className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                            <span className="text-xs md:text-sm font-semibold">{person.contact_phone}</span>
                           </div>
                         )}
                       </div>
