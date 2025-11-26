@@ -118,10 +118,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
     setLoading(true);
 
     try {
-      let location = null;
-      if (formData.lat && formData.lng) {
-        location = `POINT(${lng} ${lat})`;
-      }
+      const location = `POINT(${lng} ${lat})`;
 
       const shelterData = {
         name: sanitizedName,
@@ -133,7 +130,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
         notes: sanitizedNotes,
         photo_urls: photos,
         manager_id: user?.id,
-        ...(location && { location }),
+        location,
       };
 
       if (shelter) {
@@ -211,7 +208,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="lat">{t('shelters.latitude')}</Label>
+                <Label htmlFor="lat">{t('shelters.latitude')} *</Label>
                 <Input
                   id="lat"
                   type="number"
@@ -219,10 +216,11 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
                   value={formData.lat}
                   onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
                   placeholder="13.7563"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="lng">{t('shelters.longitude')}</Label>
+                <Label htmlFor="lng">{t('shelters.longitude')} *</Label>
                 <Input
                   id="lng"
                   type="number"
@@ -230,6 +228,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
                   value={formData.lng}
                   onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
                   placeholder="100.5018"
+                  required
                 />
               </div>
             </div>
