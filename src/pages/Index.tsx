@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon } from 'lucide-react';
 import { Notifications } from '@/components/Notifications';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { QuickSOS } from '@/components/QuickSOS';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -87,8 +88,11 @@ const Index = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-20 md:pb-4">
       <div className="max-w-4xl mx-auto space-y-6 py-8">
+        {/* Quick SOS Floating Button */}
+        <QuickSOS />
+        
         {/* Header */}
         <Card className="border-2 border-primary">
           <CardHeader>
