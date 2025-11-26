@@ -136,8 +136,8 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
   }
 
   return (
-    <Card className="w-full flex flex-col shadow-lg border-border/50">
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b bg-muted/30">
+    <Card className="w-full h-full flex flex-col shadow-lg border-border/50">
+      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b bg-muted/30 shrink-0">
         <CardTitle className="flex items-center gap-2 text-lg">
           <MessageSquare className="h-5 w-5 text-primary" />
           {t('chat.title')}
@@ -148,8 +148,8 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
           </Button>
         )}
       </CardHeader>
-      <CardContent className="p-0 flex flex-col">
-        <ScrollArea className="h-[400px] px-4" ref={scrollRef}>
+      <CardContent className="p-0 flex flex-col flex-1 min-h-0">
+        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="py-12 text-center">
               <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
@@ -193,7 +193,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
           )}
         </ScrollArea>
 
-        <form onSubmit={sendMessage} className="p-4 border-t bg-background flex gap-2">
+        <form onSubmit={sendMessage} className="p-4 border-t bg-background flex gap-2 shrink-0">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
