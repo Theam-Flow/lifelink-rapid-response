@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, User, MapPin, Phone, Mail, Calendar, Shield, Save, Plus } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Phone, Mail, Calendar, Shield, Save, Plus, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Profile {
@@ -34,7 +34,7 @@ interface Profile {
 const Profile = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -145,6 +145,16 @@ const Profile = () => {
       toast.error(error.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success(t('profile.signOutSuccess'));
+      navigate('/auth');
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -513,6 +523,20 @@ const Profile = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Sign Out Section */}
+          <Card className="mb-6 animate-fade-in border-destructive/20 bg-destructive/5">
+            <CardContent className="p-4 md:p-6">
+              <Button
+                variant="destructive"
+                className="w-full h-12"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                {t('profile.signOut')}
+              </Button>
             </CardContent>
           </Card>
         </div>
