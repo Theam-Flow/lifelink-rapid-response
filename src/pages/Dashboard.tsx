@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, AlertCircle, Users, Heart, Clock, TrendingUp, Download } from 'lucide-react';
 import { toast } from 'sonner';
@@ -132,21 +132,25 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
       <div className="max-w-7xl mx-auto space-y-6 py-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
-              <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                  <CardTitle className="text-2xl md:text-3xl">{t('dashboard.title')}</CardTitle>
+                  <CardDescription className="text-sm md:text-base">{t('dashboard.subtitle')}</CardDescription>
+                </div>
+              </div>
+              <Button onClick={exportReport} variant="outline" className="w-full sm:w-auto sm:self-end">
+                <Download className="mr-2 h-4 w-4" />
+                {t('dashboard.exportReport')}
+              </Button>
             </div>
-          </div>
-          <Button onClick={exportReport} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            {t('dashboard.exportReport')}
-          </Button>
-        </div>
+          </CardHeader>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>

@@ -159,19 +159,19 @@ const MissingPersons = () => {
         {/* Header */}
         <Card className="border-2 border-primary">
           <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                   <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                  <CardTitle className="text-3xl">{t('missing.title')}</CardTitle>
-                  <CardDescription className="text-base">{t('missing.subtitle')}</CardDescription>
+                  <CardTitle className="text-2xl md:text-3xl">{t('missing.title')}</CardTitle>
+                  <CardDescription className="text-sm md:text-base">{t('missing.subtitle')}</CardDescription>
                 </div>
               </div>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" className="gap-2">
+                  <Button size="lg" className="gap-2 w-full sm:w-auto sm:self-end">
                     <Plus className="h-5 w-5" />
                     {t('missing.reportMissing')}
                   </Button>
