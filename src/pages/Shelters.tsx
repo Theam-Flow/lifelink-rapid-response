@@ -131,8 +131,8 @@ const Shelters = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-2 md:p-4 pb-28 overflow-y-auto">
+      <div className="max-w-6xl mx-auto space-y-3 md:space-y-6 py-2 md:py-8">
         {/* Header */}
         <Card className="border-2 border-primary">
           <CardHeader>
@@ -172,40 +172,40 @@ const Shelters = () => {
 
         {/* Statistics */}
         {viewMode === 'list' && (
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Home className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">{shelters.length}</p>
-                    <p className="text-sm text-muted-foreground">{t('shelters.totalShelters')}</p>
+              <CardContent className="p-3 md:pt-6">
+                <div className="flex flex-col md:flex-row items-center md:gap-3">
+                  <Home className="h-5 w-5 md:h-8 md:w-8 text-primary mb-1 md:mb-0" />
+                  <div className="text-center md:text-left">
+                    <p className="text-xl md:text-2xl font-bold">{shelters.length}</p>
+                    <p className="text-[9px] md:text-sm text-muted-foreground leading-tight">{t('shelters.totalShelters')}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
-                  <div>
-                    <p className="text-2xl font-bold">
+              <CardContent className="p-3 md:pt-6">
+                <div className="flex flex-col md:flex-row items-center md:gap-3">
+                  <CheckCircle className="h-5 w-5 md:h-8 md:w-8 text-green-500 mb-1 md:mb-0" />
+                  <div className="text-center md:text-left">
+                    <p className="text-xl md:text-2xl font-bold">
                       {shelters.filter(s => s.is_verified).length}
                     </p>
-                    <p className="text-sm text-muted-foreground">{t('shelters.verified')}</p>
+                    <p className="text-[9px] md:text-sm text-muted-foreground leading-tight">{t('shelters.verified')}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Users className="h-8 w-8 text-secondary" />
-                  <div>
-                    <p className="text-2xl font-bold">
+              <CardContent className="p-3 md:pt-6">
+                <div className="flex flex-col md:flex-row items-center md:gap-3">
+                  <Users className="h-5 w-5 md:h-8 md:w-8 text-secondary mb-1 md:mb-0" />
+                  <div className="text-center md:text-left">
+                    <p className="text-xl md:text-2xl font-bold">
                       {shelters.reduce((sum, s) => sum + (s.capacity_current || 0), 0)}
                     </p>
-                    <p className="text-sm text-muted-foreground">{t('shelters.totalOccupants')}</p>
+                    <p className="text-[9px] md:text-sm text-muted-foreground leading-tight">{t('shelters.totalOccupants')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -222,7 +222,7 @@ const Shelters = () => {
 
         {/* Shelters List */}
         {viewMode === 'list' && (
-          <div className="grid gap-6">
+          <div className="grid gap-3 md:gap-6">
           {shelters.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
@@ -239,7 +239,7 @@ const Shelters = () => {
               
               return (
                 <Card key={shelter.id} className="overflow-hidden">
-                  <CardContent className="p-6">
+                  <CardContent className="p-3 md:p-6">
                     <div className="space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">

@@ -130,8 +130,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-2 md:p-4 pb-28 overflow-y-auto">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-6 py-2 md:py-8">
         <Card className="border-2 border-primary">
           <CardHeader>
             <div className="flex flex-col gap-4">
@@ -152,61 +152,66 @@ const Dashboard = () => {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.activeSOS')}</CardTitle>
-              <AlertCircle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.activeSOS}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.requiresAttention')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.activeRescuers')}</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.activeRescuers}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.sharingLocation')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.totalRescued')}</CardTitle>
-              <Heart className="h-4 w-4 text-secondary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.totalRescued}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.sinceStart')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.last24h')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.rescuedLast24h}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.rescuesCompleted')}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.avgTime')}</CardTitle>
-              <Clock className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {metrics.avgResponseTime ? Math.round(metrics.avgResponseTime) : '-'}
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-4">
+          <Card className="border-destructive/20">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <AlertCircle className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
+                  <div className="text-xl md:text-2xl font-bold text-destructive">{metrics.activeSOS}</div>
+                </div>
+                <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">{t('dashboard.activeSOS')}</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.responseMinutes')}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <Users className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                  <div className="text-xl md:text-2xl font-bold text-primary">{metrics.activeRescuers}</div>
+                </div>
+                <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">{t('dashboard.activeRescuers')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-secondary/20">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <Heart className="h-3 w-3 md:h-4 md:w-4 text-secondary" />
+                  <div className="text-xl md:text-2xl font-bold text-secondary">{metrics.totalRescued}</div>
+                </div>
+                <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">{t('dashboard.totalRescued')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-500/20">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
+                  <div className="text-xl md:text-2xl font-bold text-green-500">{metrics.rescuedLast24h}</div>
+                </div>
+                <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">{t('dashboard.last24h')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-500/20">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 text-blue-500" />
+                  <div className="text-xl md:text-2xl font-bold text-blue-500">
+                    {metrics.avgResponseTime ? Math.round(metrics.avgResponseTime) : '-'}
+                  </div>
+                </div>
+                <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">{t('dashboard.avgTime')}</p>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -116,8 +116,8 @@ const RegisterResource = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-2xl mx-auto space-y-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-2 md:p-4 pb-28 overflow-y-auto">
+      <div className="max-w-2xl mx-auto space-y-3 md:space-y-6 py-2 md:py-8">
         <Card className="border-2 border-primary">
           <CardHeader>
             <div className="flex items-center gap-3">

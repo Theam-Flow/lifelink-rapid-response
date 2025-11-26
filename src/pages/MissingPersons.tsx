@@ -154,8 +154,8 @@ const MissingPersons = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-2 md:p-4 pb-28 overflow-y-auto">
+      <div className="max-w-6xl mx-auto space-y-3 md:space-y-6 py-2 md:py-8">
         {/* Header */}
         <Card className="border-2 border-primary">
           <CardHeader>
@@ -299,7 +299,7 @@ const MissingPersons = () => {
         </Card>
 
         {/* Missing Persons List */}
-        <div className="grid gap-6">
+        <div className="grid gap-3 md:gap-6">
           {filteredPersons.length === 0 ? (
             <Card>
               <CardContent className="pt-6 text-center">
@@ -310,7 +310,7 @@ const MissingPersons = () => {
           ) : (
             filteredPersons.map((person) => (
               <Card key={person.id} className="overflow-hidden">
-                <CardContent className="p-6">
+                <CardContent className="p-3 md:p-6">
                   <div className="flex gap-6">
                     {person.photo_url && (
                       <img
