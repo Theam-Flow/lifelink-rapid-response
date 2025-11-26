@@ -136,64 +136,77 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
+    <Card className="w-full flex flex-col h-full shadow-lg border-border/50">
+      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b bg-muted/30">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <MessageSquare className="h-5 w-5 text-primary" />
           {t('chat.title')}
         </CardTitle>
         {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-background">
             <X className="h-4 w-4" />
           </Button>
         )}
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[300px] px-4" ref={scrollRef}>
+      <CardContent className="p-0 flex-1 flex flex-col">
+        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
           {messages.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              {t('chat.noMessages')}
+            <div className="py-12 text-center">
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+              <p className="text-muted-foreground text-sm">{t('chat.noMessages')}</p>
             </div>
           ) : (
-            <div className="space-y-4 py-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.user_id === user?.id ? 'justify-end' : 'justify-start'
-                  }`}
-                >
+            <div className="space-y-3 py-4">
+              {messages.map((message) => {
+                const isOwn = message.user_id === user?.id;
+                return (
                   <div
-                    className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                      message.user_id === user?.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
+                    key={message.id}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'} animate-fade-in`}
                   >
-                    {message.user_id !== user?.id && (
-                      <p className="text-xs font-semibold mb-1">
-                        {message.profile?.full_name || t('chat.unknown')}
-                      </p>
-                    )}
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {new Date(message.created_at).toLocaleTimeString()}
-                    </p>
+                    <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[75%]`}>
+                      {!isOwn && (
+                        <span className="text-xs font-semibold mb-1 px-1 text-foreground/70">
+                          {message.profile?.full_name || t('chat.unknown')}
+                        </span>
+                      )}
+                      <div
+                        className={`rounded-2xl px-4 py-2.5 ${
+                          isOwn
+                            ? 'bg-primary text-primary-foreground rounded-br-sm'
+                            : 'bg-muted text-foreground rounded-bl-sm'
+                        } shadow-sm`}
+                      >
+                        <p className="text-sm leading-relaxed break-words">{message.content}</p>
+                      </div>
+                      <span className="text-xs opacity-60 mt-1 px-1">
+                        {new Date(message.created_at).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>
 
-        <form onSubmit={sendMessage} className="p-4 border-t flex gap-2">
+        <form onSubmit={sendMessage} className="p-4 border-t bg-background flex gap-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder={t('chat.placeholder')}
             disabled={loading}
+            className="flex-1 bg-muted/50 border-border/50 focus-visible:ring-primary"
           />
-          <Button type="submit" size="icon" disabled={loading || !newMessage.trim()}>
+          <Button 
+            type="submit" 
+            size="icon" 
+            disabled={loading || !newMessage.trim()}
+            className="shrink-0"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </form>
