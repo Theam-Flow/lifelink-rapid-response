@@ -9,7 +9,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { BottomNav } from "@/components/BottomNav";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import '@/lib/i18n';
 
@@ -76,13 +76,49 @@ const AnimatedRoutes = () => {
 
 const AppContent = () => {
   useOfflineSync();
+  
   return (
-    <BrowserRouter>
+    <>
       <AnimatedRoutes />
-      <BottomNav />
-    </BrowserRouter>
+      <BottomNavWrapper />
+    </>
   );
 };
+
+const BottomNavWrapper = () => {
+  const location = useLocation();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      if (location.pathname === '/rescue-map') {
+        setIsDarkMode(localStorage.getItem('mapDarkMode') === 'true');
+      } else {
+        setIsDarkMode(false);
+      }
+    };
+
+    checkDarkMode();
+    
+    // Listen for storage changes
+    window.addEventListener('storage', checkDarkMode);
+    // Also check periodically in case of same-tab changes
+    const interval = setInterval(checkDarkMode, 500);
+
+    return () => {
+      window.removeEventListener('storage', checkDarkMode);
+      clearInterval(interval);
+    };
+  }, [location.pathname]);
+
+  return <BottomNav isDarkMode={isDarkMode} />;
+};
+
+const AppWrapper = () => (
+  <BrowserRouter>
+    <AppContent />
+  </BrowserRouter>
+);
 
 const App = () => (
   <ErrorBoundary>
@@ -91,7 +127,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <AppContent />
+          <AppWrapper />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

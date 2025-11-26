@@ -1,7 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 
-export function MapLegend() {
+interface MapLegendProps {
+  isDarkMode?: boolean;
+}
+
+export function MapLegend({ isDarkMode = false }: MapLegendProps) {
   const { t } = useTranslation();
 
   const severityLevels = [
@@ -13,7 +17,7 @@ export function MapLegend() {
   ];
 
   return (
-    <Card className="p-2 bg-background/95 backdrop-blur">
+    <Card className={`p-2 backdrop-blur ${isDarkMode ? 'bg-gray-900/95 text-white' : 'bg-background/95'}`}>
       <div className="text-[10px] font-semibold mb-1.5">{t('map.legend')}</div>
       <div className="space-y-1">
         {severityLevels.map((item) => (
