@@ -872,11 +872,12 @@ const RescueMap = () => {
         {/* Mobile Floating SOS List Button */}
         {isMobile && !showSOSList && !showChat && sosSignals.length > 0 && (
           <Button
-            className="absolute bottom-24 right-4 z-10 shadow-lg h-12 px-4"
-            variant="default"
+            className="absolute bottom-24 right-4 z-10 shadow-sm h-8 px-3"
+            variant="secondary"
+            size="sm"
             onClick={() => setShowSOSList(true)}
           >
-            {t('map.activeAlerts')} ({sosSignals.length})
+            <span className="text-xs">{t('map.activeAlerts')} ({sosSignals.length})</span>
           </Button>
         )}
 
@@ -942,10 +943,10 @@ const RescueMap = () => {
       {/* Desktop SOS List Panel - Right Side */}
       {!isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
         <div className="w-80 border-l bg-background overflow-y-auto">
-          <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-background z-10">
-            <h2 className="font-bold text-lg">SOS Activos ({sosSignals.length})</h2>
-            <Button variant="ghost" size="icon" onClick={() => setShowSOSList(false)}>
-              <X className="h-4 w-4" />
+          <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10">
+            <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowSOSList(false)}>
+              <X className="h-3 w-3" />
             </Button>
           </div>
           <div className="p-2 space-y-2">
@@ -1042,10 +1043,10 @@ const RescueMap = () => {
       {/* Mobile SOS List - Bottom Sheet */}
       {isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-50 bg-background border-t rounded-t-3xl shadow-2xl" style={{ maxHeight: '70vh', paddingBottom: '80px' }}>
-          <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-background z-10 rounded-t-3xl">
-            <h2 className="font-bold text-lg">SOS Activos ({sosSignals.length})</h2>
-            <Button variant="ghost" size="icon" onClick={() => setShowSOSList(false)}>
-              <X className="h-4 w-4" />
+          <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10 rounded-t-3xl">
+            <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowSOSList(false)}>
+              <X className="h-3 w-3" />
             </Button>
           </div>
           <div className="overflow-y-auto p-2 space-y-2" style={{ maxHeight: 'calc(70vh - 140px)' }}>
