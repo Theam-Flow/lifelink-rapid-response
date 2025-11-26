@@ -134,7 +134,7 @@ export const QuickSOS = () => {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-24 md:bottom-8 right-8 z-50">
+    <div className="hidden md:block fixed bottom-8 right-8 z-50">
       <button
         onClick={handleTap}
         className="relative w-20 h-20 md:w-24 md:h-24 bg-destructive hover:bg-destructive/90 rounded-full shadow-2xl animate-pulse-sos transition-all duration-300 hover:scale-110 group"
