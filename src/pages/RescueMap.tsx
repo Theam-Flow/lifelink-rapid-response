@@ -51,8 +51,8 @@ const RescueMap = () => {
         
         if (error) {
           console.error('Error fetching Mapbox token:', error);
-          toast.error('Error al cargar el mapa', {
-            description: 'No se pudo obtener el token de Mapbox',
+          toast.error(t('map.errorLoadingMap'), {
+            description: t('map.errorMapToken'),
           });
           setIsLoadingToken(false);
           return;
@@ -61,14 +61,14 @@ const RescueMap = () => {
         if (data?.token) {
           setMapboxToken(data.token);
         } else {
-          toast.error('Error de configuración', {
-            description: 'El token de Mapbox no está configurado',
+          toast.error(t('map.configError'), {
+            description: t('map.tokenNotConfigured'),
           });
         }
       } catch (err) {
         console.error('Exception fetching Mapbox token:', err);
-        toast.error('Error al cargar el mapa', {
-          description: 'Error al conectar con el servidor',
+        toast.error(t('map.errorLoadingMap'), {
+          description: t('map.errorConnecting'),
         });
       } finally {
         setIsLoadingToken(false);
@@ -111,7 +111,7 @@ const RescueMap = () => {
 
       if (error) {
         console.error('Error fetching SOS signals:', error);
-        toast.error('Error al cargar señales SOS');
+        toast.error(t('map.errorLoadingSignals'));
         return;
       }
 
@@ -198,7 +198,7 @@ const RescueMap = () => {
 
   const assignToMe = async (sosId: string) => {
     if (!user) {
-      toast.error('Debes iniciar sesión para asignar rescates');
+      toast.error(t('map.loginToAssign'));
       navigate('/auth');
       return;
     }
@@ -213,10 +213,10 @@ const RescueMap = () => {
       .eq('id', sosId);
 
     if (error) {
-      toast.error('Error al asignar rescate');
+      toast.error(t('map.assignError'));
       console.error(error);
     } else {
-      toast.success('Rescate asignado correctamente');
+      toast.success(t('map.assignSuccess'));
       setSelectedSOS(null);
     }
   };
@@ -252,7 +252,7 @@ const RescueMap = () => {
           <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
             <Card className="p-6 flex items-center gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="text-lg font-medium">Cargando mapa...</span>
+              <span className="text-lg font-medium">{t('map.loading')}</span>
             </Card>
           </div>
         )}
@@ -267,7 +267,7 @@ const RescueMap = () => {
               <div>
                 <h1 className="text-xl font-bold">{t('map_title')}</h1>
                 <p className="text-sm text-muted-foreground">
-                  SOS: {sosSignals.length} | Rescatistas: {rescuers.length}
+                  SOS: {sosSignals.length} | {t('map.rescuers_count')}: {rescuers.length}
                 </p>
               </div>
             </div>
@@ -281,7 +281,7 @@ const RescueMap = () => {
               onClick={() => setShowHeatmap(!showHeatmap)}
             >
               <Layers className="mr-2 h-4 w-4" />
-              Mapa de Calor
+              {t('map.heatmap')}
             </Button>
             <Button
               variant={isSharing ? 'destructive' : 'default'}
@@ -290,7 +290,7 @@ const RescueMap = () => {
               onClick={isSharing ? stopSharing : startSharing}
             >
               <Radio className="mr-2 h-4 w-4" />
-              {isSharing ? 'Detener Tracking' : 'Compartir Ubicación'}
+              {isSharing ? t('map.stopTracking') : t('map.shareLocation')}
             </Button>
           </Card>
         </div>
@@ -306,9 +306,9 @@ const RescueMap = () => {
                     style={{ color: getSeverityColor(selectedSOS.severity_level) }}
                   />
                   <div>
-                    <h3 className="font-bold text-lg">{t(selectedSOS.type)}</h3>
+                    <h3 className="font-bold text-lg">{t(`emergencyTypes.${selectedSOS.type}`)}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Severidad: {selectedSOS.severity_level}/5 • {selectedSOS.victim_count || 1} personas
+                      {t('sos.severity')}: {selectedSOS.severity_level}/5 • {selectedSOS.victim_count || 1} {t('sos.people')}
                     </p>
                   </div>
                 </div>

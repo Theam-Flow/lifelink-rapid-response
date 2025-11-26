@@ -77,7 +77,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">{t('loading')}</p>
+        <p className="text-lg">{t('common.loading')}</p>
       </div>
     );
   }
@@ -94,14 +94,14 @@ const Index = () => {
               <div className="flex items-center gap-3">
                 <AlertCircle className="h-10 w-10 text-destructive" />
                 <div>
-                  <CardTitle className="text-3xl">LifeLink Asia</CardTitle>
+                  <CardTitle className="text-3xl">{t('index.title')}</CardTitle>
                   <CardDescription className="text-base">
-                    Disaster Response & Coordination System
+                    {t('index.subtitle')}
                   </CardDescription>
                 </div>
               </div>
               <Button variant="outline" onClick={signOut}>
-                {t('signout')}
+                {t('auth.signOut')}
               </Button>
             </div>
           </CardHeader>
@@ -118,11 +118,11 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Package className="h-5 w-5 text-primary" />
-                  Recursos
+                  {t('index.resources')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Vehículos y equipamiento disponible</p>
+                <p className="text-sm text-muted-foreground">{t('index.resourcesDesc')}</p>
               </CardContent>
             </Card>
             
@@ -133,11 +133,11 @@ const Index = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <BarChart3 className="h-5 w-5 text-primary" />
-                  Métricas
+                  {t('index.metrics')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Dashboard de análisis en tiempo real</p>
+                <p className="text-sm text-muted-foreground">{t('index.metricsDesc')}</p>
               </CardContent>
             </Card>
           </div>
@@ -149,10 +149,10 @@ const Index = () => {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <AlertCircle className="h-8 w-8 text-destructive group-hover:animate-pulse" />
-                {t('role_victim')}
+                {t('index.victimHelp')}
               </CardTitle>
               <CardDescription className="text-base">
-                Send an emergency signal if you need immediate help
+                {t('index.victimDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -161,7 +161,7 @@ const Index = () => {
                 variant="destructive" 
                 className="w-full h-16 text-xl font-bold"
               >
-                {t('sos_emergency')}
+                {t('sos.emergency')}
               </Button>
             </CardContent>
           </Card>
@@ -174,10 +174,10 @@ const Index = () => {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <MapPin className="h-8 w-8 text-primary group-hover:animate-bounce" />
-                {t('role_rescuer')}
+                {t('index.rescuerHelp')}
               </CardTitle>
               <CardDescription className="text-base">
-                View active SOS signals and coordinate rescue operations
+                {t('index.rescuerDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -198,21 +198,21 @@ const Index = () => {
             <CardContent className="pt-6 text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
               <p className="text-3xl font-bold">{stats.activeSOS}</p>
-              <p className="text-sm text-muted-foreground">Active SOS</p>
+              <p className="text-sm text-muted-foreground">{t('index.activeSOS')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
               <p className="text-3xl font-bold">{stats.activeRescuers}</p>
-              <p className="text-sm text-muted-foreground">Active Rescuers</p>
+              <p className="text-sm text-muted-foreground">{t('index.activeRescuers')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Heart className="h-8 w-8 mx-auto mb-2 text-secondary" />
               <p className="text-3xl font-bold">{stats.peopleRescued}</p>
-              <p className="text-sm text-muted-foreground">People Rescued</p>
+              <p className="text-sm text-muted-foreground">{t('index.peopleRescued')}</p>
             </CardContent>
           </Card>
         </div>
@@ -221,7 +221,7 @@ const Index = () => {
         <Card className="bg-accent/50">
           <CardContent className="pt-6">
             <p className="text-center text-sm text-muted-foreground">
-              <strong>Emergency Hotline:</strong> Thailand: 191 • Vietnam: 113 • Malaysia: 999 • Indonesia: 112
+              <strong>{t('index.emergencyHotline')}:</strong> Thailand: 191 • Vietnam: 113 • Malaysia: 999 • Indonesia: 112
             </p>
           </CardContent>
         </Card>
