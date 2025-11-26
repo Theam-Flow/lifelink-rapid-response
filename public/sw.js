@@ -77,7 +77,6 @@ self.addEventListener('sync', (event) => {
 
 async function syncOfflineData() {
   console.log('[SW] Syncing offline data');
-  // This will be called when connection is restored
   const clients = await self.clients.matchAll();
   clients.forEach((client) => {
     client.postMessage({
@@ -85,3 +84,46 @@ async function syncOfflineData() {
     });
   });
 }
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'view') {
+    const urlToOpen = event.notification.data?.url || '/rescue-map';
+    event.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        for (const client of clientList) {
+          if (client.url.includes(urlToOpen) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+    );
+  }
+});
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'Nueva emergencia reportada',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: data.data || {},
+    actions: [
+      { action: 'view', title: 'Ver en mapa' },
+      { action: 'dismiss', title: 'Cerrar' },
+    ],
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || '🚨 Alerta de Emergencia', options)
+  );
+});
