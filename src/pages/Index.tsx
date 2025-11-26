@@ -12,7 +12,7 @@ import { QuickSOS } from '@/components/QuickSOS';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSwipeable } from 'react-swipeable';
 import { motion } from 'framer-motion';
-import { SwipeIndicator } from '@/components/SwipeIndicator';
+
 
 const Index = () => {
   const { t } = useTranslation();
@@ -230,9 +230,6 @@ const Index = () => {
             </motion.div>
           </div>
         </div>
-        
-        {/* Swipe Indicator */}
-        <SwipeIndicator />
       </div>
     );
   }
