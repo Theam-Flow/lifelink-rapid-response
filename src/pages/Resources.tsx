@@ -116,8 +116,8 @@ const Resources = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-2 md:p-4 pb-28 overflow-y-auto">
+      <div className="max-w-6xl mx-auto space-y-3 md:space-y-6 py-2 md:py-8">
         <Card className="border-2 border-primary">
           <CardHeader>
             <div className="flex flex-col gap-4">
@@ -141,7 +141,7 @@ const Resources = () => {
         </Card>
 
         {/* Resource Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
           {resources.map((resource) => (
             <Card key={resource.id} className={resource.available_now ? '' : 'opacity-60'}>
               <CardHeader>
