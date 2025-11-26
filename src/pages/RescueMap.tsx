@@ -176,7 +176,7 @@ const RescueMap = () => {
     if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
-      // If user location available, fetch with distance
+      // Try to fetch with distance if user location is available
       if (userLocation) {
         const { data, error } = await supabase
           .rpc('get_sos_with_distance', { 
@@ -186,11 +186,8 @@ const RescueMap = () => {
 
         if (error) {
           console.error('Error fetching SOS signals with distance:', error);
-          toast.error(t('map.errorLoadingSignals'));
-          return;
-        }
-
-        if (data) {
+          // Don't return, fallback to regular fetch
+        } else if (data) {
           setSOSSignals(data as SOSSignal[]);
           
           // Convert to GeoJSON format for clustering
@@ -218,74 +215,75 @@ const RescueMap = () => {
           };
 
           updateClusterLayers(geojson);
+          return; // Success with distance, don't need fallback
         }
-      } else {
-        // Fallback to old method if no user location
-        const { data, error } = await supabase
-          .from('sos_signals')
-          .select(`
-            id,
-            type,
-            severity_level,
-            status,
-            description,
-            victim_count,
-            created_at,
-            user_id,
-            accuracy_meters,
-            location
-          `)
-          .in('status', ['active', 'acknowledged'])
-          .order('severity_level', { ascending: false });
+      }
+      
+      // Fallback: fetch without distance (always runs if no user location or if distance fetch failed)
+      const { data, error } = await supabase
+        .from('sos_signals')
+        .select(`
+          id,
+          type,
+          severity_level,
+          status,
+          description,
+          victim_count,
+          created_at,
+          user_id,
+          accuracy_meters,
+          location
+        `)
+        .in('status', ['active', 'acknowledged'])
+        .order('severity_level', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching SOS signals:', error);
-          toast.error(t('map.errorLoadingSignals'));
-          return;
-        }
+      if (error) {
+        console.error('Error fetching SOS signals:', error);
+        toast.error(t('map.errorLoadingSignals'));
+        return;
+      }
 
-        if (data) {
-          setSOSSignals(data);
+      if (data) {
+        setSOSSignals(data);
 
-          // Process coordinates and create GeoJSON
-          const promises = data.map(async (signal) => {
-            const { data: coordData, error: coordError } = await supabase
-              .rpc('get_sos_coordinates', { sos_id: signal.id });
-            
-            if (coordError || !coordData || coordData.length === 0) {
-              console.error('Error getting coordinates for signal', signal.id, coordError);
-              return null;
+        // Process coordinates and create GeoJSON
+        const promises = data.map(async (signal) => {
+          const { data: coordData, error: coordError } = await supabase
+            .rpc('get_sos_coordinates', { sos_id: signal.id });
+          
+          if (coordError || !coordData || coordData.length === 0) {
+            console.error('Error getting coordinates for signal', signal.id, coordError);
+            return null;
+          }
+          
+          const coords = coordData[0];
+          return {
+            type: 'Feature',
+            properties: {
+              id: signal.id,
+              severity_level: signal.severity_level,
+              type: signal.type,
+              description: signal.description,
+              victim_count: signal.victim_count,
+              status: signal.status,
+              created_at: signal.created_at,
+              user_id: signal.user_id,
+              accuracy_meters: signal.accuracy_meters,
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [coords.lng, coords.lat]
             }
-            
-            const coords = coordData[0];
-            return {
-              type: 'Feature',
-              properties: {
-                id: signal.id,
-                severity_level: signal.severity_level,
-                type: signal.type,
-                description: signal.description,
-                victim_count: signal.victim_count,
-                status: signal.status,
-                created_at: signal.created_at,
-                user_id: signal.user_id,
-                accuracy_meters: signal.accuracy_meters,
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [coords.lng, coords.lat]
-              }
-            };
-          });
-
-          const features = (await Promise.all(promises)).filter(f => f !== null);
-          const geojson = {
-            type: 'FeatureCollection',
-            features
           };
+        });
 
-          updateClusterLayers(geojson);
-        }
+        const features = (await Promise.all(promises)).filter(f => f !== null);
+        const geojson = {
+          type: 'FeatureCollection',
+          features
+        };
+
+        updateClusterLayers(geojson);
       }
     };
 
@@ -485,7 +483,27 @@ const RescueMap = () => {
         if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
       }
     };
-  }, [mapLoaded, t, userLocation]);
+  }, [mapLoaded, t]); // Removed userLocation dependency
+
+  // Re-fetch SOS signals when user location becomes available to show distances
+  useEffect(() => {
+    if (userLocation && mapLoaded && map.current) {
+      // Re-fetch to get distance data
+      const fetchWithDistance = async () => {
+        const { data, error } = await supabase
+          .rpc('get_sos_with_distance', { 
+            user_lng: userLocation.lng, 
+            user_lat: userLocation.lat 
+          });
+
+        if (!error && data) {
+          setSOSSignals(data as SOSSignal[]);
+        }
+      };
+      
+      fetchWithDistance();
+    }
+  }, [userLocation, mapLoaded]);
 
   // Create HTML markers for SOS signals
   useEffect(() => {
