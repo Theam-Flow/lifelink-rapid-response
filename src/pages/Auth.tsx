@@ -58,6 +58,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success(t('auth.signupSuccess'));
+        navigate('/');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: sanitizedEmail,
