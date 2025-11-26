@@ -47,7 +47,7 @@ export function SOSActionDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-background">
         <AlertDialogHeader>
           <AlertDialogTitle>{t('map.sosOptions')}</AlertDialogTitle>
           <AlertDialogDescription>
