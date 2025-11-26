@@ -63,33 +63,10 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // MapLibre doesn't need a token!
+    // MapLibre doesn't need a token! Using CartoDB Dark Matter style
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
-          }
-        },
-        layers: [
-          {
-            id: 'osm-tiles',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19
-          }
-        ]
-      },
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center: [100.5018, 13.7563],
       zoom: 11,
     });
@@ -104,7 +81,6 @@ const RescueMap = () => {
 
     // Wait for map to fully load before allowing operations
     newMap.on('load', () => {
-      console.log('Map loaded successfully');
       map.current = newMap;
       setMapLoaded(true);
 
@@ -113,7 +89,6 @@ const RescueMap = () => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-            console.log('User location:', latitude, longitude);
             setUserLocation({ lng: longitude, lat: latitude });
             
             map.current?.flyTo({
@@ -141,15 +116,6 @@ const RescueMap = () => {
       }
     });
 
-    // Set map as loaded after a small delay if 'load' event doesn't fire
-    setTimeout(() => {
-      if (!map.current) {
-        console.log('Setting map loaded via timeout');
-        map.current = newMap;
-        setMapLoaded(true);
-      }
-    }, 2000);
-
     return () => {
       if (map.current) {
         map.current.remove();
@@ -160,16 +126,11 @@ const RescueMap = () => {
 
   // Fetch SOS signals and setup clustering
   useEffect(() => {
-    console.log('useEffect triggered - mapLoaded:', mapLoaded, 'map:', !!map.current);
-    
     if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
-      console.log('Fetching SOS signals...');
-      
       // If user location available, fetch with distance
       if (userLocation) {
-        console.log('Fetching with user location:', userLocation);
         const { data, error } = await supabase
           .rpc('get_sos_with_distance', { 
             user_lng: userLocation.lng, 
@@ -183,7 +144,6 @@ const RescueMap = () => {
         }
 
         if (data) {
-          console.log('SOS Signals with distance fetched:', data);
           setSOSSignals(data as SOSSignal[]);
           
           // Convert to GeoJSON format for clustering
@@ -214,7 +174,6 @@ const RescueMap = () => {
         }
       } else {
         // Fallback to old method if no user location
-        console.log('Fetching without user location (fallback method)');
         const { data, error } = await supabase
           .from('sos_signals')
           .select(`
@@ -239,7 +198,6 @@ const RescueMap = () => {
         }
 
         if (data) {
-          console.log('SOS Signals fetched:', data);
           setSOSSignals(data);
 
           // Process coordinates and create GeoJSON
@@ -284,12 +242,7 @@ const RescueMap = () => {
     };
 
     const updateClusterLayers = (geojson: any) => {
-      if (!map.current) {
-        console.log('Map not ready for cluster layers');
-        return;
-      }
-
-      console.log('Updating cluster layers with', geojson.features.length, 'features');
+      if (!map.current) return;
 
       // Remove existing source and layers if they exist
       try {
@@ -298,24 +251,17 @@ const RescueMap = () => {
         if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
         if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
       } catch (e) {
-        console.log('No existing layers to remove');
+        // Layers don't exist yet
       }
 
       // Add source with clustering enabled
-      try {
-        map.current.addSource('sos-signals', {
-          type: 'geojson',
-          data: geojson,
-          cluster: true,
-          clusterMaxZoom: 14,
-          clusterRadius: 50
-        });
-
-        console.log('Added sos-signals source');
-      } catch (e) {
-        console.error('Error adding source:', e);
-        return;
-      }
+      map.current.addSource('sos-signals', {
+        type: 'geojson',
+        data: geojson,
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50
+      });
 
       // Add cluster circles layer
       map.current.addLayer({
