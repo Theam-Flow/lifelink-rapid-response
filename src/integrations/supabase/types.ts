@@ -182,63 +182,87 @@ export type Database = {
       missing_persons: {
         Row: {
           age: number | null
+          city: string | null
+          clothing_description: string | null
           contact_phone: string | null
           country_code: Database["public"]["Enums"]["country_code"] | null
           created_at: string | null
           description: string | null
           distinctive_features: string | null
+          eye_color: string | null
           found_at: string | null
           found_location: unknown
           full_name: string
           gender: string | null
+          hair_color: string | null
+          height_cm: number | null
           id: string
+          languages_spoken: string[] | null
           last_seen_address: string | null
           last_seen_at: string | null
           last_seen_location: unknown
+          medical_conditions: string | null
           photo_urls: string[] | null
           reporter_id: string
           status: Database["public"]["Enums"]["user_status"] | null
           updated_at: string | null
+          weight_kg: number | null
         }
         Insert: {
           age?: number | null
+          city?: string | null
+          clothing_description?: string | null
           contact_phone?: string | null
           country_code?: Database["public"]["Enums"]["country_code"] | null
           created_at?: string | null
           description?: string | null
           distinctive_features?: string | null
+          eye_color?: string | null
           found_at?: string | null
           found_location?: unknown
           full_name: string
           gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
           id?: string
+          languages_spoken?: string[] | null
           last_seen_address?: string | null
           last_seen_at?: string | null
           last_seen_location?: unknown
+          medical_conditions?: string | null
           photo_urls?: string[] | null
           reporter_id: string
           status?: Database["public"]["Enums"]["user_status"] | null
           updated_at?: string | null
+          weight_kg?: number | null
         }
         Update: {
           age?: number | null
+          city?: string | null
+          clothing_description?: string | null
           contact_phone?: string | null
           country_code?: Database["public"]["Enums"]["country_code"] | null
           created_at?: string | null
           description?: string | null
           distinctive_features?: string | null
+          eye_color?: string | null
           found_at?: string | null
           found_location?: unknown
           full_name?: string
           gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
           id?: string
+          languages_spoken?: string[] | null
           last_seen_address?: string | null
           last_seen_at?: string | null
           last_seen_location?: unknown
+          medical_conditions?: string | null
           photo_urls?: string[] | null
           reporter_id?: string
           status?: Database["public"]["Enums"]["user_status"] | null
           updated_at?: string | null
+          weight_kg?: number | null
         }
         Relationships: [
           {

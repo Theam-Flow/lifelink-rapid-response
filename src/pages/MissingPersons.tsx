@@ -28,6 +28,14 @@ interface MissingPerson {
   distinctive_features: string | null;
   status: string;
   created_at: string;
+  city: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  hair_color: string | null;
+  eye_color: string | null;
+  clothing_description: string | null;
+  medical_conditions: string | null;
+  languages_spoken: string[] | null;
 }
 
 const MissingPersons = () => {
@@ -60,6 +68,13 @@ const MissingPersons = () => {
     last_seen_at: '',
     contact_phone: '',
     distinctive_features: '',
+    city: '',
+    height_cm: '',
+    weight_kg: '',
+    hair_color: '',
+    eye_color: '',
+    clothing_description: '',
+    medical_conditions: '',
   });
 
   useEffect(() => {
@@ -92,6 +107,7 @@ const MissingPersons = () => {
     // City filter
     if (cityFilter) {
       filtered = filtered.filter(person =>
+        person.city?.toLowerCase().includes(cityFilter.toLowerCase()) ||
         person.last_seen_address?.toLowerCase().includes(cityFilter.toLowerCase())
       );
     }
@@ -223,6 +239,13 @@ const MissingPersons = () => {
         photo_urls: photoUrls,
         contact_phone: formData.contact_phone || null,
         distinctive_features: formData.distinctive_features || null,
+        city: formData.city || null,
+        height_cm: formData.height_cm ? parseInt(formData.height_cm) : null,
+        weight_kg: formData.weight_kg ? parseInt(formData.weight_kg) : null,
+        hair_color: formData.hair_color || null,
+        eye_color: formData.eye_color || null,
+        clothing_description: formData.clothing_description || null,
+        medical_conditions: formData.medical_conditions || null,
         status: 'missing',
       });
 
@@ -239,6 +262,13 @@ const MissingPersons = () => {
         last_seen_at: '',
         contact_phone: '',
         distinctive_features: '',
+        city: '',
+        height_cm: '',
+        weight_kg: '',
+        hair_color: '',
+        eye_color: '',
+        clothing_description: '',
+        medical_conditions: '',
       });
       setSelectedFiles([]);
       setPreviewUrls([]);
@@ -361,6 +391,52 @@ const MissingPersons = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       />
                     </div>
+                    
+                    {/* Physical Description */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="height_cm">{t('missing.height')} (cm)</Label>
+                        <Input
+                          id="height_cm"
+                          type="number"
+                          placeholder="170"
+                          value={formData.height_cm}
+                          onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="weight_kg">{t('missing.weight')} (kg)</Label>
+                        <Input
+                          id="weight_kg"
+                          type="number"
+                          placeholder="65"
+                          value={formData.weight_kg}
+                          onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="hair_color">{t('missing.hairColor')}</Label>
+                        <Input
+                          id="hair_color"
+                          placeholder={t('missing.hairColorPlaceholder')}
+                          value={formData.hair_color}
+                          onChange={(e) => setFormData({ ...formData, hair_color: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="eye_color">{t('missing.eyeColor')}</Label>
+                        <Input
+                          id="eye_color"
+                          placeholder={t('missing.eyeColorPlaceholder')}
+                          value={formData.eye_color}
+                          onChange={(e) => setFormData({ ...formData, eye_color: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="distinctive_features">{t('missing.distinctiveFeatures')}</Label>
                       <Textarea
@@ -371,13 +447,49 @@ const MissingPersons = () => {
                         onChange={(e) => setFormData({ ...formData, distinctive_features: e.target.value })}
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="last_seen_address">{t('missing.lastSeenAddress')}</Label>
-                      <Input
-                        id="last_seen_address"
-                        value={formData.last_seen_address}
-                        onChange={(e) => setFormData({ ...formData, last_seen_address: e.target.value })}
+                      <Label htmlFor="clothing_description">{t('missing.clothingDescription')}</Label>
+                      <Textarea
+                        id="clothing_description"
+                        rows={2}
+                        placeholder={t('missing.clothingPlaceholder')}
+                        value={formData.clothing_description}
+                        onChange={(e) => setFormData({ ...formData, clothing_description: e.target.value })}
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="medical_conditions">{t('missing.medicalConditions')}</Label>
+                      <Textarea
+                        id="medical_conditions"
+                        rows={2}
+                        placeholder={t('missing.medicalPlaceholder')}
+                        value={formData.medical_conditions}
+                        onChange={(e) => setFormData({ ...formData, medical_conditions: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Location Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">{t('missing.city')}</Label>
+                        <Input
+                          id="city"
+                          placeholder={t('missing.cityPlaceholder')}
+                          value={formData.city}
+                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="last_seen_address">{t('missing.lastSeenAddress')}</Label>
+                        <Input
+                          id="last_seen_address"
+                          placeholder={t('missing.addressPlaceholder')}
+                          value={formData.last_seen_address}
+                          onChange={(e) => setFormData({ ...formData, last_seen_address: e.target.value })}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="last_seen_at">{t('missing.lastSeenTime')}</Label>
@@ -582,10 +694,43 @@ const MissingPersons = () => {
                       )}
                       
                       {/* Compact distinctive features */}
+                      {/* Physical characteristics - compact display */}
+                      {(person.height_cm || person.weight_kg || person.hair_color || person.eye_color) && (
+                        <div className="flex flex-wrap gap-1 md:gap-2 text-[10px] md:text-xs">
+                          {person.height_cm && (
+                            <Badge variant="outline" className="text-[9px] md:text-xs px-1 py-0 md:px-2 md:py-0.5">
+                              {person.height_cm}cm
+                            </Badge>
+                          )}
+                          {person.weight_kg && (
+                            <Badge variant="outline" className="text-[9px] md:text-xs px-1 py-0 md:px-2 md:py-0.5">
+                              {person.weight_kg}kg
+                            </Badge>
+                          )}
+                          {person.hair_color && (
+                            <Badge variant="outline" className="text-[9px] md:text-xs px-1 py-0 md:px-2 md:py-0.5">
+                              {person.hair_color}
+                            </Badge>
+                          )}
+                          {person.eye_color && (
+                            <Badge variant="outline" className="text-[9px] md:text-xs px-1 py-0 md:px-2 md:py-0.5">
+                              {person.eye_color}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      
                       {person.distinctive_features && (
                         <div className="bg-accent/50 p-1.5 md:p-3 rounded md:rounded-lg">
                           <p className="text-[10px] md:text-sm font-semibold mb-0.5 md:mb-1">{t('missing.distinctiveFeatures')}:</p>
                           <p className="text-[10px] md:text-sm line-clamp-2">{person.distinctive_features}</p>
+                        </div>
+                      )}
+
+                      {person.clothing_description && (
+                        <div className="bg-accent/50 p-1.5 md:p-3 rounded md:rounded-lg">
+                          <p className="text-[10px] md:text-sm font-semibold mb-0.5 md:mb-1">{t('missing.clothingDescription')}:</p>
+                          <p className="text-[10px] md:text-sm line-clamp-2">{person.clothing_description}</p>
                         </div>
                       )}
                       
@@ -663,10 +808,59 @@ const MissingPersons = () => {
                         </div>
                       )}
 
+                      {/* Physical characteristics */}
+                      {(currentPerson.height_cm || currentPerson.weight_kg) && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {currentPerson.height_cm && (
+                            <div>
+                              <p className="text-destructive text-sm font-semibold mb-1">{t('missing.height')}</p>
+                              <p className="text-lg">{currentPerson.height_cm} cm</p>
+                            </div>
+                          )}
+                          {currentPerson.weight_kg && (
+                            <div>
+                              <p className="text-destructive text-sm font-semibold mb-1">{t('missing.weight')}</p>
+                              <p className="text-lg">{currentPerson.weight_kg} kg</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {(currentPerson.hair_color || currentPerson.eye_color) && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {currentPerson.hair_color && (
+                            <div>
+                              <p className="text-destructive text-sm font-semibold mb-1">{t('missing.hairColor')}</p>
+                              <p className="text-sm">{currentPerson.hair_color}</p>
+                            </div>
+                          )}
+                          {currentPerson.eye_color && (
+                            <div>
+                              <p className="text-destructive text-sm font-semibold mb-1">{t('missing.eyeColor')}</p>
+                              <p className="text-sm">{currentPerson.eye_color}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {currentPerson.description && (
                         <div>
                           <p className="text-destructive text-sm font-semibold mb-1">{t('missing.description')}</p>
                           <p className="text-sm">{currentPerson.description}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.clothing_description && (
+                        <div className="bg-destructive/20 p-3 rounded border border-destructive/30">
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.clothingDescription')}</p>
+                          <p className="text-sm">{currentPerson.clothing_description}</p>
+                        </div>
+                      )}
+
+                      {currentPerson.medical_conditions && (
+                        <div className="bg-destructive/20 p-3 rounded border border-destructive/30">
+                          <p className="text-destructive text-sm font-semibold mb-1">{t('missing.medicalConditions')}</p>
+                          <p className="text-sm">{currentPerson.medical_conditions}</p>
                         </div>
                       )}
 
@@ -677,13 +871,18 @@ const MissingPersons = () => {
                         </div>
                       )}
 
-                      {currentPerson.last_seen_address && (
+                      {(currentPerson.city || currentPerson.last_seen_address) && (
                         <div>
                           <p className="text-destructive text-sm font-semibold mb-1 flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            {t('missing.lastSeenAddress')}
+                            {t('missing.lastSeenLocation')}
                           </p>
-                          <p className="text-sm">{currentPerson.last_seen_address}</p>
+                          {currentPerson.city && (
+                            <p className="text-sm font-semibold">{currentPerson.city}</p>
+                          )}
+                          {currentPerson.last_seen_address && (
+                            <p className="text-sm">{currentPerson.last_seen_address}</p>
+                          )}
                         </div>
                       )}
 
