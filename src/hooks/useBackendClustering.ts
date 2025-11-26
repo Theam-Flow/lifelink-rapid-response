@@ -39,15 +39,12 @@ export const useBackendClustering = ({
     queryFn: async () => {
       if (!bounds) return [];
 
-      console.log('Fetching backend clusters for zoom', zoom);
-
       // Llamar a edge function para clustering
       const { data, error } = await supabase.functions.invoke('get-clusters', {
         body: { bounds, zoom }
       });
 
       if (error) {
-        console.error('Error fetching clusters:', error);
         throw error;
       }
 

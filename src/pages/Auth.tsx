@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeInput } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,16 +25,32 @@ const Auth = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate and sanitize inputs
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedFullName = isSignUp ? sanitizeInput(fullName.trim()) : '';
+    
+    if (isSignUp) {
+      if (sanitizedFullName.length < 2) {
+        toast.error('Name must be at least 2 characters');
+        return;
+      }
+      if (password.length < 6) {
+        toast.error(t('auth.passwordMinLength'));
+        return;
+      }
+    }
+    
     setLoading(true);
 
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: sanitizedEmail,
           password,
           options: {
             data: {
-              full_name: fullName,
+              full_name: sanitizedFullName,
               role: role,
               country_code: countryCode,
             },
@@ -41,10 +58,9 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success(t('auth.signupSuccess'));
-        // Don't navigate immediately, let auth state change handle it
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: sanitizedEmail,
           password,
         });
         if (error) throw error;

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentPosition } from '@/lib/geolocation';
+import { validateSOSSignal, sanitizeInput } from '@/lib/validation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -52,7 +53,6 @@ const SOS = () => {
       setLocationLoading(false);
       toast.success(t('sos.locationAcquired'));
     } catch (error: any) {
-      console.error('Geolocation error:', error);
       setLocationLoading(false);
       toast.error(t('sos.locationError'), {
         description: t('sos.tryReloadLocation'),
@@ -73,6 +73,19 @@ const SOS = () => {
 
     if (!userLocation) {
       toast.error(t('sos.noLocation'));
+      return;
+    }
+
+    // Validate data
+    const validation = validateSOSSignal({
+      severity_level: 5,
+      type: 'flood_trap',
+      location: { lng: userLocation.longitude, lat: userLocation.latitude },
+      description: 'Quick Emergency SOS'
+    });
+
+    if (!validation.isValid) {
+      toast.error(validation.error);
       return;
     }
 
@@ -99,7 +112,6 @@ const SOS = () => {
       toast.success(t('sos.success'));
       setTimeout(() => navigate('/rescue-map'), 1500);
     } catch (error) {
-      console.error('Error sending quick SOS:', error);
       toast.error(t('sos.error'));
     } finally {
       setLoading(false);
@@ -120,6 +132,21 @@ const SOS = () => {
       return;
     }
 
+    // Validate and sanitize input
+    const sanitizedDescription = sanitizeInput(formData.description);
+    
+    const validation = validateSOSSignal({
+      severity_level: formData.severityLevel,
+      type: formData.type,
+      location: { lng: userLocation.longitude, lat: userLocation.latitude },
+      description: sanitizedDescription
+    });
+
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -130,7 +157,7 @@ const SOS = () => {
         type: formData.type as any,
         severity_level: formData.severityLevel,
         victim_count: formData.victimCount,
-        description: formData.description,
+        description: sanitizedDescription,
         status: 'active' as any,
       }]);
 
@@ -139,7 +166,6 @@ const SOS = () => {
       toast.success(t('sos.success'));
       navigate('/');
     } catch (error) {
-      console.error('Error sending SOS:', error);
       toast.error(t('sos.error'));
     } finally {
       setLoading(false);

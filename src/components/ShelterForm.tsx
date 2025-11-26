@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { validateShelter, validatePhone, sanitizeInput } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,29 +85,55 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate and sanitize inputs
+    const sanitizedName = sanitizeInput(formData.name.trim());
+    const sanitizedAddress = formData.address ? sanitizeInput(formData.address.trim()) : null;
+    const sanitizedPhone = formData.contact_phone ? sanitizeInput(formData.contact_phone.trim()) : null;
+    const sanitizedNotes = formData.notes ? sanitizeInput(formData.notes.trim()) : null;
+
+    const lat = parseFloat(formData.lat);
+    const lng = parseFloat(formData.lng);
+
+    // Validate shelter data
+    const validation = validateShelter({
+      name: sanitizedName,
+      type: formData.type,
+      location: { lng: lng || 0, lat: lat || 0 },
+      capacity_max: formData.capacity_max ? parseInt(formData.capacity_max) : undefined
+    });
+
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    if (sanitizedPhone && !validatePhone(sanitizedPhone).isValid) {
+      toast.error('Invalid phone number format');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Create location point from lat/lng
       let location = null;
       if (formData.lat && formData.lng) {
-        location = `POINT(${formData.lng} ${formData.lat})`;
+        location = `POINT(${lng} ${lat})`;
       }
 
       const shelterData = {
-        name: formData.name,
+        name: sanitizedName,
         type: formData.type,
-        address: formData.address,
-        contact_phone: formData.contact_phone,
+        address: sanitizedAddress,
+        contact_phone: sanitizedPhone,
         capacity_max: formData.capacity_max ? parseInt(formData.capacity_max) : null,
         capacity_current: formData.capacity_current,
-        notes: formData.notes,
+        notes: sanitizedNotes,
         photo_urls: photos,
         ...(location && { location }),
       };
 
       if (shelter) {
-        // Update existing shelter
         const { error } = await supabase
           .from('shelters')
           .update(shelterData)
@@ -115,7 +142,6 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
         if (error) throw error;
         toast.success(t('shelters.updated'));
       } else {
-        // Create new shelter
         const { error } = await supabase
           .from('shelters')
           .insert([shelterData]);

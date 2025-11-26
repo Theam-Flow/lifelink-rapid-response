@@ -173,7 +173,6 @@ const RescueMap = () => {
             const { latitude, longitude } = position.coords;
             setUserLocation({ lng: longitude, lat: latitude });
             
-            // Use setCenter instead of flyTo for better reliability
             if (map.current) {
               map.current.setCenter([longitude, latitude]);
               map.current.setZoom(14);
@@ -186,7 +185,6 @@ const RescueMap = () => {
             }
           },
           (error) => {
-            console.error('Error getting location:', error);
             toast.error(t('map.errorLoadingLocation') || 'No se pudo obtener tu ubicación');
           },
           {
@@ -203,8 +201,22 @@ const RescueMap = () => {
       setCurrentZoom(newMap.getZoom());
     });
 
+    // Track bounds for geofencing
+    const updateBounds = () => {
+      if (!newMap) return;
+      const bounds = newMap.getBounds();
+      setMapBounds({
+        west: bounds.getWest(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        north: bounds.getNorth()
+      });
+    };
+
+    newMap.on('moveend', updateBounds);
+    updateBounds(); // Initial bounds
+
     return () => {
-      // Clean up markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
       shelterMarkersRef.current.forEach(marker => marker.remove());
@@ -219,16 +231,9 @@ const RescueMap = () => {
 
   // Fetch SOS signals
   useEffect(() => {
-    if (!mapLoaded || !map.current) {
-      console.log('Map not ready:', { mapLoaded, hasMap: !!map.current });
-      return;
-    }
-
-    console.log('Starting SOS fetch...');
+    if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
-      console.log('Fetching SOS signals, userLocation:', userLocation);
-      
       // Try to fetch with distance if user location is available
       if (userLocation) {
         const { data, error } = await supabase
@@ -238,16 +243,14 @@ const RescueMap = () => {
           });
 
         if (error) {
-          console.error('Error fetching SOS signals with distance:', error);
+          // Silent fail, fallback below
         } else if (data) {
-          console.log('Fetched SOS with distance:', data.length, 'signals');
           setSOSSignals(data as SOSSignal[]);
           return;
         }
       }
       
       // Fallback: fetch without distance
-      console.log('Fetching SOS signals (fallback mode)...');
       const { data, error } = await supabase
         .from('sos_signals')
         .select(`
@@ -266,13 +269,11 @@ const RescueMap = () => {
         .order('severity_level', { ascending: false });
 
       if (error) {
-        console.error('Error fetching SOS signals:', error);
         toast.error(t('map.errorLoadingSignals'));
         return;
       }
 
       if (data) {
-        console.log('Fetched SOS signals (fallback):', data.length, 'signals');
         setSOSSignals(data);
       }
     };
@@ -301,12 +302,7 @@ const RescueMap = () => {
 
   // SUPER-OPTIMIZED HTML markers with viewport culling, clustering, and massive scale support
   useEffect(() => {
-    if (!map.current || !mapLoaded || sosSignals.length === 0) {
-      console.log('Skipping marker render:', { hasMap: !!map.current, mapLoaded, signalsCount: sosSignals.length });
-      return;
-    }
-
-    console.log('Rendering OPTIMIZED markers for', sosSignals.length, 'SOS signals');
+    if (!map.current || !mapLoaded || sosSignals.length === 0) return;
 
     // Clear existing markers efficiently
     markersRef.current.forEach(marker => marker.remove());
@@ -365,22 +361,19 @@ const RescueMap = () => {
             break;
           }
         }
-        
-        if (!foundCluster) {
-          clusters.set(`${lng},${lat}`, [signal]);
-        }
-      });
       
-      console.log(`Clustered ${sosSignals.length} signals into ${clusters.size} clusters`);
-      
-      // Use representative from each cluster
-      processedSignals = Array.from(clusters.values()).map(group => {
-        // Use highest severity signal as representative
-        return group.reduce((highest, signal) => 
-          signal.severity_level > highest.severity_level ? signal : highest
-        , group[0]);
-      });
-    }
+      if (!foundCluster) {
+        clusters.set(`${lng},${lat}`, [signal]);
+      }
+    });
+    
+    // Use representative from each cluster
+    processedSignals = Array.from(clusters.values()).map(group => {
+      return group.reduce((highest, signal) => 
+        signal.severity_level > highest.severity_level ? signal : highest
+      , group[0]);
+    });
+  }
 
     // VIEWPORT CULLING: Only render markers in current view (for future optimization)
     const bounds = map.current.getBounds();
@@ -398,35 +391,29 @@ const RescueMap = () => {
       
       if (lng === undefined || lat === undefined) return false;
       
-      // Check if in viewport with buffer
-      return lng >= bounds.getWest() - 0.1 && lng <= bounds.getEast() + 0.1 &&
-             lat >= bounds.getSouth() - 0.1 && lat <= bounds.getNorth() + 0.1;
-    });
+    return lng >= bounds.getWest() - 0.1 && lng <= bounds.getEast() + 0.1 &&
+           lat >= bounds.getSouth() - 0.1 && lat <= bounds.getNorth() + 0.1;
+  });
 
-    console.log(`Rendering ${visibleSignals.length} visible signals (culled ${processedSignals.length - visibleSignals.length})`);
+  // Batch create markers with DOM fragment for performance
+  const markers: maplibregl.Marker[] = [];
+  visibleSignals.forEach(signal => {
+    let lng: number, lat: number;
 
-    // Batch create markers with DOM fragment for performance
-    const markers: maplibregl.Marker[] = [];
-    
-    visibleSignals.forEach(signal => {
-      let lng: number, lat: number;
-
-      if (signal.lng !== undefined && signal.lat !== undefined) {
-        lng = signal.lng;
-        lat = signal.lat;
-      } else if (signal.location) {
-        const locationStr = String(signal.location || '');
-        const coords = locationStr.replace('POINT(', '').replace(')', '').split(' ').map(parseFloat);
-        
-        if (coords.length !== 2 || coords.some(isNaN)) {
-          console.error('Invalid coordinates for signal', signal.id);
-          return;
-        }
-        [lng, lat] = coords;
-      } else {
-        console.error('No location data for signal', signal.id);
+    if (signal.lng !== undefined && signal.lat !== undefined) {
+      lng = signal.lng;
+      lat = signal.lat;
+    } else if (signal.location) {
+      const locationStr = String(signal.location || '');
+      const coords = locationStr.replace('POINT(', '').replace(')', '').split(' ').map(parseFloat);
+      
+      if (coords.length !== 2 || coords.some(isNaN)) {
         return;
       }
+      [lng, lat] = coords;
+    } else {
+      return;
+    }
 
       const color = getSeverityColor(signal.severity_level);
 
