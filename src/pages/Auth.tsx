@@ -20,7 +20,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'victim' | 'rescuer'>('victim');
+  const [role, setRole] = useState<'victim' | 'rescuer' | 'shelter_manager'>('victim');
   const [countryCode, setCountryCode] = useState<'TH' | 'VN' | 'MY' | 'ID'>('TH');
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -108,7 +108,7 @@ const Auth = () => {
                   <Label htmlFor="role">{t('auth.role')}</Label>
                   <Select
                     value={role}
-                    onValueChange={(value: 'victim' | 'rescuer') => setRole(value)}
+                    onValueChange={(value: 'victim' | 'rescuer' | 'shelter_manager') => setRole(value)}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue />
@@ -116,6 +116,7 @@ const Auth = () => {
                     <SelectContent>
                       <SelectItem value="victim">{t('roles.victim')}</SelectItem>
                       <SelectItem value="rescuer">{t('roles.rescuer')}</SelectItem>
+                      <SelectItem value="shelter_manager">{t('roles.shelter_manager')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

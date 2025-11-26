@@ -147,6 +147,15 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
           .insert([shelterData]);
 
         if (error) throw error;
+
+        // Update user role to shelter_manager after creating their first shelter
+        const { error: roleError } = await supabase
+          .from('profiles')
+          .update({ role: 'shelter_manager' })
+          .eq('id', user?.id);
+
+        if (roleError) console.error('Error updating role:', roleError);
+        
         toast.success(t('shelters.created'));
       }
 
