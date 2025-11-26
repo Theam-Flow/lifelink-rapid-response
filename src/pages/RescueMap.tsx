@@ -63,28 +63,24 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Using Humanitarian OpenStreetMap style - perfect for rescue operations
+    // Using reliable OpenStreetMap standard style
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
         sources: {
-          'osm-hot': {
+          'osm': {
             type: 'raster',
-            tiles: [
-              'https://tile-a.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-              'https://tile-b.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-              'https://tile-c.openstreetmap.fr/hot/{z}/{x}/{y}.png'
-            ],
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
+            attribution: '© OpenStreetMap contributors'
           }
         },
         layers: [
           {
-            id: 'osm-hot',
+            id: 'osm',
             type: 'raster',
-            source: 'osm-hot',
+            source: 'osm',
             minzoom: 0,
             maxzoom: 19
           }
@@ -114,17 +110,17 @@ const RescueMap = () => {
             const { latitude, longitude } = position.coords;
             setUserLocation({ lng: longitude, lat: latitude });
             
-            map.current?.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              duration: 2000
-            });
-
-            // Add a marker for user's location
-            new maplibregl.Marker({ color: '#3b82f6' })
-              .setLngLat([longitude, latitude])
-              .setPopup(new maplibregl.Popup().setHTML('<p>Tu ubicación</p>'))
-              .addTo(map.current!);
+            // Use setCenter instead of flyTo for better reliability
+            if (map.current) {
+              map.current.setCenter([longitude, latitude]);
+              map.current.setZoom(14);
+              
+              // Add a marker for user's location
+              new maplibregl.Marker({ color: '#3b82f6' })
+                .setLngLat([longitude, latitude])
+                .setPopup(new maplibregl.Popup().setHTML('<p>Tu ubicación</p>'))
+                .addTo(map.current);
+            }
           },
           (error) => {
             console.error('Error getting location:', error);
