@@ -40,7 +40,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
         .from('messages')
         .select(`
           *,
-          profiles:user_id (full_name)
+          profile:profiles!user_id (full_name)
         `)
         .eq('sos_id', sosId)
         .order('created_at', { ascending: true });
@@ -75,7 +75,7 @@ export const Chat = ({ sosId, onClose }: ChatProps) => {
             .from('messages')
             .select(`
               *,
-              profiles:user_id (full_name)
+              profile:profiles!user_id (full_name)
             `)
             .eq('id', payload.new.id)
             .single();
