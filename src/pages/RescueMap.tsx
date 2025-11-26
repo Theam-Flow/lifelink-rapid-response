@@ -9,10 +9,12 @@ import { useRescuerTracking } from '@/hooks/useRescuerTracking';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair } from 'lucide-react';
 import { HeatmapLayer } from '@/components/HeatmapLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
+import { SOSActionDialog } from '@/components/SOSActionDialog';
+import { MapLegend } from '@/components/MapLegend';
 import { requestNotificationPermission, setupSOSNotifications } from '@/lib/notifications';
 
 interface SOSSignal {
@@ -57,6 +59,7 @@ const RescueMap = () => {
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [showActionDialog, setShowActionDialog] = useState(false);
   const [showSOSList, setShowSOSList] = useState(false); // Changed to false by default
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -401,7 +404,7 @@ const RescueMap = () => {
         }
       });
 
-      // Click event on unclustered points to show details
+      // Click event on unclustered points to show action dialog
       map.current.on('click', 'unclustered-point', (e) => {
         if (!map.current || !e.features || e.features.length === 0) return;
         
@@ -426,7 +429,7 @@ const RescueMap = () => {
         };
 
         setSelectedSOS(signal);
-        setShowChat(true);
+        setShowActionDialog(true);
         
         // Center map on clicked SOS
         if (map.current) {
@@ -550,10 +553,10 @@ const RescueMap = () => {
         .setPopup(popup)
         .addTo(map.current!);
 
-      // Add click handler
+      // Add click handler to show action dialog
       el.addEventListener('click', () => {
         setSelectedSOS(signal);
-        setShowChat(true);
+        setShowActionDialog(true);
         
         // Center map on clicked marker
         if (map.current) {
@@ -800,6 +803,27 @@ const RescueMap = () => {
     window.open(url, '_blank');
   };
 
+  const handleViewDetails = () => {
+    // Just show the details, don't open chat
+    setShowChat(false);
+  };
+
+  const handleOpenChat = () => {
+    setShowChat(true);
+  };
+
+  const recenterToUserLocation = () => {
+    if (userLocation && map.current) {
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 14,
+        duration: 1000
+      });
+    } else {
+      toast.error(t('sos.noLocation'));
+    }
+  };
+
   return (
     <div className="relative h-screen w-full flex flex-col md:flex-row">
       {/* Map Container */}
@@ -862,7 +886,7 @@ const RescueMap = () => {
                 onClick={toggleNotifications}
               >
                 {notificationsEnabled ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
-                Alertas
+                {notificationsEnabled ? t('map.disableNotifications') : t('map.enableNotifications')}
               </Button>
             </Card>
           </div>
@@ -918,7 +942,26 @@ const RescueMap = () => {
             variant="default"
             onClick={() => setShowSOSList(true)}
           >
-            Ver SOS ({sosSignals.length})
+            {t('map.activeAlerts')} ({sosSignals.length})
+          </Button>
+        )}
+
+        {/* Mobile Legend */}
+        {isMobile && !showChat && !showSOSList && (
+          <div className="absolute bottom-24 left-4 z-10">
+            <MapLegend />
+          </div>
+        )}
+
+        {/* Mobile Recenter Button */}
+        {isMobile && userLocation && (
+          <Button
+            className="absolute top-20 right-4 z-10 h-10 w-10"
+            variant="outline"
+            size="icon"
+            onClick={recenterToUserLocation}
+          >
+            <Crosshair className="h-4 w-4" />
           </Button>
         )}
 
@@ -1183,9 +1226,18 @@ const RescueMap = () => {
           size="sm"
           onClick={() => setShowSOSList(true)}
         >
-          Ver SOS ({sosSignals.length})
+          {t('map.activeAlerts')} ({sosSignals.length})
         </Button>
       )}
+
+      {/* SOS Action Dialog */}
+      <SOSActionDialog
+        open={showActionDialog}
+        onOpenChange={setShowActionDialog}
+        signal={selectedSOS}
+        onViewDetails={handleViewDetails}
+        onChat={handleOpenChat}
+      />
 
       {/* Chat Panel - Full width on mobile, sidebar on desktop */}
       {showChat && selectedSOS && (
