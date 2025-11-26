@@ -533,7 +533,7 @@ const RescueMap = () => {
           className="absolute inset-0" 
           style={{ 
             bottom: isMobile ? '60px' : '0',
-            top: isMobile ? '120px' : '0'
+            top: isMobile ? '90px' : '0'
           }} 
         />
         
