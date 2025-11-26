@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Minus, Users, Save } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from "react-i18next";
 
 interface ShelterCapacityManagerProps {
   shelter: any;
@@ -14,6 +15,7 @@ interface ShelterCapacityManagerProps {
 }
 
 const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerProps) => {
+  const { t } = useTranslation();
   const [currentCapacity, setCurrentCapacity] = useState(shelter.capacity_current || 0);
   const [maxCapacity, setMaxCapacity] = useState(shelter.capacity_max || 100);
   const [checkInCount, setCheckInCount] = useState(1);
@@ -24,7 +26,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
 
   const handleCheckIn = async () => {
     if (currentCapacity + checkInCount > maxCapacity) {
-      toast.error("No hay suficiente capacidad disponible");
+      toast.error(t('shelters.notEnoughCapacity'));
       return;
     }
 
@@ -43,16 +45,16 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
       await supabase.from("shelter_activity_logs").insert({
         shelter_id: shelter.id,
         action_type: "check_in",
-        description: `Check-in de ${checkInCount} persona(s)`,
+        description: t('shelters.checkInSuccess', { count: checkInCount }),
         metadata: { count: checkInCount, new_capacity: newCapacity },
       });
 
       setCurrentCapacity(newCapacity);
-      toast.success(`Check-in exitoso: +${checkInCount} persona(s)`);
+      toast.success(t('shelters.checkInSuccess', { count: checkInCount }));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al realizar check-in");
+      toast.error(t('shelters.errorCheckIn'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
 
   const handleCheckOut = async () => {
     if (currentCapacity - checkOutCount < 0) {
-      toast.error("No puedes sacar más personas de las que hay");
+      toast.error(t('shelters.cannotRemoveMore'));
       return;
     }
 
@@ -79,16 +81,16 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
       await supabase.from("shelter_activity_logs").insert({
         shelter_id: shelter.id,
         action_type: "check_out",
-        description: `Check-out de ${checkOutCount} persona(s)`,
+        description: t('shelters.checkOutSuccess', { count: checkOutCount }),
         metadata: { count: checkOutCount, new_capacity: newCapacity },
       });
 
       setCurrentCapacity(newCapacity);
-      toast.success(`Check-out exitoso: -${checkOutCount} persona(s)`);
+      toast.success(t('shelters.checkOutSuccess', { count: checkOutCount }));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al realizar check-out");
+      toast.error(t('shelters.errorCheckOut'));
     } finally {
       setLoading(false);
     }
@@ -108,15 +110,15 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
       await supabase.from("shelter_activity_logs").insert({
         shelter_id: shelter.id,
         action_type: "capacity_update",
-        description: `Capacidad máxima actualizada a ${maxCapacity}`,
+        description: `${t('shelters.maxCapacityUpdated')} ${maxCapacity}`,
         metadata: { old_max: shelter.capacity_max, new_max: maxCapacity },
       });
 
-      toast.success("Capacidad máxima actualizada");
+      toast.success(t('shelters.maxCapacityUpdated'));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al actualizar capacidad máxima");
+      toast.error(t('shelters.errorUpdateMaxCapacity'));
     } finally {
       setLoading(false);
     }
@@ -133,9 +135,9 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
       {/* Current Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Estado Actual de Ocupación</CardTitle>
+          <CardTitle>{t('shelters.currentOccupancyStatus')}</CardTitle>
           <CardDescription>
-            Gestiona la ocupación en tiempo real de tu shelter
+            {t('shelters.manageRealtime')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -152,7 +154,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
           </div>
           <Progress value={capacityPercentage} className={getProgressColor()} />
           <p className="text-sm text-muted-foreground">
-            {maxCapacity - currentCapacity} espacios disponibles
+            {maxCapacity - currentCapacity} {t('shelters.spacesAvailable')}
           </p>
         </CardContent>
       </Card>
@@ -163,13 +165,13 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Plus className="h-5 w-5 text-green-500" />
-              Check-In
+              {t('shelters.checkIn')}
             </CardTitle>
-            <CardDescription>Registrar entrada de personas</CardDescription>
+            <CardDescription>{t('shelters.registerEntry')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Cantidad de personas</Label>
+              <Label>{t('shelters.numberOfPeople')}</Label>
               <Input
                 type="number"
                 min="1"
@@ -183,7 +185,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
               disabled={loading || currentCapacity >= maxCapacity}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Realizar Check-In
+              {t('shelters.performCheckIn')}
             </Button>
           </CardContent>
         </Card>
@@ -192,13 +194,13 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Minus className="h-5 w-5 text-orange-500" />
-              Check-Out
+              {t('shelters.checkOut')}
             </CardTitle>
-            <CardDescription>Registrar salida de personas</CardDescription>
+            <CardDescription>{t('shelters.registerExit')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Cantidad de personas</Label>
+              <Label>{t('shelters.numberOfPeople')}</Label>
               <Input
                 type="number"
                 min="1"
@@ -213,7 +215,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
               disabled={loading || currentCapacity === 0}
             >
               <Minus className="h-4 w-4 mr-2" />
-              Realizar Check-Out
+              {t('shelters.performCheckOut')}
             </Button>
           </CardContent>
         </Card>
@@ -222,14 +224,14 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
       {/* Max Capacity Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuración de Capacidad</CardTitle>
+          <CardTitle>{t('shelters.capacitySettings')}</CardTitle>
           <CardDescription>
-            Ajusta la capacidad máxima del shelter
+            {t('shelters.adjustMaxCapacity')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Capacidad Máxima</Label>
+            <Label>{t('shelters.maxCapacity')}</Label>
             <Input
               type="number"
               min="1"
@@ -242,7 +244,7 @@ const ShelterCapacityManager = ({ shelter, onUpdate }: ShelterCapacityManagerPro
             disabled={loading || maxCapacity === shelter.capacity_max}
           >
             <Save className="h-4 w-4 mr-2" />
-            Guardar Capacidad Máxima
+            {t('shelters.saveMaxCapacity')}
           </Button>
         </CardContent>
       </Card>

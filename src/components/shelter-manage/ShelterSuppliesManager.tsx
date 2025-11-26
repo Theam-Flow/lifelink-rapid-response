@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Package, Plus, Trash2, Edit2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 interface Supply {
   name: string;
@@ -24,6 +25,7 @@ interface ShelterSuppliesManagerProps {
 }
 
 const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerProps) => {
+  const { t } = useTranslation();
   const [supplies, setSupplies] = useState<Record<string, Supply>>({});
   const [newSupply, setNewSupply] = useState<{ name: string; quantity: number; unit: string; level: 'good' | 'low' | 'critical' }>({ 
     name: "", 
@@ -56,7 +58,7 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
 
   const handleAddSupply = async () => {
     if (!newSupply.name || newSupply.quantity < 0) {
-      toast.error("Por favor completa todos los campos");
+      toast.error(t('shelters.completeAllFields'));
       return;
     }
 
@@ -99,11 +101,11 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
       setSupplies(updatedSupplies);
       setNewSupply({ name: "", quantity: 0, unit: "unidades", level: "good" });
       setDialogOpen(false);
-      toast.success("Suministro agregado exitosamente");
+      toast.success(t('shelters.supplyAdded'));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al agregar suministro");
+      toast.error(t('shelters.errorAddSupply'));
     } finally {
       setLoading(false);
     }
@@ -149,11 +151,11 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
 
       setSupplies(updatedSupplies);
       setEditingSupply(null);
-      toast.success("Suministro actualizado");
+      toast.success(t('shelters.supplyUpdated'));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al actualizar suministro");
+      toast.error(t('shelters.errorUpdateSupply'));
     } finally {
       setLoading(false);
     }
@@ -180,11 +182,11 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
       });
 
       setSupplies(updatedSupplies);
-      toast.success("Suministro eliminado");
+      toast.success(t('shelters.supplyDeleted'));
       onUpdate();
     } catch (error: any) {
       console.error("Error:", error);
-      toast.error("Error al eliminar suministro");
+      toast.error(t('shelters.errorDeleteSupply'));
     } finally {
       setLoading(false);
     }
@@ -197,27 +199,27 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
         <DialogTrigger asChild>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            Agregar Suministro
+            {t('shelters.addSupply')}
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Agregar Nuevo Suministro</DialogTitle>
+            <DialogTitle>{t('shelters.addNewSupply')}</DialogTitle>
             <DialogDescription>
-              Registra un nuevo suministro en el inventario
+              {t('shelters.registerNewSupply')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Nombre del Suministro</Label>
+              <Label>{t('shelters.supplyName')}</Label>
               <Input
                 value={newSupply.name}
                 onChange={(e) => setNewSupply({ ...newSupply, name: e.target.value })}
-                placeholder="Ej: Agua embotellada"
+                placeholder={t('shelters.supplyNamePlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Cantidad</Label>
+              <Label>{t('shelters.quantity')}</Label>
               <Input
                 type="number"
                 min="0"
@@ -226,15 +228,15 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
               />
             </div>
             <div className="space-y-2">
-              <Label>Unidad</Label>
+              <Label>{t('shelters.unit')}</Label>
               <Input
                 value={newSupply.unit}
                 onChange={(e) => setNewSupply({ ...newSupply, unit: e.target.value })}
-                placeholder="Ej: litros, cajas, unidades"
+                placeholder={t('shelters.unitPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label>Nivel de Stock</Label>
+              <Label>{t('shelters.stockLevel')}</Label>
               <Select 
                 value={newSupply.level} 
                 onValueChange={(value: any) => setNewSupply({ ...newSupply, level: value })}
@@ -243,14 +245,14 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="good">Bueno</SelectItem>
-                  <SelectItem value="low">Bajo</SelectItem>
-                  <SelectItem value="critical">Crítico</SelectItem>
+                  <SelectItem value="good">{t('shelters.levelGood')}</SelectItem>
+                  <SelectItem value="low">{t('shelters.levelLow')}</SelectItem>
+                  <SelectItem value="critical">{t('shelters.levelCritical')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Button onClick={handleAddSupply} disabled={loading} className="w-full">
-              Agregar Suministro
+              {t('shelters.addSupply')}
             </Button>
           </div>
         </DialogContent>
@@ -262,8 +264,8 @@ const ShelterSuppliesManager = ({ shelter, onUpdate }: ShelterSuppliesManagerPro
           <Card className="col-span-full">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Package className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No hay suministros registrados</p>
-              <p className="text-sm text-muted-foreground">Agrega tu primer suministro para comenzar</p>
+              <p className="text-muted-foreground">{t('shelters.noSuppliesRegistered')}</p>
+              <p className="text-sm text-muted-foreground">{t('shelters.addFirstSupply')}</p>
             </CardContent>
           </Card>
         ) : (
