@@ -41,27 +41,27 @@
   color: #888;
 }
 
-/* Mapbox mobile adjustments */
+/* MapLibre mobile adjustments */
 @media (max-width: 768px) {
-  /* Ocultar controles inferiores de Mapbox */
-  .mapboxgl-ctrl-bottom-left,
-  .mapboxgl-ctrl-bottom-right {
+  /* Ocultar controles inferiores de MapLibre */
+  .maplibregl-ctrl-bottom-left,
+  .maplibregl-ctrl-bottom-right {
     display: none !important;
   }
   
   /* Bajar más el logo y atribución en lugar de ocultarlos */
-  .mapboxgl-ctrl-logo {
+  .maplibregl-ctrl-logo {
     bottom: -50px !important;
     display: block !important;
   }
   
-  .mapboxgl-ctrl-attrib {
+  .maplibregl-ctrl-attrib {
     bottom: -50px !important;
     display: block !important;
   }
   
   /* Mantener solo los controles superiores */
-  .mapboxgl-ctrl-top-right {
+  .maplibregl-ctrl-top-right {
     top: 70px !important;
     right: 10px !important;
   }

@@ -33,13 +33,13 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/api\.mapbox\.com\/.*/i,
-            handler: 'NetworkFirst',
+            urlPattern: /^https:\/\/demotiles\.maplibre\.org\/.*/i,
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'mapbox-api-cache',
+              cacheName: 'maplibre-tiles-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
               }
             }
           }
@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['framer-motion', 'react-swipeable'],
-          'map-vendor': ['mapbox-gl'],
+          'map-vendor': ['maplibre-gl'],
           'supabase-vendor': ['@supabase/supabase-js'],
         },
       },
