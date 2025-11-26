@@ -72,7 +72,7 @@ export const useRescuerTracking = () => {
 
     watchId = navigator.geolocation.watchPosition(
       async (position) => {
-        const { latitude, longitude, heading, speed } = position.coords;
+        const { latitude, longitude, heading, speed, altitude, altitudeAccuracy } = position.coords;
 
         await supabase.from('rescuer_activity').upsert({
           rescuer_id: user.id,
@@ -81,6 +81,8 @@ export const useRescuerTracking = () => {
           last_ping: new Date().toISOString(),
           heading: heading || 0,
           speed_kmh: speed ? speed * 3.6 : 0, // Convert m/s to km/h
+          altitude_meters: altitude,
+          altitude_accuracy_meters: altitudeAccuracy,
         });
       },
       (error) => {

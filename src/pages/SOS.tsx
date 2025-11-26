@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { getCurrentPosition } from '@/lib/geolocation';
+import { useEnhancedGeolocation } from '@/hooks/useEnhancedGeolocation';
 import { validateSOSSignal, sanitizeInput } from '@/lib/validation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,10 @@ const SOS = () => {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number; accuracy: number } | null>(null);
+  
+  // Enhanced geolocation tracking
+  const { location, quality, isImproving, error: geoError, startTracking, stopTracking } = useEnhancedGeolocation(true);
   const [formData, setFormData] = useState({
     type: 'flood_trap',
     severityLevel: 3,
@@ -63,31 +64,25 @@ const SOS = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    fetchLocation();
-  }, [t]);
-
-  const fetchLocation = async () => {
-    setLocationLoading(true);
-    try {
-      const position = await getCurrentPosition();
-      setUserLocation({
-        latitude: position.latitude,
-        longitude: position.longitude,
-        accuracy: position.accuracy,
-      });
-      setLocationLoading(false);
-      toast.success(t('sos.locationAcquired'));
-    } catch (error: any) {
-      setLocationLoading(false);
+    if (geoError) {
       toast.error(t('sos.locationError'), {
-        description: t('sos.tryReloadLocation'),
+        description: geoError,
         action: {
           label: t('sos.retry'),
-          onClick: fetchLocation,
+          onClick: startTracking,
         },
       });
     }
-  };
+  }, [geoError, t]);
+
+  useEffect(() => {
+    // Show toast when GPS quality improves to excellent
+    if (quality === 'excellent' && location) {
+      toast.success(t('profile.excellentPrecision'), {
+        description: `±${location.accuracy.toFixed(1)}m`,
+      });
+    }
+  }, [quality, location, t]);
 
   const sendQuickSOS = async () => {
     if (!user) {
@@ -96,7 +91,7 @@ const SOS = () => {
       return;
     }
 
-    if (!userLocation) {
+    if (!location) {
       toast.error(t('sos.noLocation'));
       return;
     }
@@ -105,7 +100,7 @@ const SOS = () => {
     const validation = validateSOSSignal({
       severity_level: 5,
       type: 'flood_trap',
-      location: { lng: userLocation.longitude, lat: userLocation.latitude },
+      location: { lng: location.longitude, lat: location.latitude },
       description: 'Quick Emergency SOS'
     });
 
@@ -123,8 +118,13 @@ const SOS = () => {
     try {
       const { error } = await supabase.from('sos_signals').insert([{
         user_id: user.id,
-        location: `POINT(${userLocation.longitude} ${userLocation.latitude})` as any,
-        accuracy_meters: userLocation.accuracy,
+        location: `POINT(${location.longitude} ${location.latitude})` as any,
+        accuracy_meters: location.accuracy,
+        altitude_meters: location.altitude,
+        altitude_accuracy_meters: location.altitudeAccuracy,
+        heading_degrees: location.heading,
+        speed_mps: location.speed,
+        gps_timestamp: new Date(location.timestamp).toISOString(),
         type: 'flood_trap',
         severity_level: 5,
         victim_count: 1,
@@ -152,7 +152,7 @@ const SOS = () => {
       return;
     }
 
-    if (!userLocation) {
+    if (!location) {
       toast.error(t('sos.noLocation'));
       return;
     }
@@ -163,7 +163,7 @@ const SOS = () => {
     const validation = validateSOSSignal({
       severity_level: formData.severityLevel,
       type: formData.type,
-      location: { lng: userLocation.longitude, lat: userLocation.latitude },
+      location: { lng: location.longitude, lat: location.latitude },
       description: sanitizedDescription
     });
 
@@ -177,8 +177,13 @@ const SOS = () => {
     try {
       const { error } = await supabase.from('sos_signals').insert([{
         user_id: user.id,
-        location: `POINT(${userLocation.longitude} ${userLocation.latitude})` as any,
-        accuracy_meters: userLocation.accuracy,
+        location: `POINT(${location.longitude} ${location.latitude})` as any,
+        accuracy_meters: location.accuracy,
+        altitude_meters: location.altitude,
+        altitude_accuracy_meters: location.altitudeAccuracy,
+        heading_degrees: location.heading,
+        speed_mps: location.speed,
+        gps_timestamp: new Date(location.timestamp).toISOString(),
         type: formData.type as any,
         severity_level: formData.severityLevel,
         victim_count: formData.victimCount,
@@ -209,6 +214,28 @@ const SOS = () => {
 
   // Mobile-first quick SOS view
   if (isMobile && !showDetails) {
+    // Get quality color
+    const getQualityColor = () => {
+      if (!location) return 'text-muted-foreground';
+      switch (quality) {
+        case 'excellent': return 'text-blue-500';
+        case 'good': return 'text-green-500';
+        case 'fair': return 'text-yellow-500';
+        case 'poor': return 'text-red-500';
+        default: return 'text-muted-foreground';
+      }
+    };
+
+    const getQualityText = () => {
+      switch (quality) {
+        case 'excellent': return t('profile.excellentPrecision');
+        case 'good': return t('profile.goodPrecision');
+        case 'fair': return t('profile.fairPrecision');
+        case 'poor': return t('profile.poorPrecision');
+        default: return t('profile.acquiringGPS');
+      }
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background flex flex-col p-4 pb-28 overflow-y-auto">
           <Button variant="ghost" onClick={() => navigate('/')} className="self-start mb-4">
@@ -217,10 +244,22 @@ const SOS = () => {
         </Button>
 
         <div className="flex-1 flex flex-col items-center justify-center space-y-6">
+          {/* GPS Quality Indicator */}
+          {location && (
+            <div className="text-center space-y-1">
+              <p className={`text-sm font-semibold ${getQualityColor()}`}>
+                {getQualityText()}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isImproving && t('profile.gpsImproving')}
+              </p>
+            </div>
+          )}
+
           {/* Giant Quick Emergency Button */}
           <button
             onClick={sendQuickSOS}
-            disabled={!userLocation || loading || locationLoading}
+            disabled={!location || loading}
             className="w-72 h-72 rounded-full bg-destructive text-destructive-foreground shadow-2xl animate-pulse-sos disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-4 active:scale-95 transition-transform"
           >
             <AlertTriangle className="w-32 h-32 animate-pulse" />
@@ -229,24 +268,23 @@ const SOS = () => {
 
           {/* Location Status */}
           <div className="text-center space-y-2">
-            {userLocation ? (
-              <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
-                <MapPin className="h-5 w-5 text-primary" />
-                {t('sos.locationAccuracy')}: {Math.round(userLocation.accuracy)}m
-              </p>
-            ) : locationLoading ? (
+            {location ? (
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  {t('profile.horizontalPrecision')}: ±{Math.round(location.accuracy)}m
+                </p>
+                {location.altitude !== null && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('profile.altitude')}: ~{Math.round(location.altitude)}m {t('profile.metersAboveSea')}
+                  </p>
+                )}
+              </div>
+            ) : (
               <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                {t('sos.acquiringLocation')}
+                {t('profile.acquiringGPS')}
               </p>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-destructive">{t('sos.noLocation')}</p>
-                <Button onClick={fetchLocation} variant="outline" size="lg">
-                  <RefreshCw className="mr-2 h-5 w-5" />
-                  {t('sos.retry')}
-                </Button>
-              </div>
             )}
           </div>
 
@@ -297,33 +335,27 @@ const SOS = () => {
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+            {/* GPS Quality and Location Status */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                {userLocation ? (
-                  <span>
-                    {t('sos.locationAccuracy')}: {Math.round(userLocation.accuracy)}m
-                  </span>
-                ) : locationLoading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t('sos.acquiringLocation')}
+                {location ? (
+                  <span className={
+                    quality === 'excellent' ? 'text-blue-500 font-semibold' :
+                    quality === 'good' ? 'text-green-500' :
+                    quality === 'fair' ? 'text-yellow-500' :
+                    quality === 'poor' ? 'text-red-500' : ''
+                  }>
+                    ±{Math.round(location.accuracy)}m
+                    {location.altitude !== null && ` | ${Math.round(location.altitude)}m`}
                   </span>
                 ) : (
-                  <span className="text-destructive">{t('sos.noLocation')}</span>
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('profile.acquiringGPS')}
+                  </span>
                 )}
               </div>
-              {!userLocation && !locationLoading && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchLocation}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {t('sos.retry')}
-                </Button>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -434,7 +466,7 @@ const SOS = () => {
               type="submit"
               className="w-full"
               size="lg"
-              disabled={!userLocation || loading || locationLoading}
+              disabled={!location || loading}
             >
               {loading ? (
                 <>

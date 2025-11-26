@@ -306,6 +306,8 @@ export type Database = {
       }
       rescuer_activity: {
         Row: {
+          altitude_accuracy_meters: number | null
+          altitude_meters: number | null
           current_sos_id: string | null
           heading: number | null
           id: string
@@ -317,6 +319,8 @@ export type Database = {
           timestamp: string | null
         }
         Insert: {
+          altitude_accuracy_meters?: number | null
+          altitude_meters?: number | null
           current_sos_id?: string | null
           heading?: number | null
           id?: string
@@ -328,6 +332,8 @@ export type Database = {
           timestamp?: string | null
         }
         Update: {
+          altitude_accuracy_meters?: number | null
+          altitude_meters?: number | null
           current_sos_id?: string | null
           heading?: number | null
           id?: string
@@ -547,11 +553,15 @@ export type Database = {
         Row: {
           accuracy_meters: number | null
           acknowledged_at: string | null
+          altitude_accuracy_meters: number | null
+          altitude_meters: number | null
           assigned_rescuer_id: string | null
           contact_line_id: string | null
           contact_phone: string | null
           created_at: string | null
           description: string | null
+          gps_timestamp: string | null
+          heading_degrees: number | null
           id: string
           in_progress_at: string | null
           location: unknown
@@ -559,6 +569,7 @@ export type Database = {
           rescued_at: string | null
           severity_level: number
           special_needs: Json | null
+          speed_mps: number | null
           status: Database["public"]["Enums"]["sos_status"] | null
           type: Database["public"]["Enums"]["emergency_type"]
           updated_at: string | null
@@ -568,11 +579,15 @@ export type Database = {
         Insert: {
           accuracy_meters?: number | null
           acknowledged_at?: string | null
+          altitude_accuracy_meters?: number | null
+          altitude_meters?: number | null
           assigned_rescuer_id?: string | null
           contact_line_id?: string | null
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null
+          gps_timestamp?: string | null
+          heading_degrees?: number | null
           id?: string
           in_progress_at?: string | null
           location: unknown
@@ -580,6 +595,7 @@ export type Database = {
           rescued_at?: string | null
           severity_level: number
           special_needs?: Json | null
+          speed_mps?: number | null
           status?: Database["public"]["Enums"]["sos_status"] | null
           type: Database["public"]["Enums"]["emergency_type"]
           updated_at?: string | null
@@ -589,11 +605,15 @@ export type Database = {
         Update: {
           accuracy_meters?: number | null
           acknowledged_at?: string | null
+          altitude_accuracy_meters?: number | null
+          altitude_meters?: number | null
           assigned_rescuer_id?: string | null
           contact_line_id?: string | null
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null
+          gps_timestamp?: string | null
+          heading_degrees?: number | null
           id?: string
           in_progress_at?: string | null
           location?: unknown
@@ -601,6 +621,7 @@ export type Database = {
           rescued_at?: string | null
           severity_level?: number
           special_needs?: Json | null
+          speed_mps?: number | null
           status?: Database["public"]["Enums"]["sos_status"] | null
           type?: Database["public"]["Enums"]["emergency_type"]
           updated_at?: string | null
