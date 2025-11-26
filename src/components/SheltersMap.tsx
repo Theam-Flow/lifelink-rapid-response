@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,44 +29,27 @@ interface SheltersMapProps {
 export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => {
   const { t } = useTranslation();
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const map = useRef<maplibregl.Map | null>(null);
+  const markers = useRef<maplibregl.Marker[]>([]);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
 
-  // Fetch Mapbox token
-  useEffect(() => {
-    const fetchMapboxToken = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-        if (error) throw error;
-        setMapboxToken(data.token);
-      } catch (error: any) {
-        console.error('Error fetching Mapbox token:', error);
-        toast.error(t('map.errorMapToken'));
-      }
-    };
-
-    fetchMapboxToken();
-  }, []);
+  // MapLibre doesn't need a token - it's 100% free!
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || map.current) return;
-
-    mapboxgl.accessToken = mapboxToken;
+    if (!mapContainer.current || map.current) return;
 
     // Default center (Thailand)
     const defaultCenter: [number, number] = [100.5018, 13.7563];
 
-    const newMap = new mapboxgl.Map({
+    const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'https://demotiles.maplibre.org/style.json',
       center: defaultCenter,
       zoom: 6,
     });
 
-    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    newMap.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     // Wait for map to load before allowing other operations
     newMap.on('load', () => {
@@ -78,10 +61,10 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
       markers.current = [];
       if (map.current) {
         map.current.remove();
-        map.current = null;
-      }
-    };
-  }, [mapboxToken]);
+      map.current = null;
+    }
+  };
+}, []);
 
   // Update shelter markers
   useEffect(() => {
@@ -91,7 +74,7 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
 
-    const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new maplibregl.LngLatBounds();
     let hasValidCoordinates = false;
 
     shelters.forEach((shelter) => {
@@ -130,7 +113,7 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
       `;
 
       // Add marker
-      const marker = new mapboxgl.Marker(el)
+      const marker = new maplibregl.Marker(el)
         .setLngLat([lng, lat])
         .addTo(map.current!);
 
@@ -178,14 +161,6 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
     if (percentage >= 70) return 'text-yellow-500';
     return 'text-green-500';
   };
-
-  if (!mapboxToken) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-muted">
-        <p className="text-muted-foreground">{t('common.loading')}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="relative h-full w-full">

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
+import maplibregl from 'maplibre-gl';
 
 interface HeatmapLayerProps {
-  map: mapboxgl.Map | null;
+  map: maplibregl.Map | null;
   sosSignals: Array<{
     id: string;
     location?: unknown;

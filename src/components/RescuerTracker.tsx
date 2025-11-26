@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
+import maplibregl from 'maplibre-gl';
 import { useTranslation } from 'react-i18next';
 
 interface RescuerTrackerProps {
-  map: mapboxgl.Map | null;
+  map: maplibregl.Map | null;
   rescuers: Array<{
     rescuer_id: string;
     location: unknown;
@@ -16,7 +16,7 @@ interface RescuerTrackerProps {
 
 export const RescuerTracker = ({ map, rescuers }: RescuerTrackerProps) => {
   const { t } = useTranslation();
-  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const markersRef = useRef<{ [key: string]: maplibregl.Marker }>({});
 
   useEffect(() => {
     if (!map) return;
@@ -58,10 +58,10 @@ export const RescuerTracker = ({ map, rescuers }: RescuerTrackerProps) => {
         el.style.cursor = 'pointer';
         el.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
 
-        const marker = new mapboxgl.Marker(el)
+        const marker = new maplibregl.Marker(el)
           .setLngLat([lng, lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(`
+            new maplibregl.Popup({ offset: 25 }).setHTML(`
               <div class="p-2">
                 <strong class="text-primary">${t('map.rescuer')}</strong>
                 <p class="text-sm">${rescuer.profile?.full_name || t('map.unknownName')}</p>
