@@ -88,12 +88,12 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      toast.error('La geolocalización no está soportada en tu navegador');
+      toast.error(t('shelters.locationNotSupported'));
       return;
     }
 
     setGettingLocation(true);
-    toast.loading('Obteniendo ubicación...');
+    toast.loading(t('shelters.gettingLocation'));
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -107,22 +107,22 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
         });
         
         toast.dismiss();
-        toast.success('Ubicación detectada correctamente');
+        toast.success(t('shelters.locationDetected'));
         setGettingLocation(false);
       },
       (error) => {
         toast.dismiss();
-        let errorMessage = 'No se pudo obtener la ubicación';
+        let errorMessage = t('shelters.locationUnavailable');
         
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación en la configuración del navegador.';
+            errorMessage = t('shelters.locationPermissionDenied');
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Información de ubicación no disponible';
+            errorMessage = t('shelters.locationUnavailable');
             break;
           case error.TIMEOUT:
-            errorMessage = 'Tiempo de espera agotado al obtener la ubicación';
+            errorMessage = t('shelters.locationTimeout');
             break;
         }
         
@@ -282,7 +282,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
                   ) : (
                     <MapPin className="h-4 w-4 mr-2" />
                   )}
-                  Añadir mi ubicación
+                  {t('shelters.addMyLocation')}
                 </Button>
               </div>
               

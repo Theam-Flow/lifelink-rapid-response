@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -32,6 +33,7 @@ const ShelterManage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [shelter, setShelter] = useState<Shelter | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,7 +59,7 @@ const ShelterManage = () => {
 
       // Verify user is the manager
       if (data.manager_id !== user?.id) {
-        toast.error("No tienes permiso para administrar este shelter");
+        toast.error(t('common.error'));
         navigate("/shelters");
         return;
       }
@@ -65,7 +67,7 @@ const ShelterManage = () => {
       setShelter(data);
     } catch (error: any) {
       console.error("Error fetching shelter:", error);
-      toast.error("Error al cargar el shelter");
+      toast.error(t('common.error'));
       navigate("/shelters");
     } finally {
       setLoading(false);
@@ -109,12 +111,12 @@ const ShelterManage = () => {
         {/* Tabs */}
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="capacity">Capacidad</TabsTrigger>
-            <TabsTrigger value="supplies">Suministros</TabsTrigger>
-            <TabsTrigger value="reports">Reportes</TabsTrigger>
-            <TabsTrigger value="logs">Registros</TabsTrigger>
-            <TabsTrigger value="alerts">Alertas</TabsTrigger>
+            <TabsTrigger value="dashboard">{t('shelters.dashboard')}</TabsTrigger>
+            <TabsTrigger value="capacity">{t('shelters.capacityTab')}</TabsTrigger>
+            <TabsTrigger value="supplies">{t('shelters.suppliesTab')}</TabsTrigger>
+            <TabsTrigger value="reports">{t('shelters.reportsTab')}</TabsTrigger>
+            <TabsTrigger value="logs">{t('shelters.logsTab')}</TabsTrigger>
+            <TabsTrigger value="alerts">{t('shelters.alertsTab')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-4 mt-6">
