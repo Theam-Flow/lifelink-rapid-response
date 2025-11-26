@@ -189,12 +189,25 @@ const RescueMap = () => {
               const el = document.createElement('div');
               el.className = 'sos-marker';
               el.style.backgroundColor = getSeverityColor(signal.severity_level);
-              el.style.width = '30px';
-              el.style.height = '30px';
+              el.style.width = '10px';
+              el.style.height = '10px';
               el.style.borderRadius = '50%';
-              el.style.border = '3px solid white';
+              el.style.border = '2px solid white';
               el.style.cursor = 'pointer';
-              el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+              el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
+              el.style.transition = 'all 0.2s';
+
+              // Hover effect
+              el.addEventListener('mouseenter', () => {
+                el.style.width = '16px';
+                el.style.height = '16px';
+                el.style.boxShadow = '0 0 12px rgba(255,0,0,0.9)';
+              });
+              el.addEventListener('mouseleave', () => {
+                el.style.width = '10px';
+                el.style.height = '10px';
+                el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
+              });
 
               try {
                 const marker = new mapboxgl.Marker(el)
@@ -279,12 +292,25 @@ const RescueMap = () => {
               const el = document.createElement('div');
               el.className = 'sos-marker';
               el.style.backgroundColor = getSeverityColor(signal.severity_level);
-              el.style.width = '30px';
-              el.style.height = '30px';
+              el.style.width = '10px';
+              el.style.height = '10px';
               el.style.borderRadius = '50%';
-              el.style.border = '3px solid white';
+              el.style.border = '2px solid white';
               el.style.cursor = 'pointer';
-              el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+              el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
+              el.style.transition = 'all 0.2s';
+
+              // Hover effect
+              el.addEventListener('mouseenter', () => {
+                el.style.width = '16px';
+                el.style.height = '16px';
+                el.style.boxShadow = '0 0 12px rgba(255,0,0,0.9)';
+              });
+              el.addEventListener('mouseleave', () => {
+                el.style.width = '10px';
+                el.style.height = '10px';
+                el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
+              });
 
               try {
                 const marker = new mapboxgl.Marker(el)
