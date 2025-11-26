@@ -430,27 +430,13 @@ const RescueMap = () => {
         el.style.transform = 'scale(1)';
       });
 
-      // Click handler
+      // Click handler - sin mover el mapa
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         console.log('Marker clicked:', signal.id);
         setSelectedSOS(signal);
         setShowActionDialog(true);
-        
-        // Center map smoothly on clicked marker
-        if (map.current) {
-          setTimeout(() => {
-            if (map.current) {
-              map.current.easeTo({
-                center: [lng, lat],
-                zoom: Math.max(map.current.getZoom(), 14),
-                duration: 500,
-                padding: { top: 100, bottom: 100, left: 50, right: 50 }
-              });
-            }
-          }, 100);
-        }
       });
 
       // Create marker
