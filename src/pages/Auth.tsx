@@ -15,13 +15,11 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    role: 'victim',
-    countryCode: 'TH',
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'victim' | 'rescuer'>('victim');
+  const [countryCode, setCountryCode] = useState<'TH' | 'VN' | 'MY' | 'ID'>('TH');
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,32 +28,32 @@ const Auth = () => {
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
+          email,
+          password,
           options: {
             data: {
-              full_name: formData.fullName,
-              role: formData.role,
-              country_code: formData.countryCode,
+              full_name: fullName,
+              role: role,
+              country_code: countryCode,
             },
-            emailRedirectTo: `${window.location.origin}/`,
           },
         });
-
         if (error) throw error;
-        toast.success(t('success'), { description: 'Account created successfully!' });
-        navigate('/');
+        toast.success(t('auth.signupSuccess'), {
+          description: 'Tu cuenta ha sido creada exitosamente',
+        });
+        // Don't navigate immediately, let auth state change handle it
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
+          email,
+          password,
         });
-
         if (error) throw error;
+        toast.success(t('auth.signinSuccess'));
         navigate('/');
       }
     } catch (error: any) {
-      toast.error(t('error'), { description: error.message });
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -98,23 +96,40 @@ const Auth = () => {
                     id="fullName"
                     type="text"
                     required
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="text-lg h-12"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="h-12"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">{t('role')}</Label>
                   <Select
-                    value={formData.role}
-                    onValueChange={(value) => setFormData({ ...formData, role: value })}
+                    value={role}
+                    onValueChange={(value: 'victim' | 'rescuer') => setRole(value)}
                   >
-                    <SelectTrigger className="text-lg h-12">
+                    <SelectTrigger className="h-12">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="victim">{t('role_victim')}</SelectItem>
                       <SelectItem value="rescuer">{t('role_rescuer')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">{t('country')}</Label>
+                  <Select
+                    value={countryCode}
+                    onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setCountryCode(value)}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TH">Thailand</SelectItem>
+                      <SelectItem value="VN">Vietnam</SelectItem>
+                      <SelectItem value="MY">Malaysia</SelectItem>
+                      <SelectItem value="ID">Indonesia</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -127,9 +142,9 @@ const Auth = () => {
                 id="email"
                 type="email"
                 required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="text-lg h-12"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12"
               />
             </div>
 
@@ -139,11 +154,16 @@ const Auth = () => {
                 id="password"
                 type="password"
                 required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="text-lg h-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12"
                 minLength={6}
               />
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">
+                  Mínimo 6 caracteres
+                </p>
+              )}
             </div>
 
             <Button

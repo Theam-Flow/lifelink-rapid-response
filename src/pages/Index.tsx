@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertCircle, Users, MapPin, Heart } from 'lucide-react';
@@ -10,12 +11,68 @@ const Index = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
+  const [stats, setStats] = useState({
+    activeSOS: 0,
+    activeRescuers: 0,
+    peopleRescued: 0,
+  });
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchStats = async () => {
+      // Fetch active SOS count
+      const { count: sosCount } = await supabase
+        .from('sos_signals')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['active', 'acknowledged']);
+
+      // Fetch active rescuers count
+      const { count: rescuerCount } = await supabase
+        .from('rescuer_activity')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'available');
+
+      // Fetch rescued count
+      const { count: rescuedCount } = await supabase
+        .from('sos_signals')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'rescued');
+
+      setStats({
+        activeSOS: sosCount || 0,
+        activeRescuers: rescuerCount || 0,
+        peopleRescued: rescuedCount || 0,
+      });
+    };
+
+    fetchStats();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('stats_updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sos_signals' },
+        () => fetchStats()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rescuer_activity' },
+        () => fetchStats()
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [user]);
 
   if (loading) {
     return (
@@ -108,21 +165,21 @@ const Index = () => {
           <Card>
             <CardContent className="pt-6 text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.activeSOS}</p>
               <p className="text-sm text-muted-foreground">Active SOS</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.activeRescuers}</p>
               <p className="text-sm text-muted-foreground">Active Rescuers</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Heart className="h-8 w-8 mx-auto mb-2 text-secondary" />
-              <p className="text-3xl font-bold">0</p>
+              <p className="text-3xl font-bold">{stats.peopleRescued}</p>
               <p className="text-sm text-muted-foreground">People Rescued</p>
             </CardContent>
           </Card>
