@@ -949,12 +949,30 @@ const RescueMap = () => {
                 className="cursor-pointer hover:shadow-md transition-all"
                 onClick={() => {
                   setSelectedSOS(signal);
-                  // Center map on SOS location immediately
-                  if (signal.lng && signal.lat && map.current) {
-                    setTimeout(() => {
-                      map.current?.setCenter([signal.lng!, signal.lat!]);
-                      map.current?.setZoom(15);
-                    }, 100);
+                  
+                  // Navigate to SOS location on map
+                  let lng: number | undefined, lat: number | undefined;
+                  
+                  if (signal.lng !== undefined && signal.lat !== undefined) {
+                    lng = signal.lng;
+                    lat = signal.lat;
+                  } else if (signal.location) {
+                    // Parse location if needed
+                    const locationStr = String(signal.location || '');
+                    const match = locationStr.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+                    if (match) {
+                      lng = parseFloat(match[1]);
+                      lat = parseFloat(match[2]);
+                    }
+                  }
+                  
+                  if (lng !== undefined && lat !== undefined && map.current) {
+                    map.current.flyTo({
+                      center: [lng, lat],
+                      zoom: 16,
+                      duration: 1500,
+                      essential: true
+                    });
                   }
                 }}
               >
@@ -1032,12 +1050,30 @@ const RescueMap = () => {
                 onClick={() => {
                   setSelectedSOS(signal);
                   setShowSOSList(false);
-                  // Center map on SOS location
-                  if (signal.lng && signal.lat && map.current) {
-                    setTimeout(() => {
-                      map.current?.setCenter([signal.lng!, signal.lat!]);
-                      map.current?.setZoom(15);
-                    }, 100);
+                  
+                  // Navigate to SOS location on map
+                  let lng: number | undefined, lat: number | undefined;
+                  
+                  if (signal.lng !== undefined && signal.lat !== undefined) {
+                    lng = signal.lng;
+                    lat = signal.lat;
+                  } else if (signal.location) {
+                    // Parse location if needed
+                    const locationStr = String(signal.location || '');
+                    const match = locationStr.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+                    if (match) {
+                      lng = parseFloat(match[1]);
+                      lat = parseFloat(match[2]);
+                    }
+                  }
+                  
+                  if (lng !== undefined && lat !== undefined && map.current) {
+                    map.current.flyTo({
+                      center: [lng, lat],
+                      zoom: 16,
+                      duration: 1500,
+                      essential: true
+                    });
                   }
                 }}
               >
