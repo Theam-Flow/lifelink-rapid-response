@@ -36,7 +36,6 @@ const RescueMap = () => {
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [isLoadingToken, setIsLoadingToken] = useState(true);
@@ -155,7 +154,7 @@ const RescueMap = () => {
     };
   }, [mapboxToken, t]);
 
-  // Fetch SOS signals
+  // Fetch SOS signals and setup clustering
   useEffect(() => {
     if (!mapLoaded || !map.current || !mapboxToken) return;
 
@@ -178,59 +177,31 @@ const RescueMap = () => {
           console.log('SOS Signals with distance fetched:', data);
           setSOSSignals(data as SOSSignal[]);
           
-          // Clear existing markers
-          markersRef.current.forEach(marker => marker.remove());
-          markersRef.current = [];
-
-            // Add markers for each SOS
-            data.forEach((signal: SOSSignal) => {
-              if (!map.current || !map.current.loaded() || !signal.lng || !signal.lat) return;
-
-              const el = document.createElement('div');
-              el.className = 'sos-marker';
-              el.style.backgroundColor = getSeverityColor(signal.severity_level);
-              el.style.width = '10px';
-              el.style.height = '10px';
-              el.style.borderRadius = '50%';
-              el.style.border = '2px solid white';
-              el.style.cursor = 'pointer';
-              el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
-              el.style.transition = 'all 0.2s';
-
-              // Hover effect
-              el.addEventListener('mouseenter', () => {
-                el.style.width = '16px';
-                el.style.height = '16px';
-                el.style.boxShadow = '0 0 12px rgba(255,0,0,0.9)';
-              });
-              el.addEventListener('mouseleave', () => {
-                el.style.width = '10px';
-                el.style.height = '10px';
-                el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
-              });
-
-              try {
-                const marker = new mapboxgl.Marker(el)
-                  .setLngLat([signal.lng, signal.lat])
-                  .addTo(map.current!);
-
-                marker.getElement().addEventListener('click', () => {
-                  setSelectedSOS(signal);
-                  setShowChat(true);
-                  if (map.current && map.current.loaded()) {
-                    map.current.flyTo({
-                      center: [signal.lng!, signal.lat!],
-                      zoom: 14,
-                      duration: 1000
-                    });
-                  }
-                });
-
-                markersRef.current.push(marker);
-              } catch (error) {
-                console.error('Error adding marker:', error);
+          // Convert to GeoJSON format for clustering
+          const geojson = {
+            type: 'FeatureCollection',
+            features: data.map((signal: SOSSignal) => ({
+              type: 'Feature',
+              properties: {
+                id: signal.id,
+                severity_level: signal.severity_level,
+                type: signal.type,
+                description: signal.description,
+                victim_count: signal.victim_count,
+                status: signal.status,
+                created_at: signal.created_at,
+                user_id: signal.user_id,
+                accuracy_meters: signal.accuracy_meters,
+                distance_meters: signal.distance_meters,
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [signal.lng, signal.lat]
               }
-            });
+            })).filter((f: any) => f.geometry.coordinates[0] && f.geometry.coordinates[1])
+          };
+
+          updateClusterLayers(geojson);
         }
       } else {
         // Fallback to old method if no user location
@@ -259,84 +230,203 @@ const RescueMap = () => {
 
         if (data) {
           console.log('SOS Signals fetched:', data);
-          
-          markersRef.current.forEach(marker => marker.remove());
-          markersRef.current = [];
-
           setSOSSignals(data);
 
-          data.forEach((signal) => {
-            if (!map.current) return;
+          // Process coordinates and create GeoJSON
+          const promises = data.map(async (signal) => {
+            const { data: coordData, error: coordError } = await supabase
+              .rpc('get_sos_coordinates', { sos_id: signal.id });
             
-            // Extract coordinates using PostGIS helper
-            const extractCoords = async () => {
-              const { data: coordData, error: coordError } = await supabase
-                .rpc('get_sos_coordinates', { sos_id: signal.id });
-              
-              if (coordError || !coordData || coordData.length === 0) {
-                console.error('Error getting coordinates for signal:', signal.id, coordError);
-                return null;
+            if (coordError || !coordData || coordData.length === 0) {
+              return null;
+            }
+            
+            const coords = coordData[0];
+            return {
+              type: 'Feature',
+              properties: {
+                id: signal.id,
+                severity_level: signal.severity_level,
+                type: signal.type,
+                description: signal.description,
+                victim_count: signal.victim_count,
+                status: signal.status,
+                created_at: signal.created_at,
+                user_id: signal.user_id,
+                accuracy_meters: signal.accuracy_meters,
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [coords.lng, coords.lat]
               }
-              
-              return coordData[0];
             };
-
-            extractCoords().then((coords) => {
-              if (!coords || !map.current || !map.current.loaded()) return;
-              
-              const lng = coords.lng;
-              const lat = coords.lat;
-
-              console.log(`Creating marker for SOS ${signal.id} at [${lng}, ${lat}]`);
-
-              const el = document.createElement('div');
-              el.className = 'sos-marker';
-              el.style.backgroundColor = getSeverityColor(signal.severity_level);
-              el.style.width = '10px';
-              el.style.height = '10px';
-              el.style.borderRadius = '50%';
-              el.style.border = '2px solid white';
-              el.style.cursor = 'pointer';
-              el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
-              el.style.transition = 'all 0.2s';
-
-              // Hover effect
-              el.addEventListener('mouseenter', () => {
-                el.style.width = '16px';
-                el.style.height = '16px';
-                el.style.boxShadow = '0 0 12px rgba(255,0,0,0.9)';
-              });
-              el.addEventListener('mouseleave', () => {
-                el.style.width = '10px';
-                el.style.height = '10px';
-                el.style.boxShadow = '0 0 8px rgba(255,0,0,0.6)';
-              });
-
-              try {
-                const marker = new mapboxgl.Marker(el)
-                  .setLngLat([lng, lat])
-                  .addTo(map.current!);
-
-                marker.getElement().addEventListener('click', () => {
-                  setSelectedSOS(signal);
-                  setShowChat(true);
-                  if (map.current && map.current.loaded()) {
-                    map.current.flyTo({
-                      center: [lng, lat],
-                      zoom: 14,
-                      duration: 1000
-                    });
-                  }
-                });
-
-                markersRef.current.push(marker);
-              } catch (error) {
-                console.error('Error adding marker:', error);
-              }
-            });
           });
+
+          const features = (await Promise.all(promises)).filter(f => f !== null);
+          const geojson = {
+            type: 'FeatureCollection',
+            features
+          };
+
+          updateClusterLayers(geojson);
         }
       }
+    };
+
+    const updateClusterLayers = (geojson: any) => {
+      if (!map.current || !map.current.loaded()) return;
+
+      // Remove existing source and layers if they exist
+      if (map.current.getLayer('clusters')) map.current.removeLayer('clusters');
+      if (map.current.getLayer('cluster-count')) map.current.removeLayer('cluster-count');
+      if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
+      if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
+
+      // Add source with clustering enabled
+      map.current.addSource('sos-signals', {
+        type: 'geojson',
+        data: geojson,
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50
+      });
+
+      // Add cluster circles layer
+      map.current.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'sos-signals',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#FF6347',
+            100,
+            '#FF4500',
+            750,
+            '#DC143C'
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            20,
+            100,
+            30,
+            750,
+            40
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#fff'
+        }
+      });
+
+      // Add cluster count labels
+      map.current.addLayer({
+        id: 'cluster-count',
+        type: 'symbol',
+        source: 'sos-signals',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12
+        },
+        paint: {
+          'text-color': '#ffffff'
+        }
+      });
+
+      // Add unclustered points layer
+      map.current.addLayer({
+        id: 'unclustered-point',
+        type: 'circle',
+        source: 'sos-signals',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': [
+            'match',
+            ['get', 'severity_level'],
+            1, '#FFA500',
+            2, '#FF6347',
+            3, '#FF4500',
+            4, '#DC143C',
+            5, '#8B0000',
+            '#FF0000'
+          ],
+          'circle-radius': 6,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#fff',
+          'circle-opacity': 0.9
+        }
+      });
+
+      // Click event on clusters to zoom in
+      map.current.on('click', 'clusters', (e) => {
+        if (!map.current) return;
+        const features = map.current.queryRenderedFeatures(e.point, {
+          layers: ['clusters']
+        });
+        const clusterId = features[0].properties.cluster_id;
+        (map.current.getSource('sos-signals') as mapboxgl.GeoJSONSource).getClusterExpansionZoom(
+          clusterId,
+          (err, zoom) => {
+            if (err || !map.current) return;
+
+            map.current.easeTo({
+              center: (features[0].geometry as any).coordinates,
+              zoom: zoom
+            });
+          }
+        );
+      });
+
+      // Click event on unclustered points to show details
+      map.current.on('click', 'unclustered-point', (e) => {
+        if (!map.current || !e.features || e.features.length === 0) return;
+        
+        const feature = e.features[0];
+        const coordinates = (feature.geometry as any).coordinates.slice();
+        const properties = feature.properties;
+
+        // Reconstruct signal from properties
+        const signal: SOSSignal = {
+          id: properties.id,
+          severity_level: properties.severity_level,
+          type: properties.type,
+          description: properties.description,
+          victim_count: properties.victim_count,
+          status: properties.status,
+          created_at: properties.created_at,
+          user_id: properties.user_id,
+          accuracy_meters: properties.accuracy_meters || null,
+          lng: coordinates[0],
+          lat: coordinates[1],
+          distance_meters: properties.distance_meters,
+        };
+
+        setSelectedSOS(signal);
+        setShowChat(true);
+        map.current.flyTo({
+          center: coordinates,
+          zoom: 14,
+          duration: 1000
+        });
+      });
+
+      // Change cursor on hover
+      map.current.on('mouseenter', 'clusters', () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', 'clusters', () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+      map.current.on('mouseenter', 'unclustered-point', () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', 'unclustered-point', () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
     };
 
     fetchSOSSignals();
@@ -358,8 +448,12 @@ const RescueMap = () => {
 
     return () => {
       channel.unsubscribe();
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
+      if (map.current) {
+        if (map.current.getLayer('clusters')) map.current.removeLayer('clusters');
+        if (map.current.getLayer('cluster-count')) map.current.removeLayer('cluster-count');
+        if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
+        if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
+      }
     };
   }, [mapLoaded, mapboxToken, t, userLocation]);
 
