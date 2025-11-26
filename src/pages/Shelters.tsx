@@ -35,6 +35,7 @@ interface Shelter {
   supplies_status: any;
   photo_urls: string[] | null;
   created_at: string;
+  manager_id: string | null;
 }
 
 const Shelters = () => {
@@ -261,7 +262,7 @@ const Shelters = () => {
                             </Badge>
                           </div>
                         </div>
-                        {user && (
+                        {user && shelter.manager_id === user.id && (
                           <div className="flex gap-2">
                             <Button
                               variant="ghost"
