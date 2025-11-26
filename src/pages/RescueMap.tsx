@@ -148,8 +148,11 @@ const RescueMap = () => {
     if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
+      console.log('fetchSOSSignals: Starting fetch...');
+      
       // If user location available, fetch with distance
       if (userLocation) {
+        console.log('fetchSOSSignals: Using user location', userLocation);
         const { data, error } = await supabase
           .rpc('get_sos_with_distance', { 
             user_lng: userLocation.lng, 
@@ -163,6 +166,7 @@ const RescueMap = () => {
         }
 
         if (data) {
+          console.log('fetchSOSSignals: Got signals with distance:', data.length);
           setSOSSignals(data as SOSSignal[]);
           
           // Convert to GeoJSON format for clustering
@@ -189,10 +193,12 @@ const RescueMap = () => {
             })).filter((f: any) => f.geometry.coordinates[0] && f.geometry.coordinates[1])
           };
 
+          console.log('fetchSOSSignals: Created geojson with features:', geojson.features.length);
           updateClusterLayers(geojson);
         }
       } else {
         // Fallback to old method if no user location
+        console.log('fetchSOSSignals: No user location, using fallback');
         const { data, error } = await supabase
           .from('sos_signals')
           .select(`
@@ -217,6 +223,7 @@ const RescueMap = () => {
         }
 
         if (data) {
+          console.log('fetchSOSSignals: Got signals (fallback):', data.length);
           setSOSSignals(data);
 
           // Process coordinates and create GeoJSON
@@ -225,6 +232,7 @@ const RescueMap = () => {
               .rpc('get_sos_coordinates', { sos_id: signal.id });
             
             if (coordError || !coordData || coordData.length === 0) {
+              console.error('Error getting coordinates for signal', signal.id, coordError);
               return null;
             }
             
@@ -255,13 +263,19 @@ const RescueMap = () => {
             features
           };
 
+          console.log('fetchSOSSignals: Created geojson (fallback) with features:', features.length);
           updateClusterLayers(geojson);
         }
       }
     };
 
     const updateClusterLayers = (geojson: any) => {
-      if (!map.current) return;
+      if (!map.current) {
+        console.log('updateClusterLayers: No map available');
+        return;
+      }
+
+      console.log('updateClusterLayers: Adding layers with features:', geojson.features.length);
 
       // Remove existing source and layers if they exist
       try {
@@ -270,7 +284,7 @@ const RescueMap = () => {
         if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
         if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
       } catch (e) {
-        // Layers don't exist yet
+        console.log('No existing layers to remove');
       }
 
       // Add source with clustering enabled
@@ -281,6 +295,8 @@ const RescueMap = () => {
         clusterMaxZoom: 14,
         clusterRadius: 50
       });
+
+      console.log('updateClusterLayers: Source added successfully');
 
       // Add cluster circles layer
       map.current.addLayer({
@@ -320,7 +336,7 @@ const RescueMap = () => {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
           'text-size': 12
         },
         paint: {
@@ -328,7 +344,7 @@ const RescueMap = () => {
         }
       });
 
-      // Add unclustered points layer
+      // Add unclustered points layer - BRIGHT RED CIRCLES
       map.current.addLayer({
         id: 'unclustered-point',
         type: 'circle',
@@ -342,15 +358,17 @@ const RescueMap = () => {
             2, '#FF6347',
             3, '#FF4500',
             4, '#DC143C',
-            5, '#8B0000',
+            5, '#FF0000',
             '#FF0000'
           ],
-          'circle-radius': 6,
-          'circle-stroke-width': 2,
+          'circle-radius': 8,
+          'circle-stroke-width': 3,
           'circle-stroke-color': '#fff',
-          'circle-opacity': 0.9
+          'circle-opacity': 1
         }
       });
+
+      console.log('updateClusterLayers: All layers added successfully');
 
       // Click event on clusters to zoom in
       map.current.on('click', 'clusters', async (e) => {

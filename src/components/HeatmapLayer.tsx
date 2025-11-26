@@ -16,7 +16,12 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
   const layerIdRef = useRef('sos-heatmap');
 
   useEffect(() => {
-    if (!map || !map.loaded() || sosSignals.length === 0) return;
+    if (!map || sosSignals.length === 0) {
+      console.log('HeatmapLayer: No map or no signals', { hasMap: !!map, signalsCount: sosSignals.length });
+      return;
+    }
+
+    console.log('HeatmapLayer: Adding heatmap with signals:', sosSignals.length);
 
     // Remove existing layer if it exists
     try {
@@ -27,8 +32,7 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
         map.removeSource(layerIdRef.current);
       }
     } catch (error) {
-      console.error('Error removing existing layer:', error);
-      return;
+      console.log('No existing heatmap to remove');
     }
 
     // Convert SOS signals to GeoJSON
@@ -66,6 +70,8 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
       };
     }).filter(Boolean);
 
+    console.log('HeatmapLayer: Features created:', features.length);
+
     if (features.length === 0) return;
 
     // Add source and layer
@@ -85,34 +91,36 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
         source: layerIdRef.current,
         paint: {
           // Increase weight as severity increases
-          'heatmap-weight': ['get', 'weight'],
+          'heatmap-weight': ['interpolate', ['linear'], ['get', 'weight'], 1, 0.5, 5, 1],
           // Increase intensity as zoom level increases
           'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 15, 3],
-          // Color ramp for heatmap
+          // Color ramp for heatmap - red/orange theme for emergencies
           'heatmap-color': [
             'interpolate',
             ['linear'],
             ['heatmap-density'],
-            0, 'rgba(33,102,172,0)',
-            0.2, 'rgb(103,169,207)',
-            0.4, 'rgb(209,229,240)',
-            0.6, 'rgb(253,219,199)',
-            0.8, 'rgb(239,138,98)',
-            1, 'rgb(178,24,43)',
+            0, 'rgba(255,0,0,0)',
+            0.2, 'rgba(255,165,0,0.5)',
+            0.4, 'rgba(255,69,0,0.6)',
+            0.6, 'rgba(255,0,0,0.7)',
+            0.8, 'rgba(220,20,60,0.8)',
+            1, 'rgba(139,0,0,1)',
           ],
           // Radius of influence of one point
-          'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 20, 15, 50],
+          'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 30, 15, 80],
           // Opacity
-          'heatmap-opacity': 0.7,
+          'heatmap-opacity': 0.8,
         },
       });
+      
+      console.log('HeatmapLayer: Successfully added heatmap');
     } catch (error) {
       console.error('Error adding heatmap layer:', error);
     }
 
     return () => {
       try {
-        if (map && map.loaded()) {
+        if (map) {
           if (map.getLayer(layerIdRef.current)) {
             map.removeLayer(layerIdRef.current);
           }
@@ -121,7 +129,7 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
           }
         }
       } catch (error) {
-        console.error('Error cleaning up heatmap layer:', error);
+        // Ignore cleanup errors
       }
     };
   }, [map, sosSignals]);
