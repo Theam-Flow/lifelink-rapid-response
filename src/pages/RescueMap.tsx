@@ -79,8 +79,8 @@ const RescueMap = () => {
   // OPTIMIZACIÓN: React Query para caching + paginación
   const { data: sosSignalsData, refetch: refetchSOS } = useSOSPagination({
     userLocation,
-    radiusKm: 50,
-    pageSize: 200,
+    radiusKm: 200, // Increased radius to show more SOS signals
+    pageSize: 500, // Increased page size for better coverage
     enabled: mapLoaded
   });
 
