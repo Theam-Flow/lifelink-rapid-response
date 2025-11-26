@@ -54,6 +54,7 @@ const RescueMap = () => {
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const shelterMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const [currentZoom, setCurrentZoom] = useState(11);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
@@ -156,6 +157,11 @@ const RescueMap = () => {
           }
         );
       }
+    });
+
+    // Track zoom changes
+    newMap.on('zoom', () => {
+      setCurrentZoom(newMap.getZoom());
     });
 
     return () => {
@@ -360,6 +366,14 @@ const RescueMap = () => {
   // SOS points are now rendered using MapLibre layers (clustering system)
   // No HTML markers needed - the circle layers handle both visualization and interaction
 
+  // Calculate marker size based on zoom level
+  const getMarkerSize = (zoom: number) => {
+    if (zoom < 10) return { width: 6, height: 6, border: 1 };
+    if (zoom < 12) return { width: 10, height: 10, border: 2 };
+    if (zoom < 14) return { width: 14, height: 14, border: 2 };
+    return { width: 18, height: 18, border: 2 };
+  };
+
   // Create HTML markers for SOS signals - VISIBLE AND CLICKABLE
   useEffect(() => {
     if (!map.current || !mapLoaded || sosSignals.length === 0) {
@@ -372,6 +386,9 @@ const RescueMap = () => {
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
+
+    // Get marker size based on current zoom
+    const markerSize = getMarkerSize(currentZoom);
 
     // Create a marker for each SOS signal
     sosSignals.forEach(signal => {
@@ -409,27 +426,55 @@ const RescueMap = () => {
       };
       const color = colors[signal.severity_level as keyof typeof colors] || '#FF0000';
 
-      // Create marker element - completamente estático
+      // Create marker element - tamaño adaptativo
       const el = document.createElement('div');
-      el.style.width = '24px';
-      el.style.height = '24px';
+      el.style.width = `${markerSize.width}px`;
+      el.style.height = `${markerSize.height}px`;
       el.style.borderRadius = '50%';
       el.style.backgroundColor = color;
-      el.style.border = '3px solid white';
+      el.style.border = `${markerSize.border}px solid white`;
       el.style.cursor = 'pointer';
       el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
       el.style.position = 'relative';
       el.style.zIndex = '1000';
       el.className = 'sos-marker-point';
 
-      // Click handler - sin mover el mapa
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        console.log('Marker clicked:', signal.id);
-        setSelectedSOS(signal);
-        setShowActionDialog(true);
-      });
+      // Create popup with basic info
+      const popupHTML = `
+        <div style="padding: 12px; min-width: 200px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${color};"></div>
+            <h3 style="font-weight: bold; margin: 0; font-size: 14px;">
+              ${t(`emergencyTypes.${signal.type}`)}
+            </h3>
+          </div>
+          <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+            <p style="margin: 4px 0;"><strong>${t('sos.severity')}:</strong> ${signal.severity_level}/5</p>
+            ${signal.victim_count ? `<p style="margin: 4px 0;"><strong>${t('sos.victimCount')}:</strong> ${signal.victim_count} ${t('sos.people')}</p>` : ''}
+            ${signal.distance_meters !== undefined ? `
+              <p style="margin: 4px 0;"><strong>${t('map.distance')}:</strong> 
+                ${signal.distance_meters < 1000 
+                  ? `${Math.round(signal.distance_meters)}m` 
+                  : `${(signal.distance_meters / 1000).toFixed(1)}km`}
+              </p>
+            ` : ''}
+            ${signal.description ? `<p style="margin: 4px 0; font-style: italic;">${signal.description.substring(0, 50)}${signal.description.length > 50 ? '...' : ''}</p>` : ''}
+          </div>
+          <button 
+            id="view-details-btn-${signal.id}"
+            style="width: 100%; padding: 6px; background-color: hsl(var(--primary)); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;"
+          >
+            ${t('map.viewDetails')}
+          </button>
+        </div>
+      `;
+
+      const popup = new maplibregl.Popup({ 
+        offset: 25,
+        closeButton: true,
+        closeOnClick: false,
+        maxWidth: '300px'
+      }).setHTML(popupHTML);
 
       // Create marker
       const marker = new maplibregl.Marker({ 
@@ -437,14 +482,27 @@ const RescueMap = () => {
         anchor: 'center'
       })
         .setLngLat([lng, lat])
+        .setPopup(popup)
         .addTo(map.current!);
+
+      // Add event listener to popup button after popup opens
+      popup.on('open', () => {
+        const btn = document.getElementById(`view-details-btn-${signal.id}`);
+        if (btn) {
+          btn.addEventListener('click', () => {
+            setSelectedSOS(signal);
+            setShowActionDialog(true);
+            popup.remove();
+          });
+        }
+      });
 
       markersRef.current.push(marker);
       console.log('Marker created at', lng, lat);
     });
 
     console.log('Total markers created:', markersRef.current.length);
-  }, [sosSignals, mapLoaded, t]);
+  }, [sosSignals, mapLoaded, currentZoom, t]);
 
   // Fetch shelters
   useEffect(() => {
