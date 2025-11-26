@@ -36,6 +36,7 @@ const RescueMap = () => {
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
@@ -136,12 +137,16 @@ const RescueMap = () => {
     });
 
     return () => {
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      
       if (map.current) {
         map.current.remove();
-      map.current = null;
-    }
-  };
-}, [t]);
+        map.current = null;
+      }
+    };
+  }, [t]);
 
   // Fetch SOS signals and setup clustering
   useEffect(() => {
@@ -461,6 +466,10 @@ const RescueMap = () => {
 
     return () => {
       channel.unsubscribe();
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      
       if (map.current) {
         if (map.current.getLayer('clusters')) map.current.removeLayer('clusters');
         if (map.current.getLayer('cluster-count')) map.current.removeLayer('cluster-count');
@@ -469,6 +478,95 @@ const RescueMap = () => {
       }
     };
   }, [mapLoaded, t, userLocation]);
+
+  // Create HTML markers for SOS signals
+  useEffect(() => {
+    if (!map.current || !mapLoaded || sosSignals.length === 0) return;
+
+    console.log('Creating HTML markers for', sosSignals.length, 'SOS signals');
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Create a marker for each SOS signal
+    sosSignals.forEach(signal => {
+      let lng: number, lat: number;
+
+      // Get coordinates
+      if (signal.lng !== undefined && signal.lat !== undefined) {
+        lng = signal.lng;
+        lat = signal.lat;
+      } else if (signal.location) {
+        const locationStr = String(signal.location || '');
+        const coords = locationStr
+          .replace('POINT(', '')
+          .replace(')', '')
+          .split(' ')
+          .map(parseFloat);
+        
+        if (coords.length !== 2 || coords.some(isNaN)) {
+          console.error('Invalid coordinates for signal', signal.id);
+          return;
+        }
+        [lng, lat] = coords;
+      } else {
+        console.error('No location data for signal', signal.id);
+        return;
+      }
+
+      // Create marker element
+      const el = document.createElement('div');
+      el.className = `sos-marker sos-marker-severity-${signal.severity_level}`;
+      el.style.zIndex = '1000';
+
+      // Create popup with signal info
+      const popup = new maplibregl.Popup({ 
+        offset: 25,
+        closeButton: true,
+        closeOnClick: false
+      }).setHTML(`
+        <div style="padding: 8px; min-width: 200px;">
+          <h3 style="font-weight: bold; margin-bottom: 4px; color: ${getSeverityColor(signal.severity_level)}">
+            ${t(`emergencyTypes.${signal.type}`)}
+          </h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 4px;">
+            ${t('sos.severity')}: ${signal.severity_level}/5
+          </p>
+          ${signal.description ? `<p style="font-size: 12px; margin-bottom: 8px;">${signal.description}</p>` : ''}
+          ${signal.victim_count ? `<p style="font-size: 12px; color: #666;">${signal.victim_count} ${t('sos.people')}</p>` : ''}
+        </div>
+      `);
+
+      // Create marker
+      const marker = new maplibregl.Marker({ 
+        element: el,
+        anchor: 'center'
+      })
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+
+      // Add click handler
+      el.addEventListener('click', () => {
+        setSelectedSOS(signal);
+        setShowChat(true);
+        
+        // Center map on clicked marker
+        if (map.current) {
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 15,
+            duration: 1000
+          });
+        }
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    console.log('Created', markersRef.current.length, 'HTML markers');
+  }, [sosSignals, mapLoaded, t]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
