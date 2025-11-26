@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, User, MapPin, Phone, Mail, Calendar, Shield, Save } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Phone, Mail, Calendar, Shield, Save, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Profile {
@@ -246,7 +246,7 @@ const Profile = () => {
                   className="hidden"
                   disabled={uploading}
                 />
-                <User className="h-5 w-5" />
+                <Plus className="h-5 w-5" />
               </label>
             </div>
           </div>
