@@ -37,7 +37,18 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+// Configuración optimizada de React Query para caching inteligente
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000, // 30 segundos - datos considerados frescos
+      gcTime: 5 * 60_000, // 5 minutos - tiempo en cache
+      refetchOnWindowFocus: false, // No refetch automático al cambiar tabs
+      retry: 3, // 3 reintentos en caso de error
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
+    },
+  },
+});
 
 const AnimatedRoutes = () => {
   const location = useLocation();
