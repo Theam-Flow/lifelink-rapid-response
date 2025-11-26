@@ -31,14 +31,14 @@ import { LazyImage } from '@/components/LazyImage';
 Dividimos el código en chunks optimizados:
 - `react-vendor`: React core (~140KB)
 - `ui-vendor`: Framer Motion, React Swipeable (~80KB)
-- `map-vendor`: Mapbox GL (~200KB)
+- `map-vendor`: MapLibre GL (~200KB)
 - `supabase-vendor`: Cliente Supabase (~60KB)
 
 **Resultado**: Carga paralela más rápida, mejor caché del navegador
 
 ### 4. **PWA Optimizations**
 - Cache de fuentes de Google (1 año)
-- Cache de API de Mapbox (24 horas)
+- Cache de tiles OpenStreetMap (24 horas)
 - Service Worker con estrategias de caché inteligentes
 - Funciona offline para contenido ya visitado
 

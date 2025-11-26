@@ -1,4 +1,4 @@
 project_id = "uatrqjqrfufwrdoxhcpe"
 
-[functions.get-mapbox-token]
+[functions.get-clusters]
 verify_jwt = false
