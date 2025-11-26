@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import maplibregl from 'maplibre-gl';
@@ -6,6 +6,9 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRescuerTracking } from '@/hooks/useRescuerTracking';
+import { useSOSPagination } from '@/hooks/useSOSPagination';
+import { useGeofencedRealtime } from '@/hooks/useGeofencedRealtime';
+import { useBackendClustering } from '@/hooks/useBackendClustering';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -70,6 +73,42 @@ const RescueMap = () => {
   const sosNotificationChannelRef = useRef<ReturnType<typeof setupSOSNotifications> | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
+
+  // OPTIMIZACIÓN: React Query para caching + paginación
+  const { data: sosSignalsData, refetch: refetchSOS } = useSOSPagination({
+    userLocation,
+    radiusKm: 50,
+    pageSize: 200,
+    enabled: mapLoaded
+  });
+
+  // Actualizar estado local cuando cambien los datos
+  useEffect(() => {
+    if (sosSignalsData) {
+      setSOSSignals(sosSignalsData);
+    }
+  }, [sosSignalsData]);
+
+  // OPTIMIZACIÓN: Realtime geofenced (solo viewport visible)
+  const [mapBounds, setMapBounds] = useState<{ west: number; south: number; east: number; north: number } | null>(null);
+  
+  const handleRealtimeUpdate = useCallback(() => {
+    refetchSOS();
+  }, [refetchSOS]);
+
+  useGeofencedRealtime({
+    bounds: mapBounds,
+    enabled: mapLoaded && !!user,
+    onUpdate: handleRealtimeUpdate
+  });
+
+  // OPTIMIZACIÓN: Backend clustering para bajo zoom
+  const shouldUseBackendClustering = currentZoom < 12;
+  const { data: backendClusters } = useBackendClustering({
+    bounds: mapBounds,
+    zoom: currentZoom,
+    enabled: shouldUseBackendClustering && mapLoaded
+  });
 
   // Handle window resize for mobile detection
   useEffect(() => {
@@ -484,29 +523,7 @@ const RescueMap = () => {
     };
   }, [sosSignals, mapLoaded, currentZoom, t]);
 
-  // Re-fetch SOS signals when user location becomes available to show distances
-  useEffect(() => {
-    if (userLocation && mapLoaded && map.current) {
-      // Re-fetch to get distance data
-      const fetchWithDistance = async () => {
-        const { data, error } = await supabase
-          .rpc('get_sos_with_distance', { 
-            user_lng: userLocation.lng, 
-            user_lat: userLocation.lat 
-          });
-
-        if (!error && data) {
-          setSOSSignals(data as SOSSignal[]);
-        }
-      };
-      
-      fetchWithDistance();
-    }
-  }, [userLocation, mapLoaded]);
-
-  // SOS points are now rendered using GPU-accelerated MapLibre vector layers
-  // No HTML markers needed - optimized for hundreds of thousands of points
-  // Clustering is handled by MapLibre's native clustering system
+  // No longer needed - usando hooks optimizados
 
   // Fetch shelters
   useEffect(() => {
