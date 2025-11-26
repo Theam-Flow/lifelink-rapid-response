@@ -5,8 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Truck, Heart, Wrench, Package } from 'lucide-react';
+import { ArrowLeft, Truck, Heart, Wrench, Package, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Resource {
   id: string;
@@ -23,6 +24,7 @@ interface Resource {
 }
 
 const Resources = () => {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [resources, setResources] = useState<Resource[]>([]);
@@ -48,7 +50,7 @@ const Resources = () => {
 
       if (error) {
         console.error('Error fetching resources:', error);
-        toast.error('Error al cargar recursos');
+        toast.error(t('resources.registerError'));
         return;
       }
 
@@ -109,7 +111,7 @@ const Resources = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Cargando...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -117,16 +119,22 @@ const Resources = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4">
       <div className="max-w-6xl mx-auto space-y-6 py-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Recursos Disponibles</h1>
-            <p className="text-muted-foreground">
-              Vehículos, equipamiento y suministros de la comunidad
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">{t('resources.title')}</h1>
+              <p className="text-muted-foreground">
+                {t('resources.registerDescription')}
+              </p>
+            </div>
           </div>
+          <Button onClick={() => navigate('/resources/register')}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('resources.addResource')}
+          </Button>
         </div>
 
         {/* Resource Grid */}
@@ -140,30 +148,30 @@ const Resources = () => {
                     <CardTitle className="text-lg">{resource.name}</CardTitle>
                   </div>
                   <Badge variant={getStatusColor(resource.status, resource.available_now)}>
-                    {resource.available_now ? resource.status : 'No disponible'}
+                    {resource.available_now ? t(`resources.statuses.${resource.status}`) : t('resources.statuses.offline')}
                   </Badge>
                 </div>
                 <CardDescription>
-                  Tipo: {resource.type.replace('_', ' ')}
+                  {t(`resources.types.${resource.type}`)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {resource.capacity && (
                   <p className="text-sm">
-                    <strong>Capacidad:</strong> {resource.capacity} personas
+                    <strong>{t('resources.capacity')}:</strong> {resource.capacity}
                   </p>
                 )}
                 {resource.volunteer_operator && (
                   <p className="text-sm">
-                    <strong>Operador:</strong> {resource.volunteer_operator}
+                    <strong>{t('resources.operator')}:</strong> {resource.volunteer_operator}
                   </p>
                 )}
                 <p className="text-sm">
-                  <strong>Propietario:</strong> {resource.profiles.full_name}
+                  <strong>{t('auth.fullName')}:</strong> {resource.profiles.full_name}
                 </p>
                 {resource.available_now && resource.status === 'available' && (
                   <Button variant="default" size="sm" className="w-full mt-2">
-                    Solicitar Recurso
+                    {t('resources.registerButton')}
                   </Button>
                 )}
               </CardContent>
@@ -174,10 +182,14 @@ const Resources = () => {
         {resources.length === 0 && (
           <Card className="p-12 text-center">
             <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No hay recursos registrados</h3>
-            <p className="text-muted-foreground">
-              Los equipos de rescate pueden registrar sus recursos aquí
+            <h3 className="text-xl font-semibold mb-2">{t('resources.noResources')}</h3>
+            <p className="text-muted-foreground mb-4">
+              {t('resources.registerPrompt')}
             </p>
+            <Button onClick={() => navigate('/resources/register')}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('resources.addResource')}
+            </Button>
           </Card>
         )}
       </div>

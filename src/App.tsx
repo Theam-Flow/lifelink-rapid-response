@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import SOS from "./pages/SOS";
 import RescueMap from "./pages/RescueMap";
 import Resources from "./pages/Resources";
+import RegisterResource from "./pages/RegisterResource";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const AppContent = () => {
         <Route path="/sos" element={<SOS />} />
         <Route path="/rescue-map" element={<RescueMap />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/resources/register" element={<RegisterResource />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
