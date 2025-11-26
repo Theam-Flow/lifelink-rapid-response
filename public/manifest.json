@@ -1,0 +1,41 @@
+{
+  "name": "LifeLink Asia",
+  "short_name": "LifeLink",
+  "description": "Emergency disaster response and coordination system for Southeast Asia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["emergency", "utilities", "navigation"],
+  "shortcuts": [
+    {
+      "name": "Send SOS",
+      "short_name": "SOS",
+      "description": "Send emergency signal",
+      "url": "/sos",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rescue Map",
+      "short_name": "Map",
+      "description": "View rescue operations",
+      "url": "/rescue-map",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
