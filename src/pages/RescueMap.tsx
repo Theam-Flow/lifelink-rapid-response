@@ -1226,7 +1226,7 @@ const RescueMap = () => {
 
       {/* Chat Panel - Full width on mobile, sidebar on desktop */}
       {showChat && selectedSOS && (
-        <div className={isMobile ? "fixed inset-0 z-[2000] bg-background" : "w-96 border-l bg-background z-[1500]"}>
+        <div className={isMobile ? "fixed inset-0 z-[2000] bg-background flex flex-col" : "w-96 h-full border-l bg-background z-[1500] flex flex-col"}>
           <Chat sosId={selectedSOS.id} onClose={() => setShowChat(false)} />
         </div>
       )}
