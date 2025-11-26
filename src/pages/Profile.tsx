@@ -187,7 +187,7 @@ const Profile = () => {
                   <h3 className="text-2xl font-bold">{profile.full_name}</h3>
                   <div className="flex flex-col gap-2">
                     <Badge variant={getRoleBadgeVariant(profile.role)}>
-                      {t(`role_${profile.role}`)}
+                      {t(`roles.${profile.role}`)}
                     </Badge>
                     <Badge variant={getStatusBadgeVariant(profile.status)}>
                       {t(`profile.status_${profile.status}`)}
@@ -236,7 +236,7 @@ const Profile = () => {
                   {editMode ? (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="full_name">{t('fullname')}</Label>
+                        <Label htmlFor="full_name">{t('auth.fullName')}</Label>
                         <Input
                           id="full_name"
                           value={formData.full_name}
@@ -294,7 +294,7 @@ const Profile = () => {
                       <div className="flex items-start gap-3">
                         <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                         <div>
-                          <p className="text-sm text-muted-foreground">{t('fullname')}</p>
+                          <p className="text-sm text-muted-foreground">{t('auth.fullName')}</p>
                           <p className="font-medium">{profile.full_name}</p>
                         </div>
                       </div>
