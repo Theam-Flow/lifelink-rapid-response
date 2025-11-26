@@ -30,6 +30,19 @@ interface SOSSignal {
   distance_meters?: number;
 }
 
+interface Shelter {
+  id: string;
+  name: string;
+  type: string;
+  location: unknown;
+  address: string | null;
+  contact_phone: string | null;
+  capacity_max: number | null;
+  capacity_current: number | null;
+  is_verified: boolean | null;
+  photo_urls: string[] | null;
+}
+
 const RescueMap = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -37,7 +50,9 @@ const RescueMap = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const shelterMarkersRef = useRef<maplibregl.Marker[]>([]);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
+  const [shelters, setShelters] = useState<Shelter[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
@@ -140,6 +155,8 @@ const RescueMap = () => {
       // Clean up markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
+      shelterMarkersRef.current.forEach(marker => marker.remove());
+      shelterMarkersRef.current = [];
       
       if (map.current) {
         map.current.remove();
@@ -567,6 +584,148 @@ const RescueMap = () => {
 
     console.log('Created', markersRef.current.length, 'HTML markers');
   }, [sosSignals, mapLoaded, t]);
+
+  // Fetch shelters
+  useEffect(() => {
+    const fetchShelters = async () => {
+      const { data, error } = await supabase
+        .from('shelters')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching shelters:', error);
+        return;
+      }
+
+      if (data) {
+        setShelters(data);
+      }
+    };
+
+    fetchShelters();
+  }, []);
+
+  // Create HTML markers for shelters
+  useEffect(() => {
+    if (!map.current || !mapLoaded || shelters.length === 0) return;
+
+    console.log('Creating shelter markers for', shelters.length, 'shelters');
+
+    // Clear existing shelter markers
+    shelterMarkersRef.current.forEach(marker => marker.remove());
+    shelterMarkersRef.current = [];
+
+    // Create a marker for each shelter
+    shelters.forEach(shelter => {
+      let lng: number, lat: number;
+
+      // Parse location
+      if (shelter.location) {
+        const locationStr = String(shelter.location || '');
+        const match = locationStr.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+        if (match) {
+          lng = parseFloat(match[1]);
+          lat = parseFloat(match[2]);
+        } else {
+          console.error('Invalid location format for shelter', shelter.id);
+          return;
+        }
+      } else {
+        console.error('No location data for shelter', shelter.id);
+        return;
+      }
+
+      if (isNaN(lng) || isNaN(lat)) {
+        console.error('Invalid coordinates for shelter', shelter.id);
+        return;
+      }
+
+      // Get shelter icon
+      const icon = getShelterIcon(shelter.type);
+
+      // Create marker element
+      const el = document.createElement('div');
+      el.className = 'shelter-marker';
+      el.innerHTML = `
+        <div class="shelter-marker-icon">
+          <span>${icon}</span>
+        </div>
+      `;
+
+      // Create popup with shelter info
+      const capacityPercentage = shelter.capacity_max && shelter.capacity_current 
+        ? (shelter.capacity_current / shelter.capacity_max) * 100 
+        : 0;
+      
+      const capacityColor = capacityPercentage >= 90 ? '#dc2626' 
+        : capacityPercentage >= 70 ? '#eab308' 
+        : '#22c55e';
+
+      const popup = new maplibregl.Popup({ 
+        offset: 25,
+        closeButton: true,
+        closeOnClick: false
+      }).setHTML(`
+        <div style="padding: 8px; min-width: 220px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 24px;">${icon}</span>
+            <h3 style="font-weight: bold; margin: 0;">
+              ${shelter.name}
+            </h3>
+            ${shelter.is_verified ? '<span style="color: #22c55e;">✓</span>' : ''}
+          </div>
+          <p style="font-size: 12px; color: #666; margin-bottom: 4px;">
+            ${t(`shelters.type_${shelter.type}`) || shelter.type}
+          </p>
+          ${shelter.capacity_max ? `
+            <div style="padding: 8px; background: #f3f4f6; border-radius: 4px; margin-bottom: 8px;">
+              <p style="font-size: 12px; margin: 0;">
+                <span style="color: #666;">Capacidad:</span>
+                <span style="color: ${capacityColor}; font-weight: bold;">
+                  ${shelter.capacity_current || 0} / ${shelter.capacity_max}
+                </span>
+              </p>
+            </div>
+          ` : ''}
+          ${shelter.address ? `
+            <p style="font-size: 11px; color: #666; margin: 4px 0;">
+              📍 ${shelter.address}
+            </p>
+          ` : ''}
+          ${shelter.contact_phone ? `
+            <p style="font-size: 11px; color: #666; margin: 4px 0;">
+              📞 <a href="tel:${shelter.contact_phone}" style="color: inherit;">${shelter.contact_phone}</a>
+            </p>
+          ` : ''}
+        </div>
+      `);
+
+      // Create marker
+      const marker = new maplibregl.Marker({ 
+        element: el,
+        anchor: 'center'
+      })
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+
+      shelterMarkersRef.current.push(marker);
+    });
+
+    console.log('Created', shelterMarkersRef.current.length, 'shelter markers');
+  }, [shelters, mapLoaded, t]);
+
+  const getShelterIcon = (type: string) => {
+    switch (type) {
+      case 'temple': return '🛕';
+      case 'school': return '🏫';
+      case 'hospital': return '🏥';
+      case 'high_ground': return '⛰️';
+      case 'community_center': return '🏛️';
+      case 'sports_complex': return '🏟️';
+      default: return '🏠';
+    }
+  };
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
