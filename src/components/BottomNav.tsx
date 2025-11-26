@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Home, AlertCircle, MapPin, Building2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const BottomNav = () => {
+interface BottomNavProps {
+  isDarkMode?: boolean;
+}
+
+export const BottomNav = ({ isDarkMode = false }: BottomNavProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +37,7 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t-2 border-border shadow-2xl z-50 safe-area-inset-bottom pointer-events-none" aria-label="by @withkevinm">
+    <nav className={`md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-lg border-t-2 shadow-2xl z-50 safe-area-inset-bottom pointer-events-none ${isDarkMode ? 'bg-gray-900/95 border-gray-700' : 'bg-card/95 border-border'}`} aria-label="by @withkevinm">
       <div className="flex items-center justify-around h-20 px-1 pointer-events-auto">
         {navItems.map((item) => {
           const Icon = item.icon;

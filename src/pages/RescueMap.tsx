@@ -73,7 +73,10 @@ const RescueMap = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showOnlyNearby, setShowOnlyNearby] = useState(false); // Toggle para filtro de distancia
-  const [isDarkMode, setIsDarkMode] = useState(false); // Toggle para modo noche del mapa
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('mapDarkMode');
+    return saved === 'true';
+  }); // Toggle para modo noche del mapa
   const sosNotificationChannelRef = useRef<ReturnType<typeof setupSOSNotifications> | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
@@ -261,6 +264,9 @@ const RescueMap = () => {
   // Toggle between day and night mode dynamically
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+
+    // Save to localStorage
+    localStorage.setItem('mapDarkMode', String(isDarkMode));
 
     const lightStyle = {
       version: 8 as const,
@@ -769,7 +775,7 @@ const RescueMap = () => {
   };
 
   return (
-    <div className="relative h-screen w-full flex flex-col md:flex-row">
+    <div className={`relative h-screen w-full flex flex-col md:flex-row ${isDarkMode ? 'dark' : ''}`}>
       {/* Map Container */}
       <div className="flex-1 relative">
         <div 
@@ -790,21 +796,21 @@ const RescueMap = () => {
         {/* Desktop Controls - Top Left */}
         {!isMobile && (
           <div className="absolute top-4 left-4 z-10 space-y-2">
-            <Card className="p-4 bg-background/90 backdrop-blur">
+            <Card className={`p-4 backdrop-blur ${isDarkMode ? 'bg-gray-900/90 text-white' : 'bg-background/90'}`}>
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
                   <h1 className="text-xl font-bold">{t('map.title')}</h1>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-muted-foreground'}`}>
                     SOS: {sosSignals.length} | {t('map.rescuers_count')}: {rescuers.length}
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
+            <Card className={`p-2 backdrop-blur space-y-2 ${isDarkMode ? 'bg-gray-900/90' : 'bg-background/90'}`}>
               <Button
                 variant={showHeatmap ? 'default' : 'outline'}
                 size="sm"
@@ -847,14 +853,14 @@ const RescueMap = () => {
 
         {/* Mobile Header - Fixed at top */}
         {isMobile && (
-          <div className="absolute top-0 left-0 right-0 z-10 bg-background/95 backdrop-blur border-b">
+          <div className={`absolute top-0 left-0 right-0 z-10 backdrop-blur border-b ${isDarkMode ? 'bg-gray-900/95 text-white border-gray-700' : 'bg-background/95'}`}>
             <div className="flex items-center justify-between p-2">
               <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="flex-1 text-center">
                 <h1 className="text-sm font-bold">{t('map.title')}</h1>
-                <p className="text-xs text-muted-foreground">
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-muted-foreground'}`}>
                   SOS: {sosSignals.length} | Rescuers: {rescuers.length}
                 </p>
               </div>
@@ -899,7 +905,7 @@ const RescueMap = () => {
         {/* Mobile Floating SOS List Button */}
         {isMobile && !showSOSList && !showChat && sosSignals.length > 0 && (
           <Button
-            className="absolute bottom-24 right-4 z-10 shadow-sm h-8 px-3"
+            className={`absolute bottom-24 right-4 z-10 shadow-sm h-8 px-3 ${isDarkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : ''}`}
             variant="secondary"
             size="sm"
             onClick={() => setShowSOSList(true)}
@@ -911,7 +917,7 @@ const RescueMap = () => {
         {/* Mobile Legend */}
         {isMobile && !showChat && !showSOSList && (
           <div className="absolute bottom-24 left-4 z-10">
-            <MapLegend />
+            <MapLegend isDarkMode={isDarkMode} />
           </div>
         )}
 
@@ -930,7 +936,7 @@ const RescueMap = () => {
         {/* Desktop SOS Details (bottom card when selected) */}
         {!isMobile && selectedSOS && !showChat && (
           <div className="absolute bottom-4 left-4 right-4 z-10 max-w-md mx-auto">
-            <Card className="p-4 bg-background/95 backdrop-blur space-y-3">
+            <Card className={`p-4 backdrop-blur space-y-3 ${isDarkMode ? 'bg-gray-900/95 text-white' : 'bg-background/95'}`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
                   <AlertCircle 
@@ -969,8 +975,8 @@ const RescueMap = () => {
 
       {/* Desktop SOS List Panel - Right Side */}
       {!isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
-        <div className="w-80 border-l bg-background overflow-y-auto">
-          <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10">
+        <div className={`w-80 border-l overflow-y-auto ${isDarkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-background'}`}>
+          <div className={`p-3 border-b flex items-center justify-between sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-background'}`}>
             <div className="flex flex-col gap-1">
               <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
               <Button 
@@ -1080,8 +1086,8 @@ const RescueMap = () => {
 
       {/* Mobile SOS List - Bottom Sheet */}
       {isMobile && showSOSList && !showChat && sosSignals.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-50 bg-background border-t rounded-t-3xl shadow-2xl" style={{ maxHeight: '70vh', paddingBottom: '80px' }}>
-          <div className="p-3 border-b flex items-center justify-between sticky top-0 bg-background z-10 rounded-t-3xl">
+        <div className={`fixed inset-x-0 bottom-0 z-50 border-t rounded-t-3xl shadow-2xl ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-background'}`} style={{ maxHeight: '70vh', paddingBottom: '80px' }}>
+          <div className={`p-3 border-b flex items-center justify-between sticky top-0 z-10 rounded-t-3xl ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-background'}`}>
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-sm text-muted-foreground">SOS Activos ({sosSignals.length})</h2>
               <Button 
@@ -1225,9 +1231,9 @@ const RescueMap = () => {
 
       {/* Details Panel - Full width on mobile, sidebar on desktop */}
       {showDetails && selectedSOS && (
-        <div className={isMobile ? "fixed inset-0 z-[2000] bg-background overflow-y-auto" : "w-96 h-full border-l bg-background z-[1500] overflow-y-auto"}>
-          <Card className="h-full border-none rounded-none">
-            <CardHeader className="border-b">
+        <div className={isMobile ? `fixed inset-0 z-[2000] overflow-y-auto ${isDarkMode ? 'bg-gray-900' : 'bg-background'}` : `w-96 h-full border-l z-[1500] overflow-y-auto ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-background'}`}>
+          <Card className={`h-full border-none rounded-none ${isDarkMode ? 'bg-gray-900 text-white' : ''}`}>
+            <CardHeader className={`border-b ${isDarkMode ? 'border-gray-700' : ''}`}>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle 
