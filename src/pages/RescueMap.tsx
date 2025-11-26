@@ -533,7 +533,7 @@ const RescueMap = () => {
           className="absolute inset-0" 
           style={{ 
             bottom: isMobile ? '60px' : '0',
-            top: isMobile ? '90px' : '0'
+            top: isMobile ? '75px' : '0'
           }} 
         />
         
@@ -595,7 +595,7 @@ const RescueMap = () => {
         {/* Mobile Header - Fixed at top */}
         {isMobile && (
           <div className="absolute top-0 left-0 right-0 z-10 bg-background/95 backdrop-blur border-b">
-            <div className="flex items-center justify-between p-3">
+            <div className="flex items-center justify-between p-2">
               <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
