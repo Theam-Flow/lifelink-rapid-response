@@ -82,14 +82,14 @@ const Auth = () => {
               </SelectContent>
             </Select>
           </div>
-          <CardDescription>{t('welcome')}</CardDescription>
+          <CardDescription>{t('auth.welcome')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">{t('fullname')}</Label>
+                  <Label htmlFor="fullName">{t('auth.fullName')}</Label>
                   <Input
                     id="fullName"
                     type="text"
@@ -100,7 +100,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">{t('role')}</Label>
+                  <Label htmlFor="role">{t('auth.role')}</Label>
                   <Select
                     value={role}
                     onValueChange={(value: 'victim' | 'rescuer') => setRole(value)}
@@ -109,8 +109,8 @@ const Auth = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="victim">{t('role_victim')}</SelectItem>
-                      <SelectItem value="rescuer">{t('role_rescuer')}</SelectItem>
+                      <SelectItem value="victim">{t('roles.victim')}</SelectItem>
+                      <SelectItem value="rescuer">{t('roles.rescuer')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -135,7 +135,7 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t('email')}</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -147,7 +147,7 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">{t('password')}</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -170,7 +170,7 @@ const Auth = () => {
               disabled={loading}
               variant={isSignUp ? 'default' : 'secondary'}
             >
-              {loading ? t('loading') : isSignUp ? t('signup') : t('signin')}
+              {loading ? t('common.loading') : isSignUp ? t('auth.signUp') : t('auth.signIn')}
             </Button>
 
             <Button
@@ -179,7 +179,7 @@ const Auth = () => {
               className="w-full"
               onClick={() => setIsSignUp(!isSignUp)}
             >
-              {isSignUp ? t('signin') : t('signup')}
+              {isSignUp ? t('auth.signIn') : t('auth.signUp')}
             </Button>
           </form>
         </CardContent>
