@@ -255,6 +255,13 @@ All colors MUST be HSL.
   animation: pulse-sos-marker 2s infinite;
 }
 
+.sos-marker-point {
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 @keyframes pulse-sos-marker {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
