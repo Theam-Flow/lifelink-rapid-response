@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRescuerTracking } from '@/hooks/useRescuerTracking';
@@ -35,11 +35,9 @@ const RescueMap = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<maplibregl.Map | null>(null);
   const [sosSignals, setSOSSignals] = useState<SOSSignal[]>([]);
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
-  const [isLoadingToken, setIsLoadingToken] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [showSOSList, setShowSOSList] = useState(false); // Changed to false by default
@@ -59,56 +57,22 @@ const RescueMap = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch Mapbox token
-  useEffect(() => {
-    const fetchMapboxToken = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-        
-        if (error) {
-          console.error('Error fetching Mapbox token:', error);
-          toast.error(t('map.errorLoadingMap'), {
-            description: t('map.errorMapToken'),
-          });
-          setIsLoadingToken(false);
-          return;
-        }
-
-        if (data?.token) {
-          setMapboxToken(data.token);
-        } else {
-          toast.error(t('map.configError'), {
-            description: t('map.tokenNotConfigured'),
-          });
-        }
-      } catch (err) {
-        console.error('Exception fetching Mapbox token:', err);
-        toast.error(t('map.errorLoadingMap'), {
-          description: t('map.errorConnecting'),
-        });
-      } finally {
-        setIsLoadingToken(false);
-      }
-    };
-
-    fetchMapboxToken();
-  }, []);
+  // MapLibre doesn't need a token - it's 100% free!
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current || !mapboxToken) return;
+    if (!mapContainer.current || map.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
-
-    const newMap = new mapboxgl.Map({
+    // MapLibre doesn't need a token!
+    const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'https://demotiles.maplibre.org/style.json',
       center: [100.5018, 13.7563],
       zoom: 11,
     });
 
     // Add navigation controls only at top-right
-    const navControl = new mapboxgl.NavigationControl({ 
+    const navControl = new maplibregl.NavigationControl({ 
       showCompass: true,
       showZoom: true,
       visualizePitch: true
@@ -134,9 +98,9 @@ const RescueMap = () => {
             });
 
             // Add a marker for user's location
-            new mapboxgl.Marker({ color: '#3b82f6' })
+            new maplibregl.Marker({ color: '#3b82f6' })
               .setLngLat([longitude, latitude])
-              .setPopup(new mapboxgl.Popup().setHTML('<p>Tu ubicación</p>'))
+              .setPopup(new maplibregl.Popup().setHTML('<p>Tu ubicación</p>'))
               .addTo(map.current!);
           },
           (error) => {
@@ -155,14 +119,14 @@ const RescueMap = () => {
     return () => {
       if (map.current) {
         map.current.remove();
-        map.current = null;
-      }
-    };
-  }, [mapboxToken, t]);
+      map.current = null;
+    }
+  };
+}, [t]);
 
   // Fetch SOS signals and setup clustering
   useEffect(() => {
-    if (!mapLoaded || !map.current || !mapboxToken) return;
+    if (!mapLoaded || !map.current) return;
 
     const fetchSOSSignals = async () => {
       // If user location available, fetch with distance
@@ -368,23 +332,24 @@ const RescueMap = () => {
       });
 
       // Click event on clusters to zoom in
-      map.current.on('click', 'clusters', (e) => {
+      map.current.on('click', 'clusters', async (e) => {
         if (!map.current) return;
         const features = map.current.queryRenderedFeatures(e.point, {
           layers: ['clusters']
         });
         const clusterId = features[0].properties.cluster_id;
-        (map.current.getSource('sos-signals') as mapboxgl.GeoJSONSource).getClusterExpansionZoom(
-          clusterId,
-          (err, zoom) => {
-            if (err || !map.current) return;
-
-            map.current.easeTo({
-              center: (features[0].geometry as any).coordinates,
-              zoom: zoom
-            });
-          }
-        );
+        
+        try {
+          const zoom = await (map.current.getSource('sos-signals') as maplibregl.GeoJSONSource).getClusterExpansionZoom(clusterId);
+          if (!map.current) return;
+          
+          map.current.easeTo({
+            center: (features[0].geometry as any).coordinates,
+            zoom: zoom
+          });
+        } catch (err) {
+          console.error('Error expanding cluster:', err);
+        }
       });
 
       // Click event on unclustered points to show details
@@ -461,7 +426,7 @@ const RescueMap = () => {
         if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
       }
     };
-  }, [mapLoaded, mapboxToken, t, userLocation]);
+  }, [mapLoaded, t, userLocation]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
@@ -542,15 +507,6 @@ const RescueMap = () => {
         
         {/* Rescuer Tracker */}
         <RescuerTracker map={map.current} rescuers={rescuers} />
-        
-        {isLoadingToken && (
-          <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
-            <Card className="p-6 flex items-center gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="text-lg font-medium">{t('map.loading')}</span>
-            </Card>
-          </div>
-        )}
         
         {/* Desktop Controls - Top Left */}
         {!isMobile && (
