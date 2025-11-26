@@ -408,7 +408,7 @@ const RescueMap = () => {
       };
       const color = colors[signal.severity_level as keyof typeof colors] || '#FF0000';
 
-      // Create marker element
+      // Create marker element with fixed positioning
       const el = document.createElement('div');
       el.style.width = '24px';
       el.style.height = '24px';
@@ -418,6 +418,9 @@ const RescueMap = () => {
       el.style.cursor = 'pointer';
       el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
       el.style.transition = 'transform 0.2s';
+      el.style.position = 'relative';
+      el.style.zIndex = '1000';
+      el.className = 'sos-marker-point';
       
       // Hover effect
       el.addEventListener('mouseenter', () => {
@@ -430,17 +433,23 @@ const RescueMap = () => {
       // Click handler
       el.addEventListener('click', (e) => {
         e.stopPropagation();
+        e.preventDefault();
         console.log('Marker clicked:', signal.id);
         setSelectedSOS(signal);
         setShowActionDialog(true);
         
-        // Center map on clicked marker
+        // Center map smoothly on clicked marker
         if (map.current) {
-          map.current.flyTo({
-            center: [lng, lat],
-            zoom: 15,
-            duration: 1000
-          });
+          setTimeout(() => {
+            if (map.current) {
+              map.current.easeTo({
+                center: [lng, lat],
+                zoom: Math.max(map.current.getZoom(), 14),
+                duration: 500,
+                padding: { top: 100, bottom: 100, left: 50, right: 50 }
+              });
+            }
+          }, 100);
         }
       });
 
