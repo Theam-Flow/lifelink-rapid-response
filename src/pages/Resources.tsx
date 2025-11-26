@@ -170,7 +170,16 @@ const Resources = () => {
                   <strong>{t('auth.fullName')}:</strong> {resource.profiles.full_name}
                 </p>
                 {resource.available_now && resource.status === 'available' && (
-                  <Button variant="default" size="sm" className="w-full mt-2">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={() => {
+                      toast.success(t('resources.requestSent'), {
+                        description: t('resources.ownerNotified')
+                      });
+                    }}
+                  >
                     {t('resources.registerButton')}
                   </Button>
                 )}
