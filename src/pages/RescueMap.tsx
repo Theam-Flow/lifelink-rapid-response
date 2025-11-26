@@ -160,40 +160,20 @@ const RescueMap = () => {
     const darkStyle = {
       version: 8 as const,
       sources: {
-        'carto-dark-nolabels': {
+        'carto-dark': {
           type: 'raster' as const,
-          tiles: ['https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors © CARTO'
-        },
-        'carto-labels': {
-          type: 'raster' as const,
-          tiles: ['https://a.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png'],
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors © CARTO'
         }
       },
       layers: [
         {
-          id: 'carto-dark-base',
+          id: 'carto-dark',
           type: 'raster' as const,
-          source: 'carto-dark-nolabels',
+          source: 'carto-dark',
           minzoom: 0,
-          maxzoom: 19,
-          paint: {
-            'raster-brightness-min': 0.3,
-            'raster-brightness-max': 0.8
-          }
-        },
-        {
-          id: 'carto-labels',
-          type: 'raster' as const,
-          source: 'carto-labels',
-          minzoom: 0,
-          maxzoom: 19,
-          paint: {
-            'raster-opacity': 0.9
-          }
+          maxzoom: 19
         }
       ]
     };
@@ -312,40 +292,20 @@ const RescueMap = () => {
     const darkStyle = {
       version: 8 as const,
       sources: {
-        'carto-dark-nolabels': {
+        'carto-dark': {
           type: 'raster' as const,
-          tiles: ['https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors © CARTO'
-        },
-        'carto-labels': {
-          type: 'raster' as const,
-          tiles: ['https://a.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png'],
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© OpenStreetMap contributors © CARTO'
         }
       },
       layers: [
         {
-          id: 'carto-dark-base',
+          id: 'carto-dark',
           type: 'raster' as const,
-          source: 'carto-dark-nolabels',
+          source: 'carto-dark',
           minzoom: 0,
-          maxzoom: 19,
-          paint: {
-            'raster-brightness-min': 0.3,
-            'raster-brightness-max': 0.8
-          }
-        },
-        {
-          id: 'carto-labels',
-          type: 'raster' as const,
-          source: 'carto-labels',
-          minzoom: 0,
-          maxzoom: 19,
-          paint: {
-            'raster-opacity': 0.9
-          }
+          maxzoom: 19
         }
       ]
     };
