@@ -32,46 +32,15 @@ export const useSOSPagination = ({
   return useQuery({
     queryKey: ['sos-signals', userLocation?.lng, userLocation?.lat, radiusKm],
     queryFn: async () => {
-      if (!userLocation) {
-        // Fallback: sin paginación si no hay ubicación
-        const { data, error } = await supabase
-          .from('sos_signals')
-          .select(`
-            id,
-            type,
-            severity_level,
-            status,
-            description,
-            victim_count,
-            created_at,
-            user_id,
-            accuracy_meters,
-            location
-          `)
-          .in('status', ['active', 'acknowledged', 'in_progress'])
-          .order('severity_level', { ascending: false })
-          .limit(pageSize);
+      // Always use optimized function, even without user location
+      // Use center of Thailand as fallback for distance calculation
+      const lng = userLocation?.lng ?? 100.5018; // Bangkok center
+      const lat = userLocation?.lat ?? 13.7563;
 
-        if (error) throw error;
-        
-        // Parse locations
-        return (data || []).map((signal: any) => {
-          if (signal.location) {
-            const locationStr = String(signal.location);
-            const coords = locationStr.replace('POINT(', '').replace(')', '').split(' ').map(parseFloat);
-            if (coords.length === 2 && !coords.some(isNaN)) {
-              return { ...signal, lng: coords[0], lat: coords[1] };
-            }
-          }
-          return signal;
-        }) as SOSSignal[];
-      }
-
-      // Usar función optimizada con paginación
       const { data, error } = await supabase.rpc('get_sos_nearby', {
-        user_lng: userLocation.lng,
-        user_lat: userLocation.lat,
-        radius_km: radiusKm,
+        user_lng: lng,
+        user_lat: lat,
+        radius_km: userLocation ? radiusKm : 500, // Wider radius if no location
         page_size: pageSize,
         page_offset: 0
       });

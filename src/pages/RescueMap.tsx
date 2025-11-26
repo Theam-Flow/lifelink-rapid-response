@@ -521,7 +521,7 @@ const RescueMap = () => {
         .select('*');
 
       if (error) {
-        console.error('Error fetching shelters:', error);
+        toast.error(t('map.errorLoadingShelters') || 'Error al cargar refugios');
         return;
       }
 
@@ -553,17 +553,14 @@ const RescueMap = () => {
           lng = parseFloat(match[1]);
           lat = parseFloat(match[2]);
         } else {
-          console.error('Invalid location format for shelter', shelter.id);
-          return;
+          return; // Skip invalid shelter location silently
         }
       } else {
-        console.error('No location data for shelter', shelter.id);
-        return;
+        return; // Skip shelter without location silently
       }
 
       if (isNaN(lng) || isNaN(lat)) {
-        console.error('Invalid coordinates for shelter', shelter.id);
-        return;
+        return; // Skip invalid coordinates silently
       }
 
       // Get shelter icon
@@ -706,7 +703,6 @@ const RescueMap = () => {
 
     if (error) {
       toast.error(t('map.assignError'));
-      console.error(error);
     } else {
       toast.success(t('map.assignSuccess'));
       setSelectedSOS(null);
