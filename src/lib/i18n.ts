@@ -910,14 +910,22 @@ const resources = {
   },
 };
 
+// Initialize i18n with localStorage detection
+const savedLanguage = localStorage.getItem('lifelink-language');
+const browserLanguage = navigator.language.split('-')[0];
+const initialLanguage = savedLanguage || (browserLanguage === 'en' || browserLanguage === 'th' || browserLanguage === 'vi' ? browserLanguage : 'th');
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'th', // Default to Thai
+    lng: initialLanguage,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
+    },
+    react: {
+      useSuspense: false, // Prevents flickering during language changes
     },
   });
 

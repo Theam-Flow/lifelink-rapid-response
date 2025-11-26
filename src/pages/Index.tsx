@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon } from 'lucide-react';
 import { Notifications } from '@/components/Notifications';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -102,6 +103,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex gap-2">
+                <LanguageSwitcher />
                 <Notifications />
                 <Button variant="outline" onClick={() => navigate('/profile')}>
                   <UserIcon className="h-4 w-4 mr-2" />
