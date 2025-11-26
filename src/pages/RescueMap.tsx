@@ -63,10 +63,10 @@ const RescueMap = () => {
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // MapLibre doesn't need a token! Using CartoDB Dark Matter style
+    // MapLibre doesn't need a token! Using CartoDB Positron style
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       center: [100.5018, 13.7563],
       zoom: 11,
     });
