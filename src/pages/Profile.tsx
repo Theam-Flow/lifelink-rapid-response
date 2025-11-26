@@ -146,187 +146,284 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-6 py-8">
-        {/* Header */}
-        <Card className="border-2 border-primary">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-                  <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <div>
-                  <CardTitle className="text-3xl">{t('profile.title')}</CardTitle>
-                  <CardDescription className="text-base">{t('profile.subtitle')}</CardDescription>
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background pb-24">
+      {/* Decorative Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative max-w-4xl mx-auto">
+        {/* Modern Header with Gradient */}
+        <div className="relative h-48 md:h-56 bg-gradient-to-r from-primary to-primary/60 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+          
+          {/* Back Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate('/')}
+            className="absolute top-4 left-4 bg-background/10 backdrop-blur-sm hover:bg-background/20 text-primary-foreground z-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+
+          {/* Edit Button */}
+          {!editMode && (
+            <Button 
+              onClick={() => setEditMode(true)}
+              className="absolute top-4 right-4 bg-background/10 backdrop-blur-sm hover:bg-background/20 text-primary-foreground z-10"
+              size="sm"
+            >
+              {t('profile.edit')}
+            </Button>
+          )}
+        </div>
+
+        {/* Profile Avatar - Overlapping Header */}
+        <div className="px-4 md:px-6 -mt-20 relative z-20">
+          <div className="animate-scale-in">
+            <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4">
+              <Avatar className="w-full h-full border-4 border-background shadow-2xl">
+                <AvatarImage src={profile.avatar_url || undefined} />
+                <AvatarFallback className="text-4xl md:text-5xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                  {profile.full_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {profile.verified && (
+                <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground rounded-full p-2 shadow-lg">
+                  <Shield className="h-5 w-5" />
                 </div>
-              </div>
-              {!editMode && (
-                <Button onClick={() => setEditMode(true)}>
-                  {t('profile.edit')}
-                </Button>
               )}
             </div>
-          </CardHeader>
-        </Card>
+          </div>
 
-        {/* Profile Content */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Sidebar */}
-          <Card className="md:col-span-1">
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <Avatar className="h-32 w-32">
-                  <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="text-4xl">
-                    {profile.full_name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold">{profile.full_name}</h3>
-                  <div className="flex flex-col gap-2">
-                    <Badge variant={getRoleBadgeVariant(profile.role)}>
-                      {t(`roles.${profile.role}`)}
-                    </Badge>
-                    <Badge variant={getStatusBadgeVariant(profile.status)}>
-                      {t(`profile.status_${profile.status}`)}
-                    </Badge>
-                    {profile.verified && (
-                      <Badge variant="outline" className="gap-1">
-                        <Shield className="h-3 w-3" />
-                        {t('profile.verified')}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+          {/* Name and Badges */}
+          <div className="text-center space-y-3 mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold animate-fade-in">{profile.full_name}</h1>
+            
+            <div className="flex flex-wrap items-center justify-center gap-2 animate-fade-in">
+              <Badge 
+                variant={getRoleBadgeVariant(profile.role)} 
+                className="text-sm px-3 py-1"
+              >
+                {t(`roles.${profile.role}`)}
+              </Badge>
+              <Badge 
+                variant={getStatusBadgeVariant(profile.status)}
+                className="text-sm px-3 py-1"
+              >
+                {t(`profile.status_${profile.status}`)}
+              </Badge>
+            </div>
 
-                <div className="w-full pt-4 space-y-2 text-sm">
-                  {user?.email && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <span className="break-all">{user.email}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{t('profile.joined')}: {format(new Date(profile.created_at), 'PP')}</span>
-                  </div>
-                  {profile.last_active && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>{t('profile.lastActive')}: {format(new Date(profile.last_active), 'PPp')}</span>
-                    </div>
-                  )}
-                </div>
+            {user?.email && (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-fade-in">
+                <Mail className="h-4 w-4" />
+                <span className="break-all">{user.email}</span>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
 
-          {/* Main Content */}
-          <Card className="md:col-span-2">
-            <CardContent className="pt-6">
-              <Tabs defaultValue="info">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="info">{t('profile.information')}</TabsTrigger>
-                  <TabsTrigger value="activity">{t('profile.activity')}</TabsTrigger>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 gap-3 mb-6 animate-fade-in">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 hover-scale">
+              <CardContent className="pt-4 pb-4 text-center">
+                <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <p className="text-xs text-muted-foreground mb-1">{t('profile.joined')}</p>
+                <p className="text-sm font-semibold">{format(new Date(profile.created_at), 'PP')}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 hover-scale">
+              <CardContent className="pt-4 pb-4 text-center">
+                <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <p className="text-xs text-muted-foreground mb-1">{t('auth.country')}</p>
+                <p className="text-sm font-semibold">
+                  {profile.country_code === 'TH' && '🇹🇭 Thailand'}
+                  {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
+                  {profile.country_code === 'MY' && '🇲🇾 Malaysia'}
+                  {profile.country_code === 'ID' && '🇮🇩 Indonesia'}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Card */}
+          <Card className="mb-6 animate-fade-in border-border/50">
+            <CardContent className="p-4 md:p-6">
+              <Tabs defaultValue="info" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="info" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <User className="h-4 w-4 mr-2" />
+                    {t('profile.information')}
+                  </TabsTrigger>
+                  <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {t('profile.activity')}
+                  </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="info" className="space-y-6 mt-6">
+                <TabsContent value="info" className="space-y-4 mt-0">
                   {editMode ? (
-                    <div className="space-y-4">
+                    <div className="space-y-4 animate-fade-in">
                       <div className="space-y-2">
-                        <Label htmlFor="full_name">{t('auth.fullName')}</Label>
+                        <Label htmlFor="full_name" className="text-base">
+                          {t('auth.fullName')}
+                        </Label>
                         <Input
                           id="full_name"
                           value={formData.full_name}
                           onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                          className="h-12"
                         />
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="phone">{t('profile.phone')}</Label>
+                        <Label htmlFor="phone" className="text-base">
+                          <Phone className="h-4 w-4 inline mr-2" />
+                          {t('profile.phone')}
+                        </Label>
                         <Input
                           id="phone"
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="h-12"
+                          placeholder="+66 XXX XXX XXX"
                         />
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="avatar_url">{t('profile.avatarUrl')}</Label>
+                        <Label htmlFor="avatar_url" className="text-base">
+                          {t('profile.avatarUrl')}
+                        </Label>
                         <Input
                           id="avatar_url"
                           type="url"
                           placeholder="https://..."
                           value={formData.avatar_url}
                           onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+                          className="h-12"
                         />
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="country">{t('auth.country')}</Label>
+                        <Label htmlFor="country" className="text-base">
+                          <MapPin className="h-4 w-4 inline mr-2" />
+                          {t('auth.country')}
+                        </Label>
                         <Select
                           value={formData.country_code}
                           onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setFormData({ ...formData, country_code: value })}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="h-12">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="TH">Thailand</SelectItem>
-                            <SelectItem value="VN">Vietnam</SelectItem>
-                            <SelectItem value="MY">Malaysia</SelectItem>
-                            <SelectItem value="ID">Indonesia</SelectItem>
+                            <SelectItem value="TH">🇹🇭 Thailand</SelectItem>
+                            <SelectItem value="VN">🇻🇳 Vietnam</SelectItem>
+                            <SelectItem value="MY">🇲🇾 Malaysia</SelectItem>
+                            <SelectItem value="ID">🇮🇩 Indonesia</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="flex gap-2">
-                        <Button onClick={handleSave} disabled={saving} className="flex-1">
+
+                      <div className="flex gap-3 pt-4">
+                        <Button 
+                          onClick={handleSave} 
+                          disabled={saving} 
+                          className="flex-1 h-12"
+                        >
                           <Save className="h-4 w-4 mr-2" />
                           {saving ? t('common.saving') : t('profile.save')}
                         </Button>
-                        <Button variant="outline" onClick={() => setEditMode(false)}>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditMode(false)}
+                          className="h-12"
+                        >
                           {t('common.cancel')}
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm text-muted-foreground">{t('auth.fullName')}</p>
-                          <p className="font-medium">{profile.full_name}</p>
-                        </div>
-                      </div>
-                      {profile.phone && (
-                        <div className="flex items-start gap-3">
-                          <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">{t('profile.phone')}</p>
-                            <p className="font-medium">{profile.phone}</p>
+                    <div className="space-y-4 animate-fade-in">
+                      <Card className="bg-muted/50 border-none">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-muted-foreground mb-1">{t('auth.fullName')}</p>
+                              <p className="font-semibold">{profile.full_name}</p>
+                            </div>
                           </div>
-                        </div>
+                        </CardContent>
+                      </Card>
+
+                      {profile.phone && (
+                        <Card className="bg-muted/50 border-none">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="bg-primary/10 p-2 rounded-lg">
+                                <Phone className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-muted-foreground mb-1">{t('profile.phone')}</p>
+                                <p className="font-semibold">{profile.phone}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       )}
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm text-muted-foreground">{t('auth.country')}</p>
-                          <p className="font-medium">
-                            {profile.country_code === 'TH' && 'Thailand'}
-                            {profile.country_code === 'VN' && 'Vietnam'}
-                            {profile.country_code === 'MY' && 'Malaysia'}
-                            {profile.country_code === 'ID' && 'Indonesia'}
-                          </p>
-                        </div>
-                      </div>
+
+                      <Card className="bg-muted/50 border-none">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                              <MapPin className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-muted-foreground mb-1">{t('auth.country')}</p>
+                              <p className="font-semibold">
+                                {profile.country_code === 'TH' && '🇹🇭 Thailand'}
+                                {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
+                                {profile.country_code === 'MY' && '🇲🇾 Malaysia'}
+                                {profile.country_code === 'ID' && '🇮🇩 Indonesia'}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {profile.last_active && (
+                        <Card className="bg-muted/50 border-none">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="bg-primary/10 p-2 rounded-lg">
+                                <Calendar className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-muted-foreground mb-1">{t('profile.lastActive')}</p>
+                                <p className="font-semibold">{format(new Date(profile.last_active), 'PPp')}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="activity" className="space-y-4 mt-6">
-                  <div className="text-center py-12">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t('profile.noActivity')}</p>
+                <TabsContent value="activity" className="space-y-4 mt-0">
+                  <div className="text-center py-16 animate-fade-in">
+                    <div className="bg-muted/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Calendar className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{t('profile.noActivity')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('profile.activityDescription')}</p>
                   </div>
                 </TabsContent>
               </Tabs>
