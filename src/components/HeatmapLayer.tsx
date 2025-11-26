@@ -21,7 +21,11 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
       return;
     }
 
-    console.log('HeatmapLayer: Adding heatmap with signals:', sosSignals.length);
+    // Wait a bit for map to be ready
+    const timer = setTimeout(() => {
+      if (!map) return;
+      
+      console.log('HeatmapLayer: Adding heatmap with signals:', sosSignals.length);
 
     // Remove existing layer if it exists
     try {
@@ -117,8 +121,10 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
     } catch (error) {
       console.error('Error adding heatmap layer:', error);
     }
+    }, 500);
 
     return () => {
+      clearTimeout(timer);
       try {
         if (map) {
           if (map.getLayer(layerIdRef.current)) {
