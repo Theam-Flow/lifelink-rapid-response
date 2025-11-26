@@ -5,8 +5,10 @@ interface HeatmapLayerProps {
   map: mapboxgl.Map | null;
   sosSignals: Array<{
     id: string;
-    location: unknown;
+    location?: unknown;
     severity_level: number;
+    lng?: number;
+    lat?: number;
   }>;
 }
 
@@ -26,12 +28,22 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
 
     // Convert SOS signals to GeoJSON
     const features = sosSignals.map((signal) => {
-      const locationStr = String(signal.location || '');
-      const coords = locationStr
-        .replace('POINT(', '')
-        .replace(')', '')
-        .split(' ')
-        .map(parseFloat);
+      let coords: number[];
+      
+      // Use lng/lat if available (from distance function)
+      if (signal.lng !== undefined && signal.lat !== undefined) {
+        coords = [signal.lng, signal.lat];
+      } else if (signal.location) {
+        // Parse location string
+        const locationStr = String(signal.location || '');
+        coords = locationStr
+          .replace('POINT(', '')
+          .replace(')', '')
+          .split(' ')
+          .map(parseFloat);
+      } else {
+        return null;
+      }
 
       if (coords.length !== 2 || coords.some(isNaN)) {
         return null;

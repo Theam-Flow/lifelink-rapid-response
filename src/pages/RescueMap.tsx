@@ -16,7 +16,7 @@ import { Chat } from '@/components/Chat';
 
 interface SOSSignal {
   id: string;
-  location: unknown;
+  location?: unknown;
   severity_level: number;
   type: string;
   description: string | null;
@@ -25,6 +25,9 @@ interface SOSSignal {
   created_at: string | null;
   user_id: string;
   accuracy_meters: number | null;
+  lng?: number;
+  lat?: number;
+  distance_meters?: number;
 }
 
 const RescueMap = () => {
@@ -40,6 +43,8 @@ const RescueMap = () => {
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [showSOSList, setShowSOSList] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
 
   const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
 
@@ -98,6 +103,8 @@ const RescueMap = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          setUserLocation({ lng: longitude, lat: latitude });
+          
           map.current?.flyTo({
             center: [longitude, latitude],
             zoom: 14,
@@ -132,60 +139,31 @@ const RescueMap = () => {
     if (!map.current || !mapboxToken) return;
 
     const fetchSOSSignals = async () => {
-      const { data, error } = await supabase
-        .from('sos_signals')
-        .select(`
-          id,
-          type,
-          severity_level,
-          status,
-          description,
-          victim_count,
-          created_at,
-          user_id,
-          accuracy_meters,
-          location
-        `)
-        .in('status', ['active', 'acknowledged'])
-        .order('severity_level', { ascending: false });
+      // If user location available, fetch with distance
+      if (userLocation) {
+        const { data, error } = await supabase
+          .rpc('get_sos_with_distance', { 
+            user_lng: userLocation.lng, 
+            user_lat: userLocation.lat 
+          });
 
-      if (error) {
-        console.error('Error fetching SOS signals:', error);
-        toast.error(t('map.errorLoadingSignals'));
-        return;
-      }
+        if (error) {
+          console.error('Error fetching SOS signals with distance:', error);
+          toast.error(t('map.errorLoadingSignals'));
+          return;
+        }
 
-      if (data) {
-        console.log('SOS Signals fetched:', data);
-        
-        markersRef.current.forEach(marker => marker.remove());
-        markersRef.current = [];
-
-        setSOSSignals(data);
-
-        data.forEach((signal) => {
-          if (!map.current) return;
+        if (data) {
+          console.log('SOS Signals with distance fetched:', data);
+          setSOSSignals(data as SOSSignal[]);
           
-          // Extract coordinates using PostGIS helper
-          const extractCoords = async () => {
-            const { data: coordData, error: coordError } = await supabase
-              .rpc('get_sos_coordinates', { sos_id: signal.id });
-            
-            if (coordError || !coordData || coordData.length === 0) {
-              console.error('Error getting coordinates for signal:', signal.id, coordError);
-              return null;
-            }
-            
-            return coordData[0];
-          };
+          // Clear existing markers
+          markersRef.current.forEach(marker => marker.remove());
+          markersRef.current = [];
 
-          extractCoords().then((coords) => {
-            if (!coords || !map.current) return;
-            
-            const lng = coords.lng;
-            const lat = coords.lat;
-
-            console.log(`Creating marker for SOS ${signal.id} at [${lng}, ${lat}]`);
+          // Add markers for each SOS
+          data.forEach((signal: SOSSignal) => {
+            if (!map.current || !signal.lng || !signal.lat) return;
 
             const el = document.createElement('div');
             el.className = 'sos-marker';
@@ -198,14 +176,14 @@ const RescueMap = () => {
             el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
             const marker = new mapboxgl.Marker(el)
-              .setLngLat([lng, lat])
+              .setLngLat([signal.lng, signal.lat])
               .addTo(map.current!);
 
             marker.getElement().addEventListener('click', () => {
               setSelectedSOS(signal);
               setShowChat(true);
               map.current?.flyTo({
-                center: [lng, lat],
+                center: [signal.lng!, signal.lat!],
                 zoom: 14,
                 duration: 1000
               });
@@ -213,7 +191,92 @@ const RescueMap = () => {
 
             markersRef.current.push(marker);
           });
-        });
+        }
+      } else {
+        // Fallback to old method if no user location
+        const { data, error } = await supabase
+          .from('sos_signals')
+          .select(`
+            id,
+            type,
+            severity_level,
+            status,
+            description,
+            victim_count,
+            created_at,
+            user_id,
+            accuracy_meters,
+            location
+          `)
+          .in('status', ['active', 'acknowledged'])
+          .order('severity_level', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching SOS signals:', error);
+          toast.error(t('map.errorLoadingSignals'));
+          return;
+        }
+
+        if (data) {
+          console.log('SOS Signals fetched:', data);
+          
+          markersRef.current.forEach(marker => marker.remove());
+          markersRef.current = [];
+
+          setSOSSignals(data);
+
+          data.forEach((signal) => {
+            if (!map.current) return;
+            
+            // Extract coordinates using PostGIS helper
+            const extractCoords = async () => {
+              const { data: coordData, error: coordError } = await supabase
+                .rpc('get_sos_coordinates', { sos_id: signal.id });
+              
+              if (coordError || !coordData || coordData.length === 0) {
+                console.error('Error getting coordinates for signal:', signal.id, coordError);
+                return null;
+              }
+              
+              return coordData[0];
+            };
+
+            extractCoords().then((coords) => {
+              if (!coords || !map.current) return;
+              
+              const lng = coords.lng;
+              const lat = coords.lat;
+
+              console.log(`Creating marker for SOS ${signal.id} at [${lng}, ${lat}]`);
+
+              const el = document.createElement('div');
+              el.className = 'sos-marker';
+              el.style.backgroundColor = getSeverityColor(signal.severity_level);
+              el.style.width = '30px';
+              el.style.height = '30px';
+              el.style.borderRadius = '50%';
+              el.style.border = '3px solid white';
+              el.style.cursor = 'pointer';
+              el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+              const marker = new mapboxgl.Marker(el)
+                .setLngLat([lng, lat])
+                .addTo(map.current!);
+
+              marker.getElement().addEventListener('click', () => {
+                setSelectedSOS(signal);
+                setShowChat(true);
+                map.current?.flyTo({
+                  center: [lng, lat],
+                  zoom: 14,
+                  duration: 1000
+                });
+              });
+
+              markersRef.current.push(marker);
+            });
+          });
+        }
       }
     };
 
@@ -239,7 +302,7 @@ const RescueMap = () => {
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
     };
-  }, [mapboxToken, t]);
+  }, [mapboxToken, t, userLocation]);
 
   const getSeverityColor = (level: number): string => {
     const colors = ['#FFA500', '#FF6347', '#FF4500', '#DC143C', '#8B0000'];
@@ -384,6 +447,100 @@ const RescueMap = () => {
           </div>
         )}
       </div>
+
+      {/* SOS List Panel */}
+      {showSOSList && !showChat && sosSignals.length > 0 && (
+        <div className="w-80 border-l bg-background overflow-y-auto">
+          <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-background z-10">
+            <h2 className="font-bold text-lg">SOS Activos ({sosSignals.length})</h2>
+            <Button variant="ghost" size="icon" onClick={() => setShowSOSList(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="p-2 space-y-2">
+            {sosSignals.map((signal, index) => (
+              <Card 
+                key={signal.id}
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => {
+                  setSelectedSOS(signal);
+                  if (signal.lng && signal.lat) {
+                    map.current?.flyTo({
+                      center: [signal.lng, signal.lat],
+                      zoom: 14,
+                      duration: 1000
+                    });
+                  }
+                }}
+              >
+                <div className="p-3">
+                  <div className="flex items-start gap-2 mb-2">
+                    <AlertCircle 
+                      className="h-5 w-5 mt-0.5" 
+                      style={{ color: getSeverityColor(signal.severity_level) }}
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">{t(`emergencyTypes.${signal.type}`)}</h3>
+                      <div className="text-xs text-muted-foreground">
+                        {t('sos.severity')}: {signal.severity_level}/5
+                      </div>
+                      {signal.distance_meters !== undefined && (
+                        <div className="text-xs text-primary font-medium mt-1">
+                          {signal.distance_meters < 1000 
+                            ? `${Math.round(signal.distance_meters)}m` 
+                            : `${(signal.distance_meters / 1000).toFixed(1)}km`}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      #{index + 1}
+                    </div>
+                  </div>
+                  {signal.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{signal.description}</p>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        assignToMe(signal.id);
+                      }}
+                    >
+                      {t('map.assign')}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSOS(signal);
+                        setShowChat(true);
+                      }}
+                    >
+                      <MessageSquare className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Show SOS List Toggle (when hidden) */}
+      {!showSOSList && !showChat && sosSignals.length > 0 && (
+        <Button
+          className="absolute right-4 top-4 z-10"
+          variant="default"
+          size="sm"
+          onClick={() => setShowSOSList(true)}
+        >
+          Ver SOS ({sosSignals.length})
+        </Button>
+      )}
 
       {/* Chat Panel */}
       {showChat && selectedSOS && (
