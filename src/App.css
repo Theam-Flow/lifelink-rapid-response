@@ -43,15 +43,21 @@
 
 /* Mapbox mobile adjustments */
 @media (max-width: 768px) {
-  .mapboxgl-ctrl-bottom-left {
-    bottom: 100px !important;
-  }
-  
+  /* Ocultar controles inferiores de Mapbox */
+  .mapboxgl-ctrl-bottom-left,
   .mapboxgl-ctrl-bottom-right {
-    bottom: 90px !important;
+    display: none !important;
   }
   
-  .mapboxgl-ctrl-logo {
-    margin-bottom: 10px !important;
+  /* Ocultar logo y atribución */
+  .mapboxgl-ctrl-logo,
+  .mapboxgl-ctrl-attrib {
+    display: none !important;
+  }
+  
+  /* Mantener solo los controles superiores */
+  .mapboxgl-ctrl-top-right {
+    top: 70px !important;
+    right: 10px !important;
   }
 }

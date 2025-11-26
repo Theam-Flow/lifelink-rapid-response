@@ -107,13 +107,13 @@ const RescueMap = () => {
       zoom: 11,
     });
 
-    // Add navigation controls (position depends on screen size)
+    // Add navigation controls only at top-right
     const navControl = new mapboxgl.NavigationControl({ 
       showCompass: true,
       showZoom: true,
       visualizePitch: true
     });
-    newMap.addControl(navControl, window.innerWidth < 768 ? 'bottom-right' : 'top-right');
+    newMap.addControl(navControl, 'top-right');
 
     // Wait for map to fully load before allowing operations
     newMap.on('load', () => {
@@ -532,7 +532,7 @@ const RescueMap = () => {
           ref={mapContainer} 
           className="absolute inset-0" 
           style={{ 
-            bottom: isMobile ? '80px' : '0',
+            bottom: isMobile ? '60px' : '0',
             top: isMobile ? '60px' : '0'
           }} 
         />
