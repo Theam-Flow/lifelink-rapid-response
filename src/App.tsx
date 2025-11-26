@@ -13,11 +13,11 @@ import { Suspense, lazy } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import '@/lib/i18n';
 
-// Lazy load pages for better performance
+// Lazy load pages for better performance (except RescueMap for real-time performance)
+import RescueMap from "./pages/RescueMap"; // No lazy loading para el mapa
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const SOS = lazy(() => import("./pages/SOS"));
-const RescueMap = lazy(() => import("./pages/RescueMap"));
 const Resources = lazy(() => import("./pages/Resources"));
 const RegisterResource = lazy(() => import("./pages/RegisterResource"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -49,7 +49,7 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<PageTransition><Index /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
           <Route path="/sos" element={<PageTransition><SOS /></PageTransition>} />
-          <Route path="/rescue-map" element={<PageTransition><RescueMap /></PageTransition>} />
+          <Route path="/rescue-map" element={<RescueMap />} /> {/* Sin PageTransition ni Suspense para rendimiento en tiempo real */}
           <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
           <Route path="/resources/register" element={<PageTransition><RegisterResource /></PageTransition>} />
           <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
