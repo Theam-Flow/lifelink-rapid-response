@@ -25,7 +25,7 @@ interface UseSOSPaginationOptions {
 
 export const useSOSPagination = ({
   userLocation,
-  radiusKm = 50,
+  radiusKm = 200, // Increased default radius to 200km
   pageSize = 200,
   enabled = true
 }: UseSOSPaginationOptions) => {
@@ -40,7 +40,7 @@ export const useSOSPagination = ({
       const { data, error } = await supabase.rpc('get_sos_nearby', {
         user_lng: lng,
         user_lat: lat,
-        radius_km: userLocation ? radiusKm : 500, // Wider radius if no location
+        radius_km: userLocation ? radiusKm : 1000, // Much wider radius if no location (1000km)
         page_size: pageSize,
         page_offset: 0
       });

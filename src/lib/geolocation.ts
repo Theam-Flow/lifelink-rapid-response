@@ -44,8 +44,8 @@ export const getCurrentPosition = (): Promise<GeolocationResult> => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        timeout: 30000, // 30 seconds - more time for GPS fix
+        maximumAge: 60000, // Allow 1 minute cached position
       }
     );
   });
@@ -78,8 +78,8 @@ export const watchPosition = (
     },
     {
       enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000,
+      timeout: 30000, // 30 seconds - more time for GPS fix
+      maximumAge: 60000, // Allow 1 minute cached position
     }
   );
 };
