@@ -154,7 +154,7 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
           maxZoom: 15,
         });
       } catch (error) {
-        console.error('Error fitting bounds:', error);
+        // Silently handle bounds fitting errors
       }
     }
   }, [shelters, onShelterSelect]);

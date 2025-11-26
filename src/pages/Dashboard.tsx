@@ -99,7 +99,6 @@ const Dashboard = () => {
         .limit(5);
 
       if (error) {
-        console.error('Error fetching incidents:', error);
         return;
       }
 

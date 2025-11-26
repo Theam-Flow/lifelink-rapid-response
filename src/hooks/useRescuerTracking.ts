@@ -33,7 +33,6 @@ export const useRescuerTracking = () => {
         .gte('last_ping', new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Last 5 minutes
 
       if (error) {
-        console.error('Error fetching rescuers:', error);
         return;
       }
 
@@ -85,7 +84,6 @@ export const useRescuerTracking = () => {
         });
       },
       (error) => {
-        console.error('Geolocation error:', error);
         setIsSharing(false);
       },
       {

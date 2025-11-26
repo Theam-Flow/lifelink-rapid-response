@@ -49,7 +49,6 @@ const Resources = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching resources:', error);
         toast.error(t('resources.registerError'));
         return;
       }

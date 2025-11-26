@@ -52,8 +52,6 @@ export const useGeofencedRealtime = ({
       channelRef.current.unsubscribe();
     }
 
-    console.log('Setting up geofenced realtime for bounds:', bounds);
-
     // Crear nuevo canal con filtro geográfico
     // Nota: Supabase no soporta filtros espaciales directos en realtime,
     // pero podemos filtrar en el cliente después de recibir
@@ -67,8 +65,6 @@ export const useGeofencedRealtime = ({
           table: 'sos_signals',
         },
         (payload) => {
-          console.log('Realtime update received:', payload);
-          
           // Aquí podrías agregar filtrado del lado del cliente
           // basado en las coordenadas si están disponibles en el payload
           
