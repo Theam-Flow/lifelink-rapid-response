@@ -5,11 +5,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon, Building2 } from 'lucide-react';
+import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon, Building2, Waves } from 'lucide-react';
 import { Notifications } from '@/components/Notifications';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { QuickSOS } from '@/components/QuickSOS';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSwipeable } from 'react-swipeable';
+import { motion } from 'framer-motion';
+import { SwipeIndicator } from '@/components/SwipeIndicator';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -20,6 +23,18 @@ const Index = () => {
     activeSOS: 0,
     activeRescuers: 0,
     peopleRescued: 0,
+  });
+
+  // Swipe navigation for mobile
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (isMobile) navigate('/rescue-map');
+    },
+    onSwipedRight: () => {
+      if (isMobile) navigate('/profile');
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
   });
 
   useEffect(() => {
@@ -92,7 +107,7 @@ const Index = () => {
   // Mobile-first simplified view
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background pb-28 overflow-y-auto">
+      <div {...swipeHandlers} className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background pb-28 overflow-y-auto">
         {/* Simple Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
@@ -109,13 +124,16 @@ const Index = () => {
 
         {/* Giant SOS Button - Most Important */}
         <div className="flex items-center justify-center py-12 px-4">
-          <button
+          <motion.button
             onClick={() => navigate('/sos')}
-            className="w-64 h-64 rounded-full bg-destructive text-destructive-foreground shadow-2xl animate-pulse-sos flex flex-col items-center justify-center gap-4 active:scale-95 transition-transform"
+            className="w-64 h-64 rounded-full bg-destructive text-destructive-foreground shadow-2xl animate-pulse-sos flex flex-col items-center justify-center gap-4"
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             <AlertCircle className="w-28 h-28 animate-pulse" />
             <span className="text-3xl font-bold uppercase">{t('sos.emergency')}</span>
-          </button>
+          </motion.button>
         </div>
 
         {/* Compact Statistics */}
@@ -142,10 +160,14 @@ const Index = () => {
 
         {/* Quick Access Cards */}
         <div className="px-4 space-y-3">
-          <Card 
-            className="border-2 border-primary hover:shadow-lg transition-all active:scale-98 cursor-pointer"
-            onClick={() => navigate('/rescue-map')}
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
+            <Card 
+              className="border-2 border-primary hover:shadow-lg transition-all cursor-pointer"
+              onClick={() => navigate('/rescue-map')}
+            >
             <CardContent className="flex items-center gap-4 py-4">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <MapPin className="h-6 w-6 text-primary" />
@@ -156,49 +178,61 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
+          </motion.div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
-              onClick={() => navigate('/resources')}
-            >
+            <motion.div whileTap={{ scale: 0.98 }}>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => navigate('/resources')}
+              >
               <CardContent className="pt-4 pb-3 text-center">
                 <Package className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="text-sm font-medium">{t('index.resources')}</p>
               </CardContent>
             </Card>
+            </motion.div>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
-              onClick={() => navigate('/shelters')}
-            >
+            <motion.div whileTap={{ scale: 0.98 }}>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => navigate('/shelters')}
+              >
               <CardContent className="pt-4 pb-3 text-center">
                 <Building2 className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="text-sm font-medium">{t('index.shelters')}</p>
               </CardContent>
             </Card>
+            </motion.div>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
-              onClick={() => navigate('/missing-persons')}
-            >
+            <motion.div whileTap={{ scale: 0.98 }}>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => navigate('/missing-persons')}
+              >
               <CardContent className="pt-4 pb-3 text-center">
                 <Search className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="text-sm font-medium">{t('index.missingPersons')}</p>
               </CardContent>
             </Card>
+            </motion.div>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-all active:scale-98"
-              onClick={() => navigate('/dashboard')}
-            >
+            <motion.div whileTap={{ scale: 0.98 }}>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all"
+                onClick={() => navigate('/dashboard')}
+              >
               <CardContent className="pt-4 pb-3 text-center">
                 <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="text-sm font-medium">{t('index.metrics')}</p>
               </CardContent>
             </Card>
+            </motion.div>
           </div>
         </div>
+        
+        {/* Swipe Indicator */}
+        <SwipeIndicator />
       </div>
     );
   }
