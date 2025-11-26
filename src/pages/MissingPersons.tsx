@@ -154,7 +154,7 @@ const MissingPersons = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4 pb-28 overflow-y-auto">
       <div className="max-w-6xl mx-auto space-y-6 py-8">
         {/* Header */}
         <Card className="border-2 border-primary">

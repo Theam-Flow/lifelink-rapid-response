@@ -237,9 +237,9 @@ const RescueMap = () => {
   };
 
   return (
-    <div className="relative h-screen w-full flex">
+    <div className="relative h-screen w-full flex pb-28">
       {/* Map */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative pb-28">
         <div ref={mapContainer} className="absolute inset-0" />
         
         {/* Heatmap Layer */}

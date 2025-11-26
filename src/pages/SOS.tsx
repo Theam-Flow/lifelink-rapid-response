@@ -157,13 +157,13 @@ const SOS = () => {
   // Mobile-first quick SOS view
   if (isMobile && !showDetails) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background flex flex-col p-4">
-        <Button variant="ghost" onClick={() => navigate('/')} className="self-start mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background flex flex-col p-4 pb-28 overflow-y-auto">
+          <Button variant="ghost" onClick={() => navigate('/')} className="self-start mb-4">
           <ArrowLeft className="mr-2 h-5 w-5" />
           {t('common.back')}
         </Button>
 
-        <div className="flex-1 flex flex-col items-center justify-center space-y-6 pb-24">
+        <div className="flex-1 flex flex-col items-center justify-center space-y-6">
           {/* Giant Quick Emergency Button */}
           <button
             onClick={sendQuickSOS}
@@ -218,7 +218,7 @@ const SOS = () => {
 
   // Desktop or detailed form view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background p-4 pb-24 md:pb-4">
+    <div className="min-h-screen bg-gradient-to-br from-destructive/30 to-background p-4 pb-28 md:pb-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto space-y-4 py-8">
         <Button variant="ghost" onClick={() => isMobile && showDetails ? setShowDetails(false) : navigate('/')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
