@@ -5,14 +5,34 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 import '@/lib/i18n';
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SOS from "./pages/SOS";
 import RescueMap from "./pages/RescueMap";
+import Resources from "./pages/Resources";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  useOfflineSync();
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/sos" element={<SOS />} />
+        <Route path="/rescue-map" element={<RescueMap />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 const App = () => (
   <ErrorBoundary>
@@ -21,15 +41,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/sos" element={<SOS />} />
-              <Route path="/rescue-map" element={<RescueMap />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <AppContent />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

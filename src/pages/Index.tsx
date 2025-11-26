@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Users, MapPin, Heart } from 'lucide-react';
+import { AlertCircle, Users, MapPin, Heart, BarChart3, Package } from 'lucide-react';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -109,6 +109,38 @@ const Index = () => {
 
         {/* Main Actions */}
         <div className="grid md:grid-cols-2 gap-6">
+          {/* Quick Links */}
+          <div className="md:col-span-2 grid grid-cols-2 gap-4">
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => navigate('/resources')}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Package className="h-5 w-5 text-primary" />
+                  Recursos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Vehículos y equipamiento disponible</p>
+              </CardContent>
+            </Card>
+            
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-all"
+              onClick={() => navigate('/dashboard')}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Métricas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Dashboard de análisis en tiempo real</p>
+              </CardContent>
+            </Card>
+          </div>
           {/* SOS Button */}
           <Card 
             className="border-2 border-destructive hover:shadow-2xl hover:shadow-destructive/50 transition-all cursor-pointer group"

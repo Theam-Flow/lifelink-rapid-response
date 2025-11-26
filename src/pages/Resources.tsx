@@ -1,0 +1,188 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Truck, Heart, Wrench, Package } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface Resource {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  capacity: number | null;
+  available_now: boolean;
+  volunteer_operator: string | null;
+  owner_id: string;
+  profiles: {
+    full_name: string;
+  };
+}
+
+const Resources = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [resources, setResources] = useState<Resource[]>([]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchResources = async () => {
+      const { data, error } = await supabase
+        .from('resources')
+        .select(`
+          *,
+          profiles:owner_id (full_name)
+        `)
+        .order('available_now', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching resources:', error);
+        toast.error('Error al cargar recursos');
+        return;
+      }
+
+      if (data) {
+        setResources(data as any);
+      }
+    };
+
+    fetchResources();
+
+    const channel = supabase
+      .channel('resources_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'resources',
+        },
+        () => {
+          fetchResources();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [user]);
+
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case 'boat_small':
+      case 'boat_large':
+      case '4x4_truck':
+        return <Truck className="h-5 w-5" />;
+      case 'medical_kit':
+        return <Heart className="h-5 w-5" />;
+      case 'generator':
+        return <Wrench className="h-5 w-5" />;
+      default:
+        return <Package className="h-5 w-5" />;
+    }
+  };
+
+  const getStatusColor = (status: string, available: boolean) => {
+    if (!available) return 'destructive';
+    switch (status) {
+      case 'available':
+        return 'default';
+      case 'busy':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-background p-4">
+      <div className="max-w-6xl mx-auto space-y-6 py-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Recursos Disponibles</h1>
+            <p className="text-muted-foreground">
+              Vehículos, equipamiento y suministros de la comunidad
+            </p>
+          </div>
+        </div>
+
+        {/* Resource Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {resources.map((resource) => (
+            <Card key={resource.id} className={resource.available_now ? '' : 'opacity-60'}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    {getResourceIcon(resource.type)}
+                    <CardTitle className="text-lg">{resource.name}</CardTitle>
+                  </div>
+                  <Badge variant={getStatusColor(resource.status, resource.available_now)}>
+                    {resource.available_now ? resource.status : 'No disponible'}
+                  </Badge>
+                </div>
+                <CardDescription>
+                  Tipo: {resource.type.replace('_', ' ')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {resource.capacity && (
+                  <p className="text-sm">
+                    <strong>Capacidad:</strong> {resource.capacity} personas
+                  </p>
+                )}
+                {resource.volunteer_operator && (
+                  <p className="text-sm">
+                    <strong>Operador:</strong> {resource.volunteer_operator}
+                  </p>
+                )}
+                <p className="text-sm">
+                  <strong>Propietario:</strong> {resource.profiles.full_name}
+                </p>
+                {resource.available_now && resource.status === 'available' && (
+                  <Button variant="default" size="sm" className="w-full mt-2">
+                    Solicitar Recurso
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {resources.length === 0 && (
+          <Card className="p-12 text-center">
+            <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-xl font-semibold mb-2">No hay recursos registrados</h3>
+            <p className="text-muted-foreground">
+              Los equipos de rescate pueden registrar sus recursos aquí
+            </p>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Resources;

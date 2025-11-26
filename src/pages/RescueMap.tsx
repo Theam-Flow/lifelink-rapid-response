@@ -5,10 +5,14 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRescuerTracking } from '@/hooks/useRescuerTracking';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Navigation, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Navigation, AlertCircle, Loader2, Radio, Layers, MessageSquare } from 'lucide-react';
+import { HeatmapLayer } from '@/components/HeatmapLayer';
+import { RescuerTracker } from '@/components/RescuerTracker';
+import { Chat } from '@/components/Chat';
 
 interface SOSSignal {
   id: string;
@@ -34,8 +38,12 @@ const RescueMap = () => {
   const [selectedSOS, setSelectedSOS] = useState<SOSSignal | null>(null);
   const [isLoadingToken, setIsLoadingToken] = useState(true);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [showHeatmap, setShowHeatmap] = useState(true);
+  const [showChat, setShowChat] = useState(false);
 
-  // Fetch Mapbox token from edge function
+  const { rescuers, isSharing, startSharing, stopSharing } = useRescuerTracking();
+
+  // Fetch Mapbox token
   useEffect(() => {
     const fetchMapboxToken = async () => {
       try {
@@ -79,7 +87,7 @@ const RescueMap = () => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [100.5018, 13.7563], // Bangkok default
+      center: [100.5018, 13.7563],
       zoom: 11,
     });
 
@@ -90,7 +98,7 @@ const RescueMap = () => {
     };
   }, [mapboxToken]);
 
-  // Fetch SOS signals and set up real-time updates
+  // Fetch SOS signals
   useEffect(() => {
     if (!map.current || !mapboxToken) return;
 
@@ -108,13 +116,11 @@ const RescueMap = () => {
       }
 
       if (data) {
-        // Clear existing markers
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
         setSOSSignals(data);
 
-        // Add markers for each SOS signal
         data.forEach((signal) => {
           if (!map.current) return;
           
@@ -125,18 +131,12 @@ const RescueMap = () => {
             .split(' ')
             .map(parseFloat);
 
-          if (coords.length !== 2) {
+          if (coords.length !== 2 || coords.some(isNaN)) {
             console.error('Invalid coordinates for signal:', signal.id);
             return;
           }
 
           const [lng, lat] = coords;
-
-          // Validate coordinates
-          if (isNaN(lat) || isNaN(lng)) {
-            console.error('Invalid coordinates for signal:', signal.id);
-            return;
-          }
 
           const el = document.createElement('div');
           el.className = 'sos-marker';
@@ -154,6 +154,7 @@ const RescueMap = () => {
 
           marker.getElement().addEventListener('click', () => {
             setSelectedSOS(signal);
+            setShowChat(true);
             map.current?.flyTo({
               center: [lng, lat],
               zoom: 14,
@@ -168,7 +169,6 @@ const RescueMap = () => {
 
     fetchSOSSignals();
 
-    // Subscribe to real-time changes
     const channel = supabase
       .channel('sos_signals_changes')
       .on(
@@ -237,81 +237,108 @@ const RescueMap = () => {
   };
 
   return (
-    <div className="relative h-screen w-full">
-      <div ref={mapContainer} className="absolute inset-0" />
-      
-      {/* Loading State */}
-      {isLoadingToken && (
-        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
-          <Card className="p-6 flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <span className="text-lg font-medium">Cargando mapa...</span>
-          </Card>
-        </div>
-      )}
-      
-      {/* Header */}
-      <div className="absolute top-4 left-4 z-10">
-        <Card className="p-4 bg-background/90 backdrop-blur">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold">{t('map_title')}</h1>
-              <p className="text-sm text-muted-foreground">
-                {t('map_active_sos')}: {sosSignals.length}
-              </p>
-            </div>
+    <div className="relative h-screen w-full flex">
+      {/* Map */}
+      <div className="flex-1 relative">
+        <div ref={mapContainer} className="absolute inset-0" />
+        
+        {/* Heatmap Layer */}
+        {showHeatmap && <HeatmapLayer map={map.current} sosSignals={sosSignals} />}
+        
+        {/* Rescuer Tracker */}
+        <RescuerTracker map={map.current} rescuers={rescuers} />
+        
+        {isLoadingToken && (
+          <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur flex items-center justify-center">
+            <Card className="p-6 flex items-center gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="text-lg font-medium">Cargando mapa...</span>
+            </Card>
           </div>
-        </Card>
-      </div>
-
-      {/* Selected SOS Details */}
-      {selectedSOS && (
-        <div className="absolute bottom-4 left-4 right-4 z-10 max-w-md mx-auto">
-          <Card className="p-4 bg-background/95 backdrop-blur space-y-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <AlertCircle 
-                  className="h-6 w-6 mt-1" 
-                  style={{ color: getSeverityColor(selectedSOS.severity_level) }}
-                />
-                <div>
-                  <h3 className="font-bold text-lg">{t(selectedSOS.type)}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Severity: {selectedSOS.severity_level}/5 • {selectedSOS.victim_count || 1} people
-                  </p>
-                </div>
+        )}
+        
+        {/* Controls */}
+        <div className="absolute top-4 left-4 z-10 space-y-2">
+          <Card className="p-4 bg-background/90 backdrop-blur">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold">{t('map_title')}</h1>
+                <p className="text-sm text-muted-foreground">
+                  SOS: {sosSignals.length} | Rescatistas: {rescuers.length}
+                </p>
               </div>
             </div>
-            
-            {selectedSOS.description && (
-              <p className="text-sm">{selectedSOS.description}</p>
-            )}
-
-            <div className="flex gap-2">
-              <Button
-                onClick={() => assignToMe(selectedSOS.id)}
-                className="flex-1"
-                variant="default"
-              >
-                {t('map_assign')}
-              </Button>
-              <Button
-                onClick={() => navigateToLocation(selectedSOS.location)}
-                variant="secondary"
-                className="flex-1"
-              >
-                <Navigation className="mr-2 h-4 w-4" />
-                {t('map_navigate')}
-              </Button>
-            </div>
           </Card>
+
+          <Card className="p-2 bg-background/90 backdrop-blur space-y-2">
+            <Button
+              variant={showHeatmap ? 'default' : 'outline'}
+              size="sm"
+              className="w-full"
+              onClick={() => setShowHeatmap(!showHeatmap)}
+            >
+              <Layers className="mr-2 h-4 w-4" />
+              Mapa de Calor
+            </Button>
+            <Button
+              variant={isSharing ? 'destructive' : 'default'}
+              size="sm"
+              className="w-full"
+              onClick={isSharing ? stopSharing : startSharing}
+            >
+              <Radio className="mr-2 h-4 w-4" />
+              {isSharing ? 'Detener Tracking' : 'Compartir Ubicación'}
+            </Button>
+          </Card>
+        </div>
+
+        {/* SOS Details */}
+        {selectedSOS && !showChat && (
+          <div className="absolute bottom-4 left-4 right-4 z-10 max-w-md mx-auto">
+            <Card className="p-4 bg-background/95 backdrop-blur space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <AlertCircle 
+                    className="h-6 w-6 mt-1" 
+                    style={{ color: getSeverityColor(selectedSOS.severity_level) }}
+                  />
+                  <div>
+                    <h3 className="font-bold text-lg">{t(selectedSOS.type)}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Severidad: {selectedSOS.severity_level}/5 • {selectedSOS.victim_count || 1} personas
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {selectedSOS.description && (
+                <p className="text-sm">{selectedSOS.description}</p>
+              )}
+
+              <div className="flex gap-2">
+                <Button onClick={() => assignToMe(selectedSOS.id)} className="flex-1" variant="default">
+                  {t('map_assign')}
+                </Button>
+                <Button onClick={() => navigateToLocation(selectedSOS.location)} variant="secondary" className="flex-1">
+                  <Navigation className="mr-2 h-4 w-4" />
+                  {t('map_navigate')}
+                </Button>
+                <Button onClick={() => setShowChat(true)} variant="outline" size="icon">
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Chat Panel */}
+      {showChat && selectedSOS && (
+        <div className="w-96 border-l bg-background">
+          <Chat sosId={selectedSOS.id} onClose={() => setShowChat(false)} />
         </div>
       )}
     </div>
