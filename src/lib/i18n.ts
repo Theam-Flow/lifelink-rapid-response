@@ -292,6 +292,8 @@ const resources = {
         deleted: 'Shelter deleted successfully',
         confirmDelete: 'Delete Shelter',
         deleteWarning: 'Are you sure you want to delete this shelter? This action cannot be undone.',
+        listView: 'List',
+        mapView: 'Map',
       },
       profile: {
         title: 'My Profile',
@@ -654,6 +656,8 @@ const resources = {
         deleted: 'ลบศูนย์พักพิงสำเร็จ',
         confirmDelete: 'ลบศูนย์พักพิง',
         deleteWarning: 'คุณแน่ใจหรือไม่ว่าต้องการลบศูนย์พักพิงนี้? การกระทำนี้ไม่สามารถยกเลิกได้',
+        listView: 'รายการ',
+        mapView: 'แผนที่',
       },
       profile: {
         title: 'โปรไฟล์ของฉัน',
