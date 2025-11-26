@@ -292,165 +292,163 @@ const RescueMap = () => {
         return;
       }
 
-      // Remove existing source and layers if they exist
-      try {
-        if (map.current.getLayer('clusters')) map.current.removeLayer('clusters');
-        if (map.current.getLayer('cluster-count')) map.current.removeLayer('cluster-count');
-        if (map.current.getLayer('unclustered-point')) map.current.removeLayer('unclustered-point');
-        if (map.current.getSource('sos-signals')) map.current.removeSource('sos-signals');
-      } catch (e) {
-        // No existing layers to remove
-      }
-
-      // Add source with clustering enabled
-      map.current.addSource('sos-signals', {
-        type: 'geojson',
-        data: geojson,
-        cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 50
-      });
-
-      // Add cluster circles layer
-      map.current.addLayer({
-        id: 'clusters',
-        type: 'circle',
-        source: 'sos-signals',
-        filter: ['has', 'point_count'],
-        paint: {
-          'circle-color': [
-            'step',
-            ['get', 'point_count'],
-            '#FF6347',
-            100,
-            '#FF4500',
-            750,
-            '#DC143C'
-          ],
-          'circle-radius': [
-            'step',
-            ['get', 'point_count'],
-            20,
-            100,
-            30,
-            750,
-            40
-          ],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff'
-        }
-      });
-
-      // Add cluster count labels
-      map.current.addLayer({
-        id: 'cluster-count',
-        type: 'symbol',
-        source: 'sos-signals',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-          'text-size': 12
-        },
-        paint: {
-          'text-color': '#ffffff'
-        }
-      });
-
-      // Add unclustered points layer - BRIGHT CIRCLES with pulsing effect
-      map.current.addLayer({
-        id: 'unclustered-point',
-        type: 'circle',
-        source: 'sos-signals',
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-          'circle-color': [
-            'match',
-            ['get', 'severity_level'],
-            1, '#FFA500',
-            2, '#FF6347',
-            3, '#FF4500',
-            4, '#DC143C',
-            5, '#FF0000',
-            '#FF0000'
-          ],
-          'circle-radius': 12,
-          'circle-stroke-width': 4,
-          'circle-stroke-color': '#fff',
-          'circle-opacity': 0.9
-        }
-      });
-
-      // Click event on clusters to zoom in
-      map.current.on('click', 'clusters', async (e) => {
-        if (!map.current) return;
-        const features = map.current.queryRenderedFeatures(e.point, {
-          layers: ['clusters']
+      // Update source data if exists, otherwise create it
+      const source = map.current.getSource('sos-signals') as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData(geojson);
+      } else {
+        // First time setup: Add source and layers
+        map.current.addSource('sos-signals', {
+          type: 'geojson',
+          data: geojson,
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50
         });
-        const clusterId = features[0].properties.cluster_id;
-        
-        try {
-          const zoom = await (map.current.getSource('sos-signals') as maplibregl.GeoJSONSource).getClusterExpansionZoom(clusterId);
+
+        // Add cluster circles layer
+        map.current.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: 'sos-signals',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': [
+              'step',
+              ['get', 'point_count'],
+              '#FF6347',
+              100,
+              '#FF4500',
+              750,
+              '#DC143C'
+            ],
+            'circle-radius': [
+              'step',
+              ['get', 'point_count'],
+              20,
+              100,
+              30,
+              750,
+              40
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#fff'
+          }
+        });
+
+        // Add cluster count labels
+        map.current.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: 'sos-signals',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+            'text-size': 12
+          },
+          paint: {
+            'text-color': '#ffffff'
+          }
+        });
+
+        // Add unclustered points layer - BRIGHT CIRCLES
+        map.current.addLayer({
+          id: 'unclustered-point',
+          type: 'circle',
+          source: 'sos-signals',
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': [
+              'match',
+              ['get', 'severity_level'],
+              1, '#FFA500',
+              2, '#FF6347',
+              3, '#FF4500',
+              4, '#DC143C',
+              5, '#FF0000',
+              '#FF0000'
+            ],
+            'circle-radius': 12,
+            'circle-stroke-width': 4,
+            'circle-stroke-color': '#fff',
+            'circle-opacity': 0.9
+          }
+        });
+
+        // Click event on clusters to zoom in (only add once)
+        map.current.on('click', 'clusters', async (e) => {
           if (!map.current) return;
-          
-          map.current.easeTo({
-            center: (features[0].geometry as any).coordinates,
-            zoom: zoom
+          const features = map.current.queryRenderedFeatures(e.point, {
+            layers: ['clusters']
           });
-        } catch (err) {
-          console.error('Error expanding cluster:', err);
-        }
-      });
+          if (!features.length) return;
+          const clusterId = features[0].properties.cluster_id;
+          
+          try {
+            const zoom = await (map.current.getSource('sos-signals') as maplibregl.GeoJSONSource).getClusterExpansionZoom(clusterId);
+            if (!map.current) return;
+            
+            map.current.easeTo({
+              center: (features[0].geometry as any).coordinates,
+              zoom: zoom
+            });
+          } catch (err) {
+            console.error('Error expanding cluster:', err);
+          }
+        });
 
-      // Click event on unclustered points to show action dialog
-      map.current.on('click', 'unclustered-point', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        
-        const feature = e.features[0];
-        const coordinates = (feature.geometry as any).coordinates.slice();
-        const properties = feature.properties;
+        // Click event on unclustered points (only add once)
+        map.current.on('click', 'unclustered-point', (e) => {
+          if (!map.current || !e.features || e.features.length === 0) return;
+          
+          const feature = e.features[0];
+          const coordinates = (feature.geometry as any).coordinates.slice();
+          const properties = feature.properties;
 
-        // Reconstruct signal from properties
-        const signal: SOSSignal = {
-          id: properties.id,
-          severity_level: properties.severity_level,
-          type: properties.type,
-          description: properties.description,
-          victim_count: properties.victim_count,
-          status: properties.status,
-          created_at: properties.created_at,
-          user_id: properties.user_id,
-          accuracy_meters: properties.accuracy_meters || null,
-          lng: coordinates[0],
-          lat: coordinates[1],
-          distance_meters: properties.distance_meters,
-        };
+          // Reconstruct signal from properties
+          const signal: SOSSignal = {
+            id: properties.id,
+            severity_level: properties.severity_level,
+            type: properties.type,
+            description: properties.description,
+            victim_count: properties.victim_count,
+            status: properties.status,
+            created_at: properties.created_at,
+            user_id: properties.user_id,
+            accuracy_meters: properties.accuracy_meters || null,
+            lng: coordinates[0],
+            lat: coordinates[1],
+            distance_meters: properties.distance_meters,
+          };
 
-        setSelectedSOS(signal);
-        setShowActionDialog(true);
-        
-        // Center map on clicked SOS
-        if (map.current) {
-          setTimeout(() => {
-            map.current?.setCenter(coordinates);
-            map.current?.setZoom(15);
-          }, 100);
-        }
-      });
+          setSelectedSOS(signal);
+          setShowActionDialog(true);
+          
+          // Center map on clicked SOS
+          if (map.current) {
+            map.current.flyTo({
+              center: coordinates,
+              zoom: 15,
+              duration: 800
+            });
+          }
+        });
 
-      // Change cursor on hover
-      map.current.on('mouseenter', 'clusters', () => {
-        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-      });
-      map.current.on('mouseleave', 'clusters', () => {
-        if (map.current) map.current.getCanvas().style.cursor = '';
-      });
-      map.current.on('mouseenter', 'unclustered-point', () => {
-        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-      });
-      map.current.on('mouseleave', 'unclustered-point', () => {
-        if (map.current) map.current.getCanvas().style.cursor = '';
-      });
+        // Change cursor on hover (only add once)
+        map.current.on('mouseenter', 'clusters', () => {
+          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+        });
+        map.current.on('mouseleave', 'clusters', () => {
+          if (map.current) map.current.getCanvas().style.cursor = '';
+        });
+        map.current.on('mouseenter', 'unclustered-point', () => {
+          if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+        });
+        map.current.on('mouseleave', 'unclustered-point', () => {
+          if (map.current) map.current.getCanvas().style.cursor = '';
+        });
+      }
     };
 
     fetchSOSSignals();
