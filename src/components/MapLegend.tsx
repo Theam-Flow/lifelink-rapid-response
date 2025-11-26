@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export function MapLegend() {
@@ -17,30 +16,30 @@ export function MapLegend() {
   ];
 
   return (
-    <Card className="p-2 bg-background/95 backdrop-blur">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full flex items-center justify-between h-8"
+    <Card className="p-2 bg-background/90 backdrop-blur-sm border-border/50">
+      <div
+        className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded px-2 py-1 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span className="text-xs font-semibold">{t('map.legend')}</span>
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          {t('map.legend')}
+        </span>
         {isExpanded ? (
-          <ChevronUp className="h-3 w-3" />
+          <ChevronUp className="h-3 w-3 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
         )}
-      </Button>
+      </div>
       
       {isExpanded && (
-        <div className="space-y-1 mt-2 px-1">
+        <div className="space-y-1 mt-1.5 px-2">
           {severityLevels.map((item) => (
-            <div key={item.level} className="flex items-center gap-2">
+            <div key={item.level} className="flex items-center gap-1.5">
               <div
-                className="w-2.5 h-2.5 rounded-full border border-white shadow-sm"
+                className="w-2 h-2 rounded-full border border-white/50 shadow-sm"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-xs">
+              <span className="text-[10px] text-foreground/80">
                 {item.level} - {item.label}
               </span>
             </div>
