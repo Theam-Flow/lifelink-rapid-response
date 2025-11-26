@@ -24,6 +24,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const [photos, setPhotos] = useState<string[]>(shelter?.photo_urls || []);
   const [formData, setFormData] = useState({
     name: shelter?.name || '',
@@ -83,6 +84,57 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
 
   const removePhoto = (url: string) => {
     setPhotos(photos.filter((p) => p !== url));
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('La geolocalización no está soportada en tu navegador');
+      return;
+    }
+
+    setGettingLocation(true);
+    toast.loading('Obteniendo ubicación...');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        
+        setFormData({
+          ...formData,
+          lat: lat,
+          lng: lng,
+        });
+        
+        toast.dismiss();
+        toast.success('Ubicación detectada correctamente');
+        setGettingLocation(false);
+      },
+      (error) => {
+        toast.dismiss();
+        let errorMessage = 'No se pudo obtener la ubicación';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación en la configuración del navegador.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Información de ubicación no disponible';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Tiempo de espera agotado al obtener la ubicación';
+            break;
+        }
+        
+        toast.error(errorMessage);
+        setGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -215,30 +267,50 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="lat">{t('shelters.latitude')} *</Label>
-                <Input
-                  id="lat"
-                  type="number"
-                  step="any"
-                  value={formData.lat}
-                  onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                  placeholder="13.7563"
-                  required
-                />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{t('shelters.location')} *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGetLocation}
+                  disabled={gettingLocation}
+                >
+                  {gettingLocation ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <MapPin className="h-4 w-4 mr-2" />
+                  )}
+                  Añadir mi ubicación
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="lng">{t('shelters.longitude')} *</Label>
-                <Input
-                  id="lng"
-                  type="number"
-                  step="any"
-                  value={formData.lng}
-                  onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                  placeholder="100.5018"
-                  required
-                />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="lat" className="text-xs text-muted-foreground">{t('shelters.latitude')} *</Label>
+                  <Input
+                    id="lat"
+                    type="number"
+                    step="any"
+                    value={formData.lat}
+                    onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
+                    placeholder="13.7563"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lng" className="text-xs text-muted-foreground">{t('shelters.longitude')} *</Label>
+                  <Input
+                    id="lng"
+                    type="number"
+                    step="any"
+                    value={formData.lng}
+                    onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
+                    placeholder="100.5018"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
