@@ -947,6 +947,23 @@ export type Database = {
           lng: number
         }[]
       }
+      get_sos_with_distance: {
+        Args: { user_lat: number; user_lng: number }
+        Returns: {
+          accuracy_meters: number
+          created_at: string
+          description: string
+          distance_meters: number
+          id: string
+          lat: number
+          lng: number
+          severity_level: number
+          status: Database["public"]["Enums"]["sos_status"]
+          type: Database["public"]["Enums"]["emergency_type"]
+          user_id: string
+          victim_count: number
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_rescuer: { Args: { _user_id: string }; Returns: boolean }
