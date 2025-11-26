@@ -4,17 +4,39 @@
 [![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](https://github.com/yourusername/lifelink-asia)
 [![Security Audit](https://img.shields.io/badge/security-audited-blue.svg)](./SECURITY.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+[![Open Source](https://img.shields.io/badge/open%20source-100%25-blue.svg)](./LICENSE)
 
-> A real-time emergency response platform connecting victims, rescuers, and resources during disasters across Southeast Asia.  
-> **by [@withkevinm](https://github.com/withkevinm)**
+> **🌍 100% Free & Open Source Emergency Response Platform**  
+> A real-time system connecting victims, rescuers, and resources during disasters.  
+> Built for humanity. Free forever. Ready for government deployment.
+>
+> **Created by [@withkevinm](https://github.com/withkevinm)**
 
 ## 🌟 Overview
 
-LifeLink Asia is a free, open-source emergency response system designed to save lives during floods, earthquakes, and other disasters. Built with modern web technologies and optimized for mobile-first usage in low-connectivity environments.
+**LifeLink Asia** is a 100% free, open-source emergency response platform designed to save lives during natural disasters. Built with transparency, security, and accessibility at its core.
 
 ### 🎯 Mission
 
-Provide fast, reliable, and free emergency coordination tools that work when people need them most - during disasters.
+**Democratize Emergency Response Technology**
+
+We believe life-saving technology should be:
+- ✅ **Free** - No licensing fees, ever
+- ✅ **Open Source** - Fully transparent and auditable code
+- ✅ **Public Domain** - Available for anyone to use, modify, and deploy
+- ✅ **Government-Ready** - Suitable for official emergency services
+- ✅ **Community-Driven** - Built and improved by the global community
+
+### 🏛️ For Governments & Organizations
+
+This platform is **specifically designed** for:
+- National disaster management agencies
+- Municipal emergency services  
+- NGOs and humanitarian organizations
+- Community emergency response teams
+- Academic institutions
+
+**No vendor lock-in. No hidden costs. No proprietary dependencies.**
 
 ## 📸 Screenshots
 
