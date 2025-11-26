@@ -169,63 +169,63 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
             type: 'heatmap',
             source: sourceIdRef.current,
             paint: {
-              // Weight increases with severity (1-5)
+              // Weight increases with severity (1-5) - MÁS AGRESIVO
               'heatmap-weight': [
                 'interpolate',
                 ['linear'],
                 ['get', 'weight'],
-                1, 0.3,  // Severity 1 = 30% weight
-                2, 0.5,  // Severity 2 = 50% weight
-                3, 0.7,  // Severity 3 = 70% weight
-                4, 0.9,  // Severity 4 = 90% weight
+                1, 0.5,  // Severity 1 = 50% weight (antes 30%)
+                2, 0.7,  // Severity 2 = 70% weight (antes 50%)
+                3, 0.85, // Severity 3 = 85% weight (antes 70%)
+                4, 1.0,  // Severity 4 = 100% weight (antes 90%)
                 5, 1.0   // Severity 5 = 100% weight
               ],
               
-              // Intensity increases with zoom for better visibility
+              // Intensity MUCHO MÁS ALTA para mejor visibilidad
               'heatmap-intensity': [
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                0, 0.8,   // Low zoom = 80% intensity
-                10, 1.2,  // Medium zoom = 120% intensity
-                15, 2.0   // High zoom = 200% intensity
+                0, 2.0,   // Low zoom = 200% intensity (antes 80%)
+                10, 3.0,  // Medium zoom = 300% intensity (antes 120%)
+                15, 4.0   // High zoom = 400% intensity (antes 200%)
               ],
               
-              // Emergency-themed color gradient (yellow → orange → red → dark red)
+              // Colores MÁS BRILLANTES Y OPACOS - Emergency theme
               'heatmap-color': [
                 'interpolate',
                 ['linear'],
                 ['heatmap-density'],
-                0, 'rgba(255, 255, 0, 0)',      // Transparent yellow
-                0.1, 'rgba(255, 200, 0, 0.3)',  // Light yellow-orange
-                0.3, 'rgba(255, 150, 0, 0.5)',  // Orange
-                0.5, 'rgba(255, 100, 0, 0.7)',  // Red-orange
-                0.7, 'rgba(255, 50, 0, 0.85)',  // Red
-                0.9, 'rgba(200, 0, 0, 0.95)',   // Dark red
-                1, 'rgba(139, 0, 0, 1)'         // Crimson
+                0, 'rgba(255, 255, 0, 0)',       // Transparent yellow
+                0.05, 'rgba(255, 255, 0, 0.6)',  // Bright yellow (antes 0.1, 0.3)
+                0.2, 'rgba(255, 200, 0, 0.75)',  // Yellow-orange (antes 0.3, 0.5)
+                0.4, 'rgba(255, 150, 0, 0.85)',  // Orange (antes 0.5, 0.7)
+                0.6, 'rgba(255, 50, 0, 0.9)',    // Red-orange (antes 0.7, 0.85)
+                0.8, 'rgba(255, 0, 0, 0.95)',    // Bright red (antes 0.9, 0.95)
+                1, 'rgba(200, 0, 0, 1)'          // Dark red
               ],
               
-              // Dynamic radius based on zoom level
+              // Radio MÁS GRANDE para cubrir más área
               'heatmap-radius': [
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                0, 15,   // World view = small radius
-                8, 25,   // Country view
-                10, 40,  // Region view
-                12, 60,  // City view
-                14, 80,  // District view
-                16, 100  // Street view = large radius
+                0, 30,    // World view (antes 15)
+                8, 50,    // Country view (antes 25)
+                10, 80,   // Region view (antes 40)
+                12, 120,  // City view (antes 60)
+                14, 150,  // District view (antes 80)
+                16, 180   // Street view (antes 100)
               ],
               
-              // Opacity (slightly transparent for map visibility)
+              // Opacidad MÁS ALTA para mejor visibilidad
               'heatmap-opacity': [
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                7, 0.7,  // More transparent at low zoom
-                10, 0.8, // Standard opacity at medium zoom
-                14, 0.85 // Slightly more opaque at high zoom
+                7, 0.85,  // Más opaco en low zoom (antes 0.7)
+                10, 0.9,  // Alto en medium zoom (antes 0.8)
+                14, 0.95  // Muy opaco en high zoom (antes 0.85)
               ],
             },
           });
