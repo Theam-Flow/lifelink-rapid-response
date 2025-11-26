@@ -1,0 +1,103 @@
+import { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+
+interface HeatmapLayerProps {
+  map: mapboxgl.Map | null;
+  sosSignals: Array<{
+    id: string;
+    location: unknown;
+    severity_level: number;
+  }>;
+}
+
+export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
+  const layerIdRef = useRef('sos-heatmap');
+
+  useEffect(() => {
+    if (!map || sosSignals.length === 0) return;
+
+    // Remove existing layer if it exists
+    if (map.getLayer(layerIdRef.current)) {
+      map.removeLayer(layerIdRef.current);
+    }
+    if (map.getSource(layerIdRef.current)) {
+      map.removeSource(layerIdRef.current);
+    }
+
+    // Convert SOS signals to GeoJSON
+    const features = sosSignals.map((signal) => {
+      const locationStr = String(signal.location || '');
+      const coords = locationStr
+        .replace('POINT(', '')
+        .replace(')', '')
+        .split(' ')
+        .map(parseFloat);
+
+      if (coords.length !== 2 || coords.some(isNaN)) {
+        return null;
+      }
+
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: coords,
+        },
+        properties: {
+          weight: signal.severity_level,
+        },
+      };
+    }).filter(Boolean);
+
+    if (features.length === 0) return;
+
+    // Add source
+    map.addSource(layerIdRef.current, {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: features as any,
+      },
+    });
+
+    // Add heatmap layer
+    map.addLayer({
+      id: layerIdRef.current,
+      type: 'heatmap',
+      source: layerIdRef.current,
+      paint: {
+        // Increase weight as severity increases
+        'heatmap-weight': ['get', 'weight'],
+        // Increase intensity as zoom level increases
+        'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 15, 3],
+        // Color ramp for heatmap
+        'heatmap-color': [
+          'interpolate',
+          ['linear'],
+          ['heatmap-density'],
+          0, 'rgba(33,102,172,0)',
+          0.2, 'rgb(103,169,207)',
+          0.4, 'rgb(209,229,240)',
+          0.6, 'rgb(253,219,199)',
+          0.8, 'rgb(239,138,98)',
+          1, 'rgb(178,24,43)',
+        ],
+        // Radius of influence of one point
+        'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 20, 15, 50],
+        // Opacity
+        'heatmap-opacity': 0.7,
+      },
+    });
+
+    return () => {
+      if (map.getLayer(layerIdRef.current)) {
+        map.removeLayer(layerIdRef.current);
+      }
+      if (map.getSource(layerIdRef.current)) {
+        map.removeSource(layerIdRef.current);
+      }
+    };
+  }, [map, sosSignals]);
+
+  return null;
+};

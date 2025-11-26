@@ -77,6 +77,108 @@ export type Database = {
           },
         ]
       }
+      incident_reports: {
+        Row: {
+          created_at: string
+          id: string
+          lessons_learned: string | null
+          notes: string | null
+          outcome: string | null
+          photos: string[] | null
+          reported_by: string
+          resources_used: Json | null
+          response_time_minutes: number | null
+          sos_id: string
+          victims_rescued: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lessons_learned?: string | null
+          notes?: string | null
+          outcome?: string | null
+          photos?: string[] | null
+          reported_by: string
+          resources_used?: Json | null
+          response_time_minutes?: number | null
+          sos_id: string
+          victims_rescued?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lessons_learned?: string | null
+          notes?: string | null
+          outcome?: string | null
+          photos?: string[] | null
+          reported_by?: string
+          resources_used?: Json | null
+          response_time_minutes?: number | null
+          sos_id?: string
+          victims_rescued?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_sos_id_fkey"
+            columns: ["sos_id"]
+            isOneToOne: false
+            referencedRelation: "sos_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          sos_id: string | null
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          sos_id?: string | null
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          sos_id?: string | null
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sos_id_fkey"
+            columns: ["sos_id"]
+            isOneToOne: false
+            referencedRelation: "sos_signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missing_persons: {
         Row: {
           age: number | null
@@ -202,25 +304,34 @@ export type Database = {
       rescuer_activity: {
         Row: {
           current_sos_id: string | null
+          heading: number | null
           id: string
+          last_ping: string | null
           location: unknown
           rescuer_id: string
+          speed_kmh: number | null
           status: Database["public"]["Enums"]["resource_status"] | null
           timestamp: string | null
         }
         Insert: {
           current_sos_id?: string | null
+          heading?: number | null
           id?: string
+          last_ping?: string | null
           location: unknown
           rescuer_id: string
+          speed_kmh?: number | null
           status?: Database["public"]["Enums"]["resource_status"] | null
           timestamp?: string | null
         }
         Update: {
           current_sos_id?: string | null
+          heading?: number | null
           id?: string
+          last_ping?: string | null
           location?: unknown
           rescuer_id?: string
+          speed_kmh?: number | null
           status?: Database["public"]["Enums"]["resource_status"] | null
           timestamp?: string | null
         }
@@ -241,48 +352,118 @@ export type Database = {
           },
         ]
       }
+      resource_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          priority: number | null
+          requested_by: string
+          resource_id: string | null
+          sos_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          requested_by: string
+          resource_id?: string | null
+          sos_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          requested_by?: string
+          resource_id?: string | null
+          sos_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_requests_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_requests_sos_id_fkey"
+            columns: ["sos_id"]
+            isOneToOne: false
+            referencedRelation: "sos_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
+          available_now: boolean | null
           capacity: number | null
           contact_info: string | null
           created_at: string | null
           current_location: unknown
           id: string
+          last_maintenance: string | null
           license_plate: string | null
           name: string
           notes: string | null
           owner_id: string
+          photo_urls: string[] | null
           status: Database["public"]["Enums"]["resource_status"] | null
           type: Database["public"]["Enums"]["resource_type"]
           updated_at: string | null
+          volunteer_operator: string | null
         }
         Insert: {
+          available_now?: boolean | null
           capacity?: number | null
           contact_info?: string | null
           created_at?: string | null
           current_location: unknown
           id?: string
+          last_maintenance?: string | null
           license_plate?: string | null
           name: string
           notes?: string | null
           owner_id: string
+          photo_urls?: string[] | null
           status?: Database["public"]["Enums"]["resource_status"] | null
           type: Database["public"]["Enums"]["resource_type"]
           updated_at?: string | null
+          volunteer_operator?: string | null
         }
         Update: {
+          available_now?: boolean | null
           capacity?: number | null
           contact_info?: string | null
           created_at?: string | null
           current_location?: unknown
           id?: string
+          last_maintenance?: string | null
           license_plate?: string | null
           name?: string
           notes?: string | null
           owner_id?: string
+          photo_urls?: string[] | null
           status?: Database["public"]["Enums"]["resource_status"] | null
           type?: Database["public"]["Enums"]["resource_type"]
           updated_at?: string | null
+          volunteer_operator?: string | null
         }
         Relationships: [
           {
