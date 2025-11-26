@@ -408,7 +408,7 @@ const RescueMap = () => {
       };
       const color = colors[signal.severity_level as keyof typeof colors] || '#FF0000';
 
-      // Create marker element with fixed positioning
+      // Create marker element - completamente estático
       const el = document.createElement('div');
       el.style.width = '24px';
       el.style.height = '24px';
@@ -417,18 +417,9 @@ const RescueMap = () => {
       el.style.border = '3px solid white';
       el.style.cursor = 'pointer';
       el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-      el.style.transition = 'transform 0.2s';
       el.style.position = 'relative';
       el.style.zIndex = '1000';
       el.className = 'sos-marker-point';
-      
-      // Hover effect
-      el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.2)';
-      });
-      el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)';
-      });
 
       // Click handler - sin mover el mapa
       el.addEventListener('click', (e) => {
