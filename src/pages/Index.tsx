@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon, Building2, Waves } from 'lucide-react';
+import { AlertCircle, Users, MapPin, Heart, BarChart3, Package, Search, Home, User as UserIcon, Building2, Waves, FileText } from 'lucide-react';
 import { Notifications } from '@/components/Notifications';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { QuickSOS } from '@/components/QuickSOS';
@@ -229,6 +229,25 @@ const Index = () => {
             </Card>
             </motion.div>
           </div>
+
+          {/* Documentation Link */}
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all bg-gradient-to-r from-primary/5 to-accent/5"
+              onClick={() => navigate('/docs')}
+            >
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <p className="text-sm font-medium">{t('index.documentation')}</p>
+                  </div>
+                  <Heart className="h-4 w-4 text-destructive animate-pulse" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Free by: @withkevinm</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     );
@@ -415,6 +434,27 @@ const Index = () => {
             <p className="text-center text-sm text-muted-foreground">
               <strong>{t('index.emergencyHotline')}:</strong> Thailand: 191 • Vietnam: 113 • Malaysia: 999 • Indonesia: 112
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Documentation & Credit */}
+        <Card 
+          className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 cursor-pointer hover:shadow-lg transition-all"
+          onClick={() => navigate('/docs')}
+        >
+          <CardContent className="pt-6 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <p className="font-semibold">{t('index.documentation')}</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              {t('index.documentationDesc')}
+            </p>
+            <div className="flex items-center justify-center gap-2 text-lg">
+              <Heart className="h-5 w-5 text-destructive animate-pulse" />
+              <span className="font-semibold">Free by: @withkevinm</span>
+              <Heart className="h-5 w-5 text-destructive animate-pulse" />
+            </div>
           </CardContent>
         </Card>
       </div>
