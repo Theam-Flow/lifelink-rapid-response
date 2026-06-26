@@ -486,6 +486,7 @@ const Profile = () => {
                             <div className="flex-1">
                               <p className="text-sm text-muted-foreground mb-1">{t('auth.country')}</p>
                               <p className="font-semibold">
+                                {profile.country_code === 'VE' && '🇻🇪 Venezuela'}
                                 {profile.country_code === 'TH' && '🇹🇭 Thailand'}
                                 {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
                                 {profile.country_code === 'MY' && '🇲🇾 Malaysia'}
