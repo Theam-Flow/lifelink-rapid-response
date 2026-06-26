@@ -73,7 +73,7 @@ const Profile = () => {
         phone: data.phone || '',
         avatar_url: data.avatar_url || '',
         line_id: data.line_id || '',
-        country_code: data.country_code || 'TH',
+        country_code: data.country_code || 'VE',
       });
     } catch (error: any) {
       toast.error(error.message);
