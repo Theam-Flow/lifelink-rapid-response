@@ -432,7 +432,7 @@ const Index = () => {
         <Card className="bg-accent/50">
           <CardContent className="pt-6">
             <p className="text-center text-sm text-muted-foreground">
-              <strong>{t('index.emergencyHotline')}:</strong> Thailand: 191 • Vietnam: 113 • Malaysia: 999 • Indonesia: 112
+              <strong>{t('index.emergencyHotline')}:</strong> Venezuela: 911 • Thailand: 191 • Vietnam: 113 • Malaysia: 999 • Indonesia: 112
             </p>
           </CardContent>
         </Card>
