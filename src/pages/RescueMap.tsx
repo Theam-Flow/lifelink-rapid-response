@@ -181,7 +181,7 @@ const RescueMap = () => {
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
       style: isDarkMode ? darkStyle : lightStyle,
-      center: [100.5018, 13.7563],
+      center: [-66.9036, 10.4806],
       zoom: 11,
     });
 
