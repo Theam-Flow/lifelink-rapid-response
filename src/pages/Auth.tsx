@@ -83,7 +83,7 @@ const Auth = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-8 w-8 text-destructive" />
-              <CardTitle className="text-2xl font-bold">LifeLink Asia</CardTitle>
+              <CardTitle className="text-2xl font-bold">LifeLink</CardTitle>
             </div>
             <LanguageSwitcher />
           </div>

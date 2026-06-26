@@ -1,7 +1,7 @@
 {
-  "name": "LifeLink Asia",
+  "name": "LifeLink",
   "short_name": "LifeLink",
-  "description": "Emergency disaster response and coordination system for Southeast Asia",
+  "description": "Emergency disaster response and coordination system",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
