@@ -380,12 +380,13 @@ const Profile = () => {
                         </Label>
                         <Select
                           value={formData.country_code}
-                          onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setFormData({ ...formData, country_code: value })}
+                          onValueChange={(value: 'VE' | 'TH' | 'VN' | 'MY' | 'ID') => setFormData({ ...formData, country_code: value })}
                         >
                           <SelectTrigger className="h-12">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="VE">🇻🇪 Venezuela</SelectItem>
                             <SelectItem value="TH">🇹🇭 Thailand</SelectItem>
                             <SelectItem value="VN">🇻🇳 Vietnam</SelectItem>
                             <SelectItem value="MY">🇲🇾 Malaysia</SelectItem>
