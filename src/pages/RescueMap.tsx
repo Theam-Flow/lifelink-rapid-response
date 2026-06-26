@@ -35,6 +35,7 @@ interface SOSSignal {
   lat?: number;
   distance_meters?: number;
   contact_phone?: string | null;
+  contact_whatsapp?: string | null;
   contact_line_id?: string | null;
 }
 
@@ -1328,7 +1329,7 @@ const RescueMap = () => {
               )}
 
               {/* Contact Information */}
-              {(selectedSOS.contact_phone || selectedSOS.contact_line_id) && (
+              {(selectedSOS.contact_phone || selectedSOS.contact_whatsapp || selectedSOS.contact_line_id) && (
                 <div className="border-t pt-4">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.contactInfo')}</h3>
                   <div className="space-y-2">
@@ -1342,6 +1343,18 @@ const RescueMap = () => {
                         <div className="text-left">
                           <div className="text-xs text-muted-foreground">{t('profile.phone')}</div>
                           <div className="font-semibold">{selectedSOS.contact_phone}</div>
+                        </div>
+                      </Button>
+                    )}
+                    {selectedSOS.contact_whatsapp && (
+                      <Button
+                        onClick={() => window.open(`https://wa.me/${selectedSOS.contact_whatsapp?.replace(/\D/g, '')}`, '_blank')}
+                        className="w-full justify-start h-auto py-3 bg-[#25D366] hover:bg-[#25D366]/90"
+                      >
+                        <MessageSquare className="mr-3 h-5 w-5 text-white" />
+                        <div className="text-left text-white">
+                          <div className="text-xs opacity-90">{t('profile.whatsapp')}</div>
+                          <div className="font-semibold">{selectedSOS.contact_whatsapp}</div>
                         </div>
                       </Button>
                     )}

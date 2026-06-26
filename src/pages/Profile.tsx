@@ -21,6 +21,7 @@ interface Profile {
   full_name: string;
   phone: string | null;
   line_id: string | null;
+  whatsapp_number: string | null;
   avatar_url: string | null;
   role: string;
   status: string;
@@ -45,6 +46,7 @@ const Profile = () => {
     phone: '',
     avatar_url: '',
     line_id: '',
+    whatsapp_number: '',
     country_code: 'VE' as 'VE' | 'TH' | 'VN' | 'MY' | 'ID',
   });
   const [uploading, setUploading] = useState(false);
@@ -73,6 +75,7 @@ const Profile = () => {
         phone: data.phone || '',
         avatar_url: data.avatar_url || '',
         line_id: data.line_id || '',
+        whatsapp_number: data.whatsapp_number || '',
         country_code: data.country_code || 'VE',
       });
     } catch (error: any) {
@@ -131,6 +134,7 @@ const Profile = () => {
           full_name: formData.full_name,
           phone: formData.phone || null,
           line_id: formData.line_id || null,
+          whatsapp_number: formData.whatsapp_number || null,
           avatar_url: formData.avatar_url || null,
           country_code: formData.country_code,
         })
@@ -359,6 +363,21 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
+                        <Label htmlFor="whatsapp_number" className="text-base">
+                          <Phone className="h-4 w-4 inline mr-2 text-[#25D366]" />
+                          {t('profile.whatsapp')}
+                        </Label>
+                        <Input
+                          id="whatsapp_number"
+                          type="tel"
+                          value={formData.whatsapp_number}
+                          onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
+                          className="h-12"
+                          placeholder="+58 412 1234567"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
                         <Label htmlFor="line_id" className="text-base">
                           <Mail className="h-4 w-4 inline mr-2" />
                           {t('profile.lineId')}
@@ -447,6 +466,29 @@ const Profile = () => {
                                 className="shrink-0"
                               >
                                 <Phone className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {profile.whatsapp_number && (
+                        <Card className="bg-muted/50 border-none">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="bg-[#25D366]/10 p-2 rounded-lg">
+                                <Phone className="h-5 w-5 text-[#25D366]" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-muted-foreground mb-1">{t('profile.whatsapp')}</p>
+                                <p className="font-semibold">{profile.whatsapp_number}</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => window.open(`https://wa.me/${profile.whatsapp_number?.replace(/\D/g, '')}`, '_blank')}
+                                className="bg-[#25D366] hover:bg-[#25D366]/90 text-white"
+                              >
+                                {t('profile.openWhatsapp')}
                               </Button>
                             </div>
                           </CardContent>

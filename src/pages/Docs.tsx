@@ -11,36 +11,36 @@ const Docs = () => {
       title: t('docs.gettingStarted'),
       icon: BookOpen,
       docs: [
-        { name: 'README', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/README.md', description: t('docs.readmeDesc') },
-        { name: 'DEVELOPMENT', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/DEVELOPMENT.md', description: t('docs.devDesc') },
-        { name: 'DEPLOYMENT', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/DEPLOYMENT.md', description: t('docs.deployDesc') },
+        { name: 'README', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/README.md', description: t('docs.readmeDesc') },
+        { name: 'DEVELOPMENT', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/DEVELOPMENT.md', description: t('docs.devDesc') },
+        { name: 'DEPLOYMENT', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/DEPLOYMENT.md', description: t('docs.deployDesc') },
       ]
     },
     {
       title: t('docs.technical'),
       icon: Code,
       docs: [
-        { name: 'ARCHITECTURE', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/ARCHITECTURE.md', description: t('docs.architectureDesc') },
-        { name: 'DATABASE', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/DATABASE.md', description: t('docs.databaseDesc') },
-        { name: 'API', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/API.md', description: t('docs.apiDesc') },
+        { name: 'ARCHITECTURE', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/ARCHITECTURE.md', description: t('docs.architectureDesc') },
+        { name: 'DATABASE', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/DATABASE.md', description: t('docs.databaseDesc') },
+        { name: 'API', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/API.md', description: t('docs.apiDesc') },
       ]
     },
     {
       title: t('docs.humanitarian'),
       icon: Heart,
       docs: [
-        { name: 'HUMANITARIAN USE', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/HUMANITARIAN_USE.md', description: t('docs.humanitarianDesc') },
-        { name: 'CODE OF CONDUCT', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/CODE_OF_CONDUCT.md', description: t('docs.conductDesc') },
-        { name: 'CONTRIBUTING', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/CONTRIBUTING.md', description: t('docs.contributingDesc') },
+        { name: 'HUMANITARIAN USE', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/HUMANITARIAN_USE.md', description: t('docs.humanitarianDesc') },
+        { name: 'CODE OF CONDUCT', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/CODE_OF_CONDUCT.md', description: t('docs.conductDesc') },
+        { name: 'CONTRIBUTING', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/CONTRIBUTING.md', description: t('docs.contributingDesc') },
       ]
     },
     {
       title: t('docs.projectInfo'),
       icon: TrendingUp,
       docs: [
-        { name: 'PUBLIC ROADMAP', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/PUBLIC_ROADMAP.md', description: t('docs.roadmapDesc') },
-        { name: 'SECURITY', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/SECURITY.md', description: t('docs.securityDesc') },
-        { name: 'PRODUCTION READY', url: 'https://github.com/withkevinm/lifelink-asia/blob/main/PRODUCTION_READY.md', description: t('docs.productionDesc') },
+        { name: 'PUBLIC ROADMAP', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/PUBLIC_ROADMAP.md', description: t('docs.roadmapDesc') },
+        { name: 'SECURITY', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/SECURITY.md', description: t('docs.securityDesc') },
+        { name: 'PRODUCTION READY', url: 'https://github.com/Theam-Flow/lifelink-rapid-response/blob/main/PRODUCTION_READY.md', description: t('docs.productionDesc') },
       ]
     }
   ];
@@ -75,7 +75,7 @@ const Docs = () => {
                 </div>
               </div>
               <Button asChild>
-                <a href="https://github.com/withkevinm/lifelink-asia" target="_blank" rel="noopener noreferrer">
+                <a href="https://github.com/Theam-Flow/lifelink-rapid-response" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   GitHub
                 </a>

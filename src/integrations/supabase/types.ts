@@ -284,6 +284,7 @@ export type Database = {
           last_active: string | null
           last_seen_location: unknown
           line_id: string | null
+          whatsapp_number: string | null
           location_accuracy_meters: number | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"] | null
@@ -301,6 +302,7 @@ export type Database = {
           last_active?: string | null
           last_seen_location?: unknown
           line_id?: string | null
+          whatsapp_number?: string | null
           location_accuracy_meters?: number | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -318,6 +320,7 @@ export type Database = {
           last_active?: string | null
           last_seen_location?: unknown
           line_id?: string | null
+          whatsapp_number?: string | null
           location_accuracy_meters?: number | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -680,6 +683,7 @@ export type Database = {
           altitude_meters: number | null
           assigned_rescuer_id: string | null
           contact_line_id: string | null
+          contact_whatsapp: string | null
           contact_phone: string | null
           created_at: string | null
           description: string | null
@@ -706,6 +710,7 @@ export type Database = {
           altitude_meters?: number | null
           assigned_rescuer_id?: string | null
           contact_line_id?: string | null
+          contact_whatsapp?: string | null
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null
@@ -732,6 +737,7 @@ export type Database = {
           altitude_meters?: number | null
           assigned_rescuer_id?: string | null
           contact_line_id?: string | null
+          contact_whatsapp?: string | null
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null

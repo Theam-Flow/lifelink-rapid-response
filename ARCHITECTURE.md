@@ -1,8 +1,8 @@
-# 🏗️ LifeLink Asia - Architecture Documentation
+# 🏗️ LifeLink - Architecture Documentation
 
 ## Overview
 
-LifeLink Asia is a full-stack real-time emergency response platform built with modern web technologies, designed for scalability, reliability, and offline-first functionality.
+LifeLink is a full-stack real-time emergency response platform built with modern web technologies, designed for scalability, reliability, and offline-first functionality.
 
 ## System Architecture
 

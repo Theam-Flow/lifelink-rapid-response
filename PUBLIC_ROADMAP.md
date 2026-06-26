@@ -1,6 +1,6 @@
 # 🗺️ Public Roadmap
 
-**LifeLink Asia Development Roadmap**
+**LifeLink Development Roadmap**
 
 This is our public roadmap showing what we're building and when. Community input is welcome!
 
@@ -290,7 +290,7 @@ This is our public roadmap showing what we're building and when. Community input
 
 ### Most Requested Features
 
-Vote on features at: [GitHub Discussions](https://github.com/yourusername/lifelink-asia/discussions)
+Vote on features at: [GitHub Discussions](https://github.com/Theam-Flow/lifelink-rapid-response/discussions)
 
 **Current Top Requests:**
 1. 📱 WhatsApp Integration (Voting: 234)
@@ -441,7 +441,7 @@ This roadmap is updated:
 
 📧 **Email Newsletter**: roadmap@lifelinkasia.org  
 💬 **Discord**: [Real-time updates]  
-🐦 **Twitter**: [@LifeLinkAsia]  
+🐦 **Twitter**: [@LifeLink]  
 📱 **GitHub**: Watch repository for releases  
 📝 **Blog**: [lifelinkasia.org/blog]
 
@@ -486,4 +486,4 @@ This roadmap exists because of:
 
 ---
 
-**Ready to help shape our future?** → [Join the discussion](https://github.com/yourusername/lifelink-asia/discussions)
+**Ready to help shape our future?** → [Join the discussion](https://github.com/Theam-Flow/lifelink-rapid-response/discussions)

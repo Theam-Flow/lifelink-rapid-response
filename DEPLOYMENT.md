@@ -1,6 +1,6 @@
 # 🚀 Deployment Guide
 
-Complete guide to deploying LifeLink Asia to production.
+Complete guide to deploying LifeLink to production.
 
 ## Table of Contents
 
@@ -163,8 +163,8 @@ server {
 
 ```bash
 # Build and run
-docker build -t lifelink-asia .
-docker run -p 80:80 lifelink-asia
+docker build -t lifelink-rapid-response .
+docker run -p 80:80 lifelink-rapid-response
 ```
 
 ### Option 5: Deploy to AWS S3 + CloudFront

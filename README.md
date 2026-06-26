@@ -1,7 +1,7 @@
-# 🆘 LifeLink Asia - Emergency Response Platform
+# 🆘 LifeLink - Emergency Response Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](https://github.com/yourusername/lifelink-asia)
+[![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](https://github.com/Theam-Flow/lifelink-rapid-response)
 [![Security Audit](https://img.shields.io/badge/security-audited-blue.svg)](./SECURITY.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Open Source](https://img.shields.io/badge/open%20source-100%25-blue.svg)](./LICENSE)
@@ -14,7 +14,7 @@
 
 ## 🌟 Overview
 
-**LifeLink Asia** is a 100% free, open-source emergency response platform designed to save lives during natural disasters. Built with transparency, security, and accessibility at its core.
+**LifeLink** is a 100% free, open-source emergency response platform designed to save lives during natural disasters. Built with transparency, security, and accessibility at its core.
 
 ### 🎯 Mission
 
@@ -204,15 +204,15 @@ Built with amazing open-source tools:
 - [shadcn/ui](https://ui.shadcn.com/)
 
 Special thanks to:
-- Emergency response teams across Southeast Asia
+- Emergency response teams worldwide
 - Open-source contributors
 - Beta testers and early adopters
 
 ## 📞 Support & Contact
 
 - 📧 Email: support@lifelinkasia.org
-- 🐛 Bugs: [GitHub Issues](https://github.com/yourusername/lifelink-asia/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/lifelink-asia/discussions)
+- 🐛 Bugs: [GitHub Issues](https://github.com/Theam-Flow/lifelink-rapid-response/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/Theam-Flow/lifelink-rapid-response/discussions)
 - 🌐 Website: [lifelinkasia.org](https://lifelinkasia.org)
 
 ## 🗺️ Roadmap
@@ -240,7 +240,7 @@ Special thanks to:
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/lifelink-asia&type=Date)](https://star-history.com/#yourusername/lifelink-asia&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Theam-Flow/lifelink-rapid-response&type=Date)](https://star-history.com/#Theam-Flow/lifelink-rapid-response&Date)
 
 ---
 

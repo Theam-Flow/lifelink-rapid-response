@@ -1,8 +1,8 @@
-# Security Policy - LifeLink Asia
+# Security Policy - LifeLink
 
 ## 🔐 Security Architecture
 
-LifeLink Asia implements enterprise-grade security measures to protect user data and ensure safe emergency response operations.
+LifeLink implements enterprise-grade security measures to protect user data and ensure safe emergency response operations.
 
 ### Row-Level Security (RLS)
 
@@ -76,7 +76,7 @@ We will respond within 48 hours and work with you to resolve the issue.
 
 ## 📊 Compliance
 
-LifeLink Asia is designed to comply with:
+LifeLink is designed to comply with:
 
 - **GDPR**: User data rights and privacy protection
 - **PDPA** (Thailand): Personal data protection requirements

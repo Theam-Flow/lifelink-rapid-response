@@ -141,14 +141,17 @@ const MissingPersons = () => {
 
   const fetchMissingPersons = async () => {
     try {
+      // Read the safe board view: identifying info for everyone, but no
+      // contact_phone / medical_conditions / precise GPS. Those are enriched
+      // per-person on open, gated by RLS (see openGallery).
       const { data, error } = await supabase
-        .from('missing_persons')
+        .from('missing_persons_public' as never)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPersons(data || []);
-      setFilteredPersons(data || []);
+      setPersons((data as unknown as MissingPerson[]) || []);
+      setFilteredPersons((data as unknown as MissingPerson[]) || []);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -288,11 +291,24 @@ const MissingPersons = () => {
     }
   };
 
-  const openGallery = (photos: string[], index: number, person: MissingPerson) => {
+  const openGallery = async (photos: string[], index: number, person: MissingPerson) => {
     setCurrentGalleryPhotos(photos);
     setCurrentImageIndex(index);
     setCurrentPerson(person);
     setGalleryOpen(true);
+
+    // Sensitive fields (phone, medical conditions) are not in the board view.
+    // Try to fetch them from the base table — RLS only returns a row to the
+    // reporter, rescuers, or admins, so non-responders get nothing and the
+    // detail view keeps these fields hidden.
+    const { data } = await supabase
+      .from('missing_persons')
+      .select('contact_phone, medical_conditions')
+      .eq('id', person.id)
+      .maybeSingle();
+    if (data) {
+      setCurrentPerson({ ...person, ...data });
+    }
   };
 
   const nextImage = () => {

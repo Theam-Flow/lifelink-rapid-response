@@ -295,7 +295,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
                     step="any"
                     value={formData.lat}
                     onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-                    placeholder="13.7563"
+                    placeholder="10.4806"
                     required
                   />
                 </div>
@@ -307,7 +307,7 @@ export const ShelterForm = ({ open, onClose, onSuccess, shelter }: ShelterFormPr
                     step="any"
                     value={formData.lng}
                     onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-                    placeholder="100.5018"
+                    placeholder="-66.9036"
                     required
                   />
                 </div>

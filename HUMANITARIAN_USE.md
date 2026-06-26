@@ -2,7 +2,7 @@
 
 ## Our Mission: Technology for Humanity
 
-**LifeLink Asia is 100% free and open for humanitarian use.**
+**LifeLink is 100% free and open for humanitarian use.**
 
 This platform was built with a single purpose: **to save lives during emergencies**. We believe that during disasters, technology should unite us, not divide us.
 
@@ -319,7 +319,7 @@ Any community can deploy LifeLink for free:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/lifelink-asia.git
+git clone https://github.com/Theam-Flow/lifelink-rapid-response.git
 
 # Customize language
 # Edit src/lib/i18n.ts

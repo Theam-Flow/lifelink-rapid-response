@@ -1,6 +1,6 @@
 # 💻 Development Guide
 
-Complete guide for setting up local development environment for LifeLink Asia.
+Complete guide for setting up local development environment for LifeLink.
 
 ## Table of Contents
 
@@ -50,12 +50,12 @@ code --install-extension esbenp.prettier-vscode
 
 ```bash
 # Clone via HTTPS
-git clone https://github.com/yourusername/lifelink-asia.git
-cd lifelink-asia
+git clone https://github.com/Theam-Flow/lifelink-rapid-response.git
+cd lifelink-rapid-response
 
 # Or clone via SSH (if you have SSH key configured)
-git clone git@github.com:yourusername/lifelink-asia.git
-cd lifelink-asia
+git clone git@github.com:Theam-Flow/lifelink-rapid-response.git
+cd lifelink-rapid-response
 ```
 
 ### 2. Install Dependencies
@@ -153,7 +153,7 @@ npm run dev
 ### File Structure
 
 ```
-lifelink-asia/
+lifelink-rapid-response/
 ├── src/
 │   ├── components/      # React components
 │   │   ├── ui/         # shadcn/ui components

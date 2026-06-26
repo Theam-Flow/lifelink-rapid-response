@@ -1,6 +1,6 @@
-# Contributing to LifeLink Asia
+# Contributing to LifeLink
 
-Thank you for your interest in contributing to LifeLink Asia! This project saves lives during emergencies, and every contribution matters.
+Thank you for your interest in contributing to LifeLink! This project saves lives during emergencies, and every contribution matters.
 
 ## 🌟 Ways to Contribute
 
@@ -33,8 +33,8 @@ Thank you for your interest in contributing to LifeLink Asia! This project saves
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/lifelink-asia.git
-cd lifelink-asia
+git clone https://github.com/Theam-Flow/lifelink-rapid-response.git
+cd lifelink-rapid-response
 
 # Install dependencies
 npm install
@@ -52,7 +52,7 @@ The app will be available at `http://localhost:5173`
 
 ### 1. Find an Issue
 
-- Check the [Issues](https://github.com/yourusername/lifelink-asia/issues) page
+- Check the [Issues](https://github.com/Theam-Flow/lifelink-rapid-response/issues) page
 - Look for issues tagged `good first issue` or `help wanted`
 - Comment on the issue to let others know you're working on it
 
@@ -236,8 +236,8 @@ Contributors will be:
 
 ## 📞 Questions?
 
-- **General Questions**: Open a [Discussion](https://github.com/yourusername/lifelink-asia/discussions)
-- **Technical Help**: Ask in [Issues](https://github.com/yourusername/lifelink-asia/issues)
+- **General Questions**: Open a [Discussion](https://github.com/Theam-Flow/lifelink-rapid-response/discussions)
+- **Technical Help**: Ask in [Issues](https://github.com/Theam-Flow/lifelink-rapid-response/issues)
 - **Email**: contribute@lifelinkasia.org
 
 ## 📚 Resources
@@ -250,6 +250,6 @@ Contributors will be:
 
 ---
 
-**Thank you for contributing to LifeLink Asia and helping save lives!**
+**Thank you for contributing to LifeLink and helping save lives!**
 
 Created with ❤️ by @withkevinm

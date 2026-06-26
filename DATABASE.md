@@ -2,7 +2,7 @@
 
 ## Overview
 
-LifeLink Asia uses PostgreSQL 15 with PostGIS extension for geospatial capabilities, hosted on Supabase.
+LifeLink uses PostgreSQL 15 with PostGIS extension for geospatial capabilities, hosted on Supabase.
 
 ## Database Schema
 

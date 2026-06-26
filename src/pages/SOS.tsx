@@ -30,6 +30,7 @@ const SOS = () => {
     victimCount: 1,
     description: '',
     contact_phone: '',
+    contact_whatsapp: '',
     contact_line_id: '',
   });
 
@@ -40,7 +41,7 @@ const SOS = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('phone, line_id')
+        .select('phone, line_id, whatsapp_number')
         .eq('id', user.id)
         .single();
       
@@ -48,6 +49,7 @@ const SOS = () => {
         setFormData(prev => ({
           ...prev,
           contact_phone: data.phone || '',
+          contact_whatsapp: data.whatsapp_number || '',
           contact_line_id: data.line_id || '',
         }));
       }
@@ -189,6 +191,7 @@ const SOS = () => {
         victim_count: formData.victimCount,
         description: sanitizedDescription,
         contact_phone: formData.contact_phone || null,
+        contact_whatsapp: formData.contact_whatsapp || null,
         contact_line_id: formData.contact_line_id || null,
         status: 'active' as any,
       }]);
@@ -443,6 +446,19 @@ const SOS = () => {
                     value={formData.contact_phone}
                     onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                     placeholder="+66 XXX XXX XXX"
+                    className="w-full h-12 px-3 rounded-md border border-input bg-background"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <span className="text-[#25D366]">WhatsApp</span>
+                  </Label>
+                  <input
+                    type="tel"
+                    value={formData.contact_whatsapp}
+                    onChange={(e) => setFormData({ ...formData, contact_whatsapp: e.target.value })}
+                    placeholder="+58 412 1234567"
                     className="w-full h-12 px-3 rounded-md border border-input bg-background"
                   />
                 </div>

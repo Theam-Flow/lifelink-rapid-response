@@ -26,6 +26,7 @@ interface SOSSignal {
   lat?: number;
   distance_meters?: number | null;
   contact_phone?: string | null;
+  contact_whatsapp?: string | null;
   contact_line_id?: string | null;
 }
 
@@ -59,7 +60,7 @@ export function SOSActionDialog({
         </AlertDialogHeader>
         
         {/* Quick Contact Buttons */}
-        {(signal.contact_phone || signal.contact_line_id) && (
+        {(signal.contact_phone || signal.contact_whatsapp || signal.contact_line_id) && (
           <div className="space-y-2 pt-2">
             <h4 className="text-sm font-semibold text-muted-foreground">{t('profile.contactInfo')}</h4>
             <div className="flex gap-2">
@@ -74,6 +75,18 @@ export function SOSActionDialog({
                 >
                   <Phone className="h-5 w-5 text-primary" />
                   <span className="text-xs font-medium">{t('profile.callPhone')}</span>
+                </Button>
+              )}
+              {signal.contact_whatsapp && (
+                <Button
+                  onClick={() => {
+                    window.open(`https://wa.me/${signal.contact_whatsapp?.replace(/\D/g, '')}`, '_blank');
+                    onOpenChange(false);
+                  }}
+                  className="flex-1 h-auto py-3 flex-col gap-1 bg-[#25D366] hover:bg-[#25D366]/90 text-white"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="text-xs font-medium">{t('profile.openWhatsapp')}</span>
                 </Button>
               )}
               {signal.contact_line_id && (

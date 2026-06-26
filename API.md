@@ -1,6 +1,6 @@
 # 🔌 API Documentation
 
-Complete API reference for LifeLink Asia backend.
+Complete API reference for LifeLink backend.
 
 ## Table of Contents
 
