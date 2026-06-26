@@ -40,7 +40,7 @@ export const SheltersMap = ({ shelters, onShelterSelect }: SheltersMapProps) => 
     if (!mapContainer.current || map.current) return;
 
     // Default center (Thailand)
-    const defaultCenter: [number, number] = [100.5018, 13.7563];
+    const defaultCenter: [number, number] = [-66.9036, 10.4806];
 
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
