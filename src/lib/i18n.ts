@@ -2407,7 +2407,7 @@ const resources = {
 // Initialize i18n with localStorage detection
 const savedLanguage = localStorage.getItem('lifelink-language');
 const browserLanguage = navigator.language.split('-')[0];
-const initialLanguage = savedLanguage || (browserLanguage === 'en' || browserLanguage === 'th' || browserLanguage === 'vi' ? browserLanguage : 'th');
+const initialLanguage = savedLanguage || (['en', 'th', 'vi', 'es'].includes(browserLanguage) ? browserLanguage : 'es');
 
 i18n
   .use(initReactI18next)
