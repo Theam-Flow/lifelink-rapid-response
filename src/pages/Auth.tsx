@@ -21,7 +21,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'victim' | 'rescuer' | 'shelter_manager'>('victim');
-  const [countryCode, setCountryCode] = useState<'TH' | 'VN' | 'MY' | 'ID'>('TH');
+  const [countryCode, setCountryCode] = useState<'VE' | 'TH' | 'VN' | 'MY' | 'ID'>('VE');
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
