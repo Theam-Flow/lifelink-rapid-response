@@ -303,6 +303,7 @@ const Profile = () => {
                 <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <p className="text-xs text-muted-foreground mb-1">{t('auth.country')}</p>
                 <p className="text-sm font-semibold">
+                  {profile.country_code === 'VE' && '🇻🇪 Venezuela'}
                   {profile.country_code === 'TH' && '🇹🇭 Thailand'}
                   {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
                   {profile.country_code === 'MY' && '🇲🇾 Malaysia'}
