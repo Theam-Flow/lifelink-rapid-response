@@ -25,7 +25,7 @@ const resources = {
         days: 'days',
       },
       auth: {
-        welcome: 'Welcome to LifeLink Asia',
+        welcome: 'Welcome to LifeLink',
         signIn: 'Sign In',
         signUp: 'Sign Up',
         signOut: 'Sign Out',
@@ -227,7 +227,7 @@ const resources = {
         unknown: 'Unknown',
       },
       index: {
-        title: 'LifeLink Asia',
+        title: 'LifeLink',
         subtitle: 'Disaster Response & Coordination System',
         resources: 'Resources Available',
         resourcesDesc: 'View and manage rescue resources',
@@ -1854,7 +1854,7 @@ const resources = {
         days: 'ngày',
       },
       auth: {
-        welcome: 'Chào mừng đến LifeLink Asia',
+        welcome: 'Chào mừng đến LifeLink',
         signIn: 'Đăng nhập',
         signUp: 'Đăng ký',
         signOut: 'Đăng xuất',
@@ -2038,7 +2038,7 @@ const resources = {
         unknown: 'Không rõ',
       },
       index: {
-        title: 'LifeLink Asia',
+        title: 'LifeLink',
         subtitle: 'Hệ thống ứng phó và điều phối thảm họa',
         resources: 'Nguồn lực',
         resourcesDesc: 'Phương tiện và thiết bị có sẵn',
