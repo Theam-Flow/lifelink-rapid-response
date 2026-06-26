@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, MapPin, AlertTriangle, Loader2, RefreshCw, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { enqueueSOS, isNetworkError } from '@/lib/offlineQueue';
 
 const SOS = () => {
   const { t } = useTranslation();
@@ -117,29 +118,37 @@ const SOS = () => {
       navigator.vibrate([200, 100, 200]);
     }
 
-    try {
-      const { error } = await supabase.from('sos_signals').insert([{
-        user_id: user.id,
-        location: `POINT(${location.longitude} ${location.latitude})` as any,
-        accuracy_meters: location.accuracy,
-        altitude_meters: location.altitude,
-        altitude_accuracy_meters: location.altitudeAccuracy,
-        heading_degrees: location.heading,
-        speed_mps: location.speed,
-        gps_timestamp: new Date(location.timestamp).toISOString(),
-        type: 'flood_trap',
-        severity_level: 5,
-        victim_count: 1,
-        description: 'Quick Emergency SOS',
-        status: 'active' as any,
-      }]);
+    const quickPayload = {
+      user_id: user.id,
+      location: `POINT(${location.longitude} ${location.latitude})`,
+      accuracy_meters: location.accuracy,
+      altitude_meters: location.altitude,
+      altitude_accuracy_meters: location.altitudeAccuracy,
+      heading_degrees: location.heading,
+      speed_mps: location.speed,
+      gps_timestamp: new Date(location.timestamp).toISOString(),
+      type: 'flood_trap',
+      severity_level: 5,
+      victim_count: 1,
+      description: 'Quick Emergency SOS',
+      status: 'active',
+    };
 
+    try {
+      if (!navigator.onLine) throw new Error('offline');
+      const { error } = await supabase.from('sos_signals').insert([quickPayload as any]);
       if (error) throw error;
 
       toast.success(t('sos.success'));
       setTimeout(() => navigate('/rescue-map'), 1500);
     } catch (error) {
-      toast.error(t('sos.error'));
+      if (isNetworkError(error)) {
+        enqueueSOS(quickPayload);
+        toast.success(t('sos.queuedOffline'), { description: t('sos.queuedOfflineDesc') });
+        setTimeout(() => navigate('/rescue-map'), 1500);
+      } else {
+        toast.error(t('sos.error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -176,32 +185,40 @@ const SOS = () => {
 
     setLoading(true);
 
-    try {
-      const { error } = await supabase.from('sos_signals').insert([{
-        user_id: user.id,
-        location: `POINT(${location.longitude} ${location.latitude})` as any,
-        accuracy_meters: location.accuracy,
-        altitude_meters: location.altitude,
-        altitude_accuracy_meters: location.altitudeAccuracy,
-        heading_degrees: location.heading,
-        speed_mps: location.speed,
-        gps_timestamp: new Date(location.timestamp).toISOString(),
-        type: formData.type as any,
-        severity_level: formData.severityLevel,
-        victim_count: formData.victimCount,
-        description: sanitizedDescription,
-        contact_phone: formData.contact_phone || null,
-        contact_whatsapp: formData.contact_whatsapp || null,
-        contact_line_id: formData.contact_line_id || null,
-        status: 'active' as any,
-      }]);
+    const sosPayload = {
+      user_id: user.id,
+      location: `POINT(${location.longitude} ${location.latitude})`,
+      accuracy_meters: location.accuracy,
+      altitude_meters: location.altitude,
+      altitude_accuracy_meters: location.altitudeAccuracy,
+      heading_degrees: location.heading,
+      speed_mps: location.speed,
+      gps_timestamp: new Date(location.timestamp).toISOString(),
+      type: formData.type,
+      severity_level: formData.severityLevel,
+      victim_count: formData.victimCount,
+      description: sanitizedDescription,
+      contact_phone: formData.contact_phone || null,
+      contact_whatsapp: formData.contact_whatsapp || null,
+      contact_line_id: formData.contact_line_id || null,
+      status: 'active',
+    };
 
+    try {
+      if (!navigator.onLine) throw new Error('offline');
+      const { error } = await supabase.from('sos_signals').insert([sosPayload as any]);
       if (error) throw error;
 
       toast.success(t('sos.success'));
       navigate('/');
     } catch (error) {
-      toast.error(t('sos.error'));
+      if (isNetworkError(error)) {
+        enqueueSOS(sosPayload);
+        toast.success(t('sos.queuedOffline'), { description: t('sos.queuedOfflineDesc') });
+        navigate('/');
+      } else {
+        toast.error(t('sos.error'));
+      }
     } finally {
       setLoading(false);
     }

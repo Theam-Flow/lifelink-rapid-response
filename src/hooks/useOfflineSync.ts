@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
+import { flushQueue, getPendingCount } from '@/lib/offlineQueue';
 
 export const useOfflineSync = () => {
   const { t } = useTranslation();
@@ -29,6 +31,20 @@ export const useOfflineSync = () => {
       });
     }
 
+    // Replay SOS that were queued while offline
+    const flushPendingSOS = async () => {
+      if (getPendingCount() === 0) return;
+      const sent = await flushQueue(async (payload) => {
+        const { error } = await supabase.from('sos_signals').insert([payload as any]);
+        return { error };
+      });
+      if (sent > 0) {
+        toast.success(t('offline.pendingSent'));
+      }
+    };
+    // Attempt a flush on mount, in case the app opened with connectivity
+    void flushPendingSOS();
+
     // Online/offline event listeners
     const handleOnline = () => {
       setIsOnline(true);
@@ -40,6 +56,9 @@ export const useOfflineSync = () => {
       if (swRegistration && 'sync' in swRegistration) {
         (swRegistration.sync as any).register('sync-sos');
       }
+
+      // Replay any SOS queued while offline (works on every browser)
+      void flushPendingSOS();
     };
 
     const handleOffline = () => {

@@ -75,6 +75,8 @@ const resources = {
         sent: 'Help requested. Rescuers have been notified.',
         success: 'SOS sent successfully',
         error: 'Error sending SOS',
+        queuedOffline: 'SOS saved offline',
+        queuedOfflineDesc: 'It will be sent automatically when the connection returns',
         sending: 'Sending...',
         loginRequired: 'You must log in to send an SOS signal',
         locationAcquired: 'Location acquired',
@@ -140,6 +142,7 @@ const resources = {
         syncingData: 'Syncing data...',
         noConnection: 'No connection',
         offlineMode: 'Offline mode enabled',
+        pendingSent: 'Pending SOS sent',
       },
       resources: {
         title: 'Available Resources',
@@ -689,6 +692,8 @@ const resources = {
         sent: 'Ayuda solicitada. Los rescatistas han sido notificados.',
         success: 'SOS enviado exitosamente',
         error: 'Error al enviar SOS',
+        queuedOffline: 'SOS guardado sin conexión',
+        queuedOfflineDesc: 'Se enviará automáticamente cuando vuelva la señal',
         sending: 'Enviando...',
         loginRequired: 'Debes iniciar sesión para enviar una señal SOS',
         locationAcquired: 'Ubicación obtenida',
@@ -754,6 +759,7 @@ const resources = {
         syncingData: 'Sincronizando datos...',
         noConnection: 'Sin conexión',
         offlineMode: 'Modo sin conexión activado',
+        pendingSent: 'SOS pendiente enviado',
       },
       resources: {
         title: 'Recursos Disponibles',
