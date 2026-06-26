@@ -124,16 +124,17 @@ const Auth = () => {
                   <Label htmlFor="country">{t('auth.country')}</Label>
                   <Select
                     value={countryCode}
-                    onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setCountryCode(value)}
+                    onValueChange={(value: 'VE' | 'TH' | 'VN' | 'MY' | 'ID') => setCountryCode(value)}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="TH">Thailand</SelectItem>
-                      <SelectItem value="VN">Vietnam</SelectItem>
-                      <SelectItem value="MY">Malaysia</SelectItem>
-                      <SelectItem value="ID">Indonesia</SelectItem>
+                      <SelectItem value="VE">🇻🇪 Venezuela</SelectItem>
+                      <SelectItem value="TH">🇹🇭 Thailand</SelectItem>
+                      <SelectItem value="VN">🇻🇳 Vietnam</SelectItem>
+                      <SelectItem value="MY">🇲🇾 Malaysia</SelectItem>
+                      <SelectItem value="ID">🇮🇩 Indonesia</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
