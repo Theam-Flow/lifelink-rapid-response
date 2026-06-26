@@ -85,7 +85,7 @@ const RescueMap = () => {
   // Radio dinámico basado en el toggle del usuario
   const effectiveRadius = showOnlyNearby ? 200 : 1000;
   const { data: sosSignalsData, refetch: refetchSOS, isLoading: sosLoading } = useSOSPagination({
-    userLocation: userLocation || { lng: 100.5018, lat: 13.7563 },
+    userLocation: userLocation || { lng: -66.9036, lat: 10.4806 },
     radiusKm: effectiveRadius,
     pageSize: 500,
     enabled: mapLoaded
@@ -181,7 +181,7 @@ const RescueMap = () => {
     const newMap = new maplibregl.Map({
       container: mapContainer.current,
       style: isDarkMode ? darkStyle : lightStyle,
-      center: [100.5018, 13.7563],
+      center: [-66.9036, 10.4806],
       zoom: 11,
     });
 

@@ -45,7 +45,7 @@ const Profile = () => {
     phone: '',
     avatar_url: '',
     line_id: '',
-    country_code: 'TH' as 'TH' | 'VN' | 'MY' | 'ID',
+    country_code: 'VE' as 'VE' | 'TH' | 'VN' | 'MY' | 'ID',
   });
   const [uploading, setUploading] = useState(false);
 
@@ -73,7 +73,7 @@ const Profile = () => {
         phone: data.phone || '',
         avatar_url: data.avatar_url || '',
         line_id: data.line_id || '',
-        country_code: data.country_code || 'TH',
+        country_code: data.country_code || 'VE',
       });
     } catch (error: any) {
       toast.error(error.message);
@@ -303,6 +303,7 @@ const Profile = () => {
                 <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <p className="text-xs text-muted-foreground mb-1">{t('auth.country')}</p>
                 <p className="text-sm font-semibold">
+                  {profile.country_code === 'VE' && '🇻🇪 Venezuela'}
                   {profile.country_code === 'TH' && '🇹🇭 Thailand'}
                   {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
                   {profile.country_code === 'MY' && '🇲🇾 Malaysia'}
@@ -379,12 +380,13 @@ const Profile = () => {
                         </Label>
                         <Select
                           value={formData.country_code}
-                          onValueChange={(value: 'TH' | 'VN' | 'MY' | 'ID') => setFormData({ ...formData, country_code: value })}
+                          onValueChange={(value: 'VE' | 'TH' | 'VN' | 'MY' | 'ID') => setFormData({ ...formData, country_code: value })}
                         >
                           <SelectTrigger className="h-12">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="VE">🇻🇪 Venezuela</SelectItem>
                             <SelectItem value="TH">🇹🇭 Thailand</SelectItem>
                             <SelectItem value="VN">🇻🇳 Vietnam</SelectItem>
                             <SelectItem value="MY">🇲🇾 Malaysia</SelectItem>
@@ -484,6 +486,7 @@ const Profile = () => {
                             <div className="flex-1">
                               <p className="text-sm text-muted-foreground mb-1">{t('auth.country')}</p>
                               <p className="font-semibold">
+                                {profile.country_code === 'VE' && '🇻🇪 Venezuela'}
                                 {profile.country_code === 'TH' && '🇹🇭 Thailand'}
                                 {profile.country_code === 'VN' && '🇻🇳 Vietnam'}
                                 {profile.country_code === 'MY' && '🇲🇾 Malaysia'}

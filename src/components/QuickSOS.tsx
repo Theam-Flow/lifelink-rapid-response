@@ -14,8 +14,8 @@ export const QuickSOS = () => {
   const [isHolding, setIsHolding] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [tapCount, setTapCount] = useState(0);
-  const tapTimeoutRef = useRef<NodeJS.Timeout>();
-  const countdownIntervalRef = useRef<NodeJS.Timeout>();
+  const tapTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
   // Reset tap count after 2 seconds
   useEffect(() => {

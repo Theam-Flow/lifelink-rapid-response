@@ -133,9 +133,9 @@ export const HeatmapLayer = ({ map, sosSignals }: HeatmapLayerProps) => {
         return;
       }
 
-      const geojsonData: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: features as GeoJSON.Feature[],
+      const geojsonData = {
+        type: 'FeatureCollection' as const,
+        features: features as any[],
       };
 
       try {
