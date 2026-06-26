@@ -45,7 +45,7 @@ const Profile = () => {
     phone: '',
     avatar_url: '',
     line_id: '',
-    country_code: 'TH' as 'TH' | 'VN' | 'MY' | 'ID',
+    country_code: 'VE' as 'VE' | 'TH' | 'VN' | 'MY' | 'ID',
   });
   const [uploading, setUploading] = useState(false);
 
