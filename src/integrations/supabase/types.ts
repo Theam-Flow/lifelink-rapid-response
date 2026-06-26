@@ -1802,7 +1802,7 @@ export type Database = {
       }
     }
     Enums: {
-      country_code: "TH" | "VN" | "MY" | "ID"
+      country_code: "TH" | "VN" | "MY" | "ID" | "VE"
       emergency_type:
         | "flood_trap"
         | "medical_emergency"
@@ -1985,7 +1985,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      country_code: ["TH", "VN", "MY", "ID"],
+      country_code: ["TH", "VN", "MY", "ID", "VE"],
       emergency_type: [
         "flood_trap",
         "medical_emergency",
