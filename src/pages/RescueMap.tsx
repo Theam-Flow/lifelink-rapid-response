@@ -230,6 +230,22 @@ const RescueMap = () => {
         });
       }
 
+      // Structural-damage reports layer, so rescuers see damage alongside SOS
+      (supabase as any).from('damage_reports').select('*').then(({ data }: any) => {
+        (data || []).forEach((r: any) => {
+          const mm = String(r.location || '').match(/POINT\s*\(([-\d.]+)\s+([-\d.]+)\)/i);
+          if (!mm) return;
+          const el = document.createElement('div');
+          el.style.cssText = 'width:12px;height:12px;background:#ea580c;border:2px solid white;transform:rotate(45deg);box-shadow:0 1px 2px rgba(0,0,0,0.4);';
+          new maplibregl.Marker({ element: el })
+            .setLngLat([parseFloat(mm[1]), parseFloat(mm[2])])
+            .setPopup(new maplibregl.Popup({ offset: 10 }).setHTML(
+              `<strong>${t('damage.types.' + r.damage_type)}</strong> · ${r.severity}/5${r.address ? '<br/>' + r.address : ''}`
+            ))
+            .addTo(newMap);
+        });
+      });
+
       // Get user's current location and center map
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
