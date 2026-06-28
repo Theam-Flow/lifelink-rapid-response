@@ -246,6 +246,22 @@ const Index = () => {
             </Card>
           </motion.div>
 
+          {/* Damage Map */}
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all border-destructive/40"
+              onClick={() => navigate('/damage-map')}
+            >
+              <CardContent className="flex items-center gap-4 py-4">
+                <Building2 className="h-8 w-8 text-destructive shrink-0" />
+                <div>
+                  <p className="font-semibold">{t('damage.title')}</p>
+                  <p className="text-sm text-muted-foreground">{t('damage.report')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Documentation Link */}
           <motion.div whileTap={{ scale: 0.98 }}>
             <Card 
