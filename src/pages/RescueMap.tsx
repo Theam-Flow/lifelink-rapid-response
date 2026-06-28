@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin, Moon, Sun } from 'lucide-react';
+import { EARTHQUAKE_EPICENTERS } from '@/data/earthquake-epicenters';
 import { HeatmapCanvasLayer } from '@/components/HeatmapCanvasLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -198,6 +199,23 @@ const RescueMap = () => {
     newMap.on('load', () => {
       map.current = newMap;
       setMapLoaded(true);
+
+      // Official USGS earthquake epicenters (2026-06-24 doublet) — static context layer
+      EARTHQUAKE_EPICENTERS.forEach((eq) => {
+        const el = document.createElement('div');
+        el.style.cssText =
+          'width:22px;height:22px;border-radius:50%;background:rgba(220,38,38,0.35);' +
+          'border:2px solid #dc2626;box-shadow:0 0 0 4px rgba(220,38,38,0.15);cursor:pointer;';
+        el.title = `Epicentro M${eq.magnitude}`;
+        new maplibregl.Marker({ element: el })
+          .setLngLat([eq.lng, eq.lat])
+          .setPopup(
+            new maplibregl.Popup({ offset: 14 }).setHTML(
+              `<div style="font-size:12px"><strong>Epicentro M${eq.magnitude}</strong><br/>${eq.place}<br/>Prof. ${eq.depthKm} km · 24 jun 2026</div>`
+            )
+          )
+          .addTo(newMap);
+      });
 
       // Get user's current location and center map
       if (navigator.geolocation) {
