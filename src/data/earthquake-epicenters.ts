@@ -12,6 +12,31 @@ export interface Epicenter {
   timeUtc: string;
 }
 
+function ringPolygon(lng: number, lat: number, radiusKm: number, points = 72): number[][] {
+  const ring: number[][] = [];
+  const latR = (radiusKm / 6371) * (180 / Math.PI);
+  const lngR = latR / Math.cos((lat * Math.PI) / 180);
+  for (let i = 0; i <= points; i++) {
+    const a = (i / points) * 2 * Math.PI;
+    ring.push([lng + lngR * Math.cos(a), lat + latR * Math.sin(a)]);
+  }
+  return ring;
+}
+
+// Approximate strong-shaking rings (km) around each epicenter, as USGS-derived
+// context for the affected area — NOT building-level damage points.
+export function affectedZoneGeoJSON() {
+  const radii = [40, 90];
+  const features = EARTHQUAKE_EPICENTERS.flatMap((eq) =>
+    radii.map((r) => ({
+      type: 'Feature' as const,
+      properties: { radiusKm: r, magnitude: eq.magnitude },
+      geometry: { type: 'Polygon' as const, coordinates: [ringPolygon(eq.lng, eq.lat, r)] },
+    }))
+  );
+  return { type: 'FeatureCollection' as const, features };
+}
+
 export const EARTHQUAKE_EPICENTERS: Epicenter[] = [
   {
     magnitude: 7.5,

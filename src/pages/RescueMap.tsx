@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Navigation, AlertCircle, Radio, Layers, MessageSquare, X, Bell, BellOff, Crosshair, Phone, Mail, MapPin, Moon, Sun } from 'lucide-react';
-import { EARTHQUAKE_EPICENTERS } from '@/data/earthquake-epicenters';
+import { EARTHQUAKE_EPICENTERS, affectedZoneGeoJSON } from '@/data/earthquake-epicenters';
 import { HeatmapCanvasLayer } from '@/components/HeatmapCanvasLayer';
 import { RescuerTracker } from '@/components/RescuerTracker';
 import { Chat } from '@/components/Chat';
@@ -216,6 +216,19 @@ const RescueMap = () => {
           )
           .addTo(newMap);
       });
+
+      // Official affected-zone context (USGS shaking radius) — not damage points
+      if (!newMap.getSource('affected-zone')) {
+        newMap.addSource('affected-zone', { type: 'geojson', data: affectedZoneGeoJSON() as any });
+        newMap.addLayer({
+          id: 'affected-zone-fill', type: 'fill', source: 'affected-zone',
+          paint: { 'fill-color': '#dc2626', 'fill-opacity': 0.06 },
+        });
+        newMap.addLayer({
+          id: 'affected-zone-line', type: 'line', source: 'affected-zone',
+          paint: { 'line-color': '#dc2626', 'line-opacity': 0.25, 'line-width': 1 },
+        });
+      }
 
       // Get user's current location and center map
       if (navigator.geolocation) {
