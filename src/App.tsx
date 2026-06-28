@@ -26,6 +26,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Shelters = lazy(() => import("./pages/Shelters"));
 const ShelterManage = lazy(() => import("./pages/ShelterManage"));
 const Docs = lazy(() => import("./pages/Docs"));
+const ReliefDirectory = lazy(() => import("./pages/ReliefDirectory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component
@@ -71,6 +72,7 @@ const AnimatedRoutes = () => {
           <Route path="/shelters" element={<PageTransition><Shelters /></PageTransition>} />
           <Route path="/shelters/manage/:id" element={<PageTransition><ShelterManage /></PageTransition>} />
           <Route path="/docs" element={<PageTransition><Docs /></PageTransition>} />
+          <Route path="/relief" element={<PageTransition><ReliefDirectory /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </Suspense>

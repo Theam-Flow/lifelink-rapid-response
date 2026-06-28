@@ -230,6 +230,22 @@ const Index = () => {
             </motion.div>
           </div>
 
+          {/* Help Directory (earthquake relief initiatives) */}
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <Card
+              className="cursor-pointer hover:shadow-md transition-all border-primary/40"
+              onClick={() => navigate('/relief')}
+            >
+              <CardContent className="flex items-center gap-4 py-4">
+                <Heart className="h-8 w-8 text-primary shrink-0" />
+                <div>
+                  <p className="font-semibold">{t('relief.title')}</p>
+                  <p className="text-sm text-muted-foreground">{t('relief.quakeTitle')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Documentation Link */}
           <motion.div whileTap={{ scale: 0.98 }}>
             <Card 
