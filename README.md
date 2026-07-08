@@ -11,6 +11,8 @@
 > Built for humanity. Free forever. Ready for government deployment.
 >
 > **Created by [@withkevinm](https://github.com/withkevinm)**
+>
+> **🔴 Live: [savelife.site](https://savelife.site)**
 
 ## 🌟 Overview
 
@@ -72,27 +74,7 @@ This platform is **specifically designed** for:
 - **Backend**: Supabase (PostgreSQL + PostGIS + Real-time)
 - **Maps**: MapLibre GL JS (100% free, no API keys!)
 - **PWA**: Service Worker + Offline Support
-- **i18n**: Multi-language support (EN, TH, VN, MY, ID)
-
-## 📊 Production Metrics
-
-✅ **Performance**
-- First Contentful Paint: < 1.2s
-- Time to Interactive: < 2.5s
-- Lighthouse Score: 95+
-- Mobile Optimized: 100%
-
-✅ **Security**
-- 38 Active RLS Policies
-- Input Validation on All Forms
-- HTTPS Only
-- Regular Security Audits
-
-✅ **Scalability**
-- Handles 10,000+ concurrent users
-- Backend clustering for map markers
-- Optimized database queries
-- CDN-ready static assets
+- **i18n**: Multi-language support (ES, EN, TH, VI)
 
 ## 🏗️ Project info
 
@@ -160,11 +142,10 @@ Simply open [Lovable](https://lovable.dev/projects/2fdbcd20-0dd9-449e-8e83-70770
 
 ## 🌍 Languages Supported
 
+- 🇻🇪 Spanish (Español) — default
 - 🇬🇧 English
 - 🇹🇭 Thai (ไทย)
-- 🇻🇳 Vietnamese (Tiếng Việt)  
-- 🇲🇾 Malay (Bahasa Melayu)
-- 🇮🇩 Indonesian (Bahasa Indonesia)
+- 🇻🇳 Vietnamese (Tiếng Việt)
 
 ## 🤝 Contributing
 
@@ -186,11 +167,11 @@ Security is our top priority. See [SECURITY.md](./SECURITY.md) for:
 - Compliance information
 - Best practices
 
-**Found a security issue?** Email: security@lifelinkasia.org
+**Found a security issue?** Report it privately via [GitHub Security Advisories](https://github.com/Theam-Flow/lifelink-rapid-response/security/advisories/new).
 
 ## 📄 License
 
-This project is licensed under the MIT License with an Emergency Use Clause - see [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License - see [LICENSE](./LICENSE). Emergency-use encouragement and third-party attributions are in [NOTICE.md](./NOTICE.md).
 
 **TL;DR**: Free to use, modify, and deploy. Especially encouraged for emergency response!
 
@@ -210,10 +191,9 @@ Special thanks to:
 
 ## 📞 Support & Contact
 
-- 📧 Email: support@lifelinkasia.org
 - 🐛 Bugs: [GitHub Issues](https://github.com/Theam-Flow/lifelink-rapid-response/issues)
 - 💬 Discussions: [GitHub Discussions](https://github.com/Theam-Flow/lifelink-rapid-response/discussions)
-- 🌐 Website: [lifelinkasia.org](https://lifelinkasia.org)
+- 🌐 Website: [savelife.site](https://savelife.site)
 
 ## 🗺️ Roadmap
 
